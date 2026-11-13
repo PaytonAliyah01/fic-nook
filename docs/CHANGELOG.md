@@ -2,6 +2,10 @@
 
 Version numbers come from the GitHub build number: build 5 is version 1.5, and so on.
 
+## 1.7
+
+- Fics in your fic folder are read again once after updating, so ones you added before 1.5 also get italics, bold and special fonts. Your spot, highlights and shelves stay. (Fics you added by hand with **Add a fic** need adding again.)
+
 ## 1.6
 
 - Fixed the cards under **Me** sitting squashed together with no space between them.

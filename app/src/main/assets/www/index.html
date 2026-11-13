@@ -2555,6 +2555,7 @@ $("#setup").addEventListener("click", e => {
 
 /* ---------------- app-only: fic folder + updates ---------------- */
 let syncing = false, lastSync = 0, syncNoteT;
+const PARSER_V = 2;
 function syncNote(msg, ms) {
   const n = $("#sync-note"); clearTimeout(syncNoteT);
   if (!msg) { n.hidden = true; return; }
@@ -2580,11 +2581,14 @@ async function syncFolder(manual) {
     const res = await fetch("/fn/list", { cache: "no-store" });
     if (!res.ok) throw new Error("Couldn't open your fic folder. Try choosing it again under Me.");
     const files = await res.json();
-    const seen = LS.get("folderSeen", {});
+    // When the way fics are read gets better (like keeping fonts in 1.5), read every folder fic again once.
+    // Fics keep their spot, highlights and shelves because they're matched as the same fic.
+    const refresh = LS.get("parserV", 1) < PARSER_V;
+    const seen = refresh ? {} : LS.get("folderSeen", {});
     const fresh = files.filter(f => !seen[f.name + "|" + f.size + "|" + f.modified]).sort((a, b) => a.modified - b.modified);
     for (let i = 0; i < fresh.length; i++) {
       const f = fresh[i], key = f.name + "|" + f.size + "|" + f.modified;
-      syncNote(fresh.length > 1 ? `Adding fics from your folder (${i + 1} of ${fresh.length})…` : `Adding “${f.name}”…`);
+      syncNote(refresh ? `Refreshing your fics with the new version (${i + 1} of ${fresh.length})…` : fresh.length > 1 ? `Adding fics from your folder (${i + 1} of ${fresh.length})…` : `Adding “${f.name}”…`);
       try {
         const r = await fetch("/fn/file?u=" + encodeURIComponent(f.uri), { cache: "no-store" });
         if (!r.ok) throw new Error("read failed");
@@ -2595,7 +2599,9 @@ async function syncFolder(manual) {
       } catch (e) { console.error(f.name, e); seen[key] = "err"; failed++; }
       LS.set("folderSeen", seen);
     }
-    if (added || updated.length || failed) {
+    if (refresh) LS.set("parserV", PARSER_V);
+    if (refresh && fresh.length && !added && !updated.length && !failed) { await renderShelf(); syncNote("Your fics are refreshed. Italics, bold and special fonts now show.", 6000); }
+    else if (added || updated.length || failed) {
       await renderShelf();
       const parts = [];
       if (added) parts.push(`Added ${added} fic${added === 1 ? "" : "s"}`);

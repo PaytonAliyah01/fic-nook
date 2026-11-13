@@ -1,6 +1,6 @@
 # Fic Nook user guide
 
-This guide covers everything Fic Nook can do as of version 1.6.
+This guide covers everything Fic Nook can do as of version 1.7.
 
 ## Getting started
 
