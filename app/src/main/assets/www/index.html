@@ -88,6 +88,25 @@ button { cursor: pointer; }
 .help li { margin-bottom: 4px; }
 .privacy { font-size: .88rem; color: var(--muted); margin: 0; }
 
+.shelf-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.shelf-head span { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tools { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.tools input[type="search"] { flex: 1 1 14rem; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 11px 16px; font-size: 1rem; }
+.tools select { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px; }
+.fic .fd { font-size: .85rem; color: var(--accent); overflow-wrap: anywhere; }
+.fic .sum { font-size: .92rem; line-height: 1.45; opacity: .9; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-top: 4px; }
+.chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.chip { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 3px 10px; font-size: .78rem; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip:hover { color: var(--fg); border-color: var(--muted); }
+.chips .more { font-size: .78rem; color: var(--muted); align-self: center; }
+.folder-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.folder-card p { margin: 0; flex: 1 1 12rem; min-width: 0; font-size: .92rem; overflow-wrap: anywhere; }
+.folder-card b { display: block; }
+.folder-card small { color: var(--muted); font-size: .88rem; }
+.update-bar { background: var(--accent); color: var(--accent-ink); border-radius: 12px; padding: 12px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: space-between; font-weight: 700; }
+.update-bar button { background: var(--accent-ink); color: var(--accent); border: 0; border-radius: 999px; padding: 8px 16px; font-weight: 700; }
+.update-bar button:disabled { opacity: .7; }
+
 /* ---------- Reader ---------- */
 #reader { max-width: calc(var(--measure) + 2rem); margin: 0 auto; padding-block: 0 80px; }
 body.reading::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
@@ -187,6 +206,8 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
     <p>A comfy place to read the fics you downloaded.</p>
   </div>
 
+  <div class="update-bar" id="update-bar" hidden role="status"><span id="update-msg"></span><button id="update-btn" type="button">Update now</button></div>
+
   <section class="open-card" id="drop">
     <button class="btn-primary" id="open-btn" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
@@ -198,7 +219,23 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
   </section>
 
   <section class="shelf" aria-labelledby="shelf-h">
-    <h2 id="shelf-h">Your shelf</h2>
+    <div class="shelf-head"><h2 id="shelf-h">Your shelf</h2><span id="shelf-count"></span></div>
+    <div class="folder-card" id="folder-card" hidden>
+      <p id="folder-text"></p>
+      <button class="btn-small" type="button" id="folder-sync" hidden>Check for new fics</button>
+      <button class="btn-small" type="button" id="folder-pick">Choose folder</button>
+    </div>
+    <div class="tools">
+      <label class="sr" for="q">Search your shelf</label>
+      <input type="search" id="q" placeholder="Search titles, tags, summaries…" autocomplete="off" enterkeyhint="search">
+      <label class="sr" for="sort">Sort by</label>
+      <select id="sort">
+        <option value="read">Last read</option>
+        <option value="added">Newest added</option>
+        <option value="title">Title A–Z</option>
+        <option value="author">Author A–Z</option>
+      </select>
+    </div>
     <ul id="shelf-list"></ul>
   </section>
 
@@ -225,7 +262,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
       <p>PDFs are made for printing, so Fic Nook has to guess where paragraphs and chapters start. Italics are lost, and now and then a heading lands in the wrong spot. If a fic looks off, download the EPUB version from AO3 instead and open that.</p>
     </details>
   </section>
-  <p class="privacy">Your fics never leave your device. Fic Nook reads the file right here in your browser and keeps your shelf only on this phone or computer.</p>
+  <p class="privacy"><span id="app-version"></span>Your fics never leave your device. Fic Nook reads the file right here in your browser and keeps your shelf only on this phone or computer.</p>
 </main>
 
 <div id="reader" hidden>
@@ -344,7 +381,8 @@ const DB = {
 /* ---------------- settings ---------------- */
 const FONTS = { book: 'var(--book)', classic: 'Georgia, "Times New Roman", serif', easy: 'var(--ui)', plain: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' };
 const WIDTHS = { narrow: "28em", normal: "34em", wide: "44em" };
-const settings = Object.assign({ theme: "auto", font: "book", size: 19, lh: 1.65, width: "normal", notes: true, about: true, justify: false }, LS.get("settings", {}));
+const settings = Object.assign({ theme: "dark", font: "book", size: 19, lh: 1.65, width: "normal", notes: true, about: true, justify: false }, LS.get("settings", {}));
+if (!settings.v2) { if (settings.theme === "auto") settings.theme = "dark"; settings.v2 = true; }
 function applySettings() {
   const root = document.documentElement;
   root.classList.remove("t-paper", "t-sepia", "t-dark", "t-night");
@@ -729,6 +767,7 @@ async function openFile(file) {
   return fic;
 }
 async function handleFiles(files) {
+  if ($("#q").value) { $("#q").value = ""; }
   files = [...files]; if (!files.length) return;
   let last = null;
   for (const f of files) {
@@ -743,32 +782,72 @@ async function handleFiles(files) {
 /* ---------------- shelf ---------------- */
 let fics = [];
 const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+const TAG_FIELDS = /^(fandoms?|relationships?|characters?|additional tags)$/i;
+const unesc = t => t.replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+const plainText = h => clean(unesc(String(h || "").replace(/<[^>]+>/g, " ")));
+const ficField = (f, rx) => { const x = (f.fields || []).find(([k]) => rx.test(k)); return x ? clean(x[1]) : ""; };
+const ficTags = f => (f.fields || []).filter(([k]) => TAG_FIELDS.test(k)).flatMap(([, v]) => String(v).split(/,\s*/)).map(clean).filter(Boolean);
+const ficSummary = f => plainText(String(f.about || "").replace(/<h2 class="lbl">\s*(Notes|Series this work belongs to)[\s\S]*$/i, "").replace(/<h2 class="lbl">\s*Summary\s*<\/h2>/i, ""));
+const hayCache = new Map();
+function haystack(f) {
+  let h = hayCache.get(f.id);
+  if (!h) { h = [f.title, f.author, ...(f.fields || []).map(x => x[1]), ficSummary(f)].join(" \n ").toLowerCase(); hayCache.set(f.id, h); }
+  return h;
+}
 function pct(f) {
   const pr = LS.get("pos:" + f.id, null); if (!pr) return 0;
   const n = f.chapters.length; const ch = Math.max(0, pr.ch);
   return Math.min(100, Math.round(((ch + (pr.ch < 0 ? 0 : pr.frac || 0)) / n) * 100));
 }
 async function renderShelf() {
-  fics = (await DB.all()).sort((a, b) => (LS.get("opened:" + b.id, b.added) - LS.get("opened:" + a.id, a.added)));
+  const all = await DB.all();
+  if (!all.some(f => f.sample) && !LS.get("sampleRemoved", false)) { const s = sampleFic(); await DB.put(s); all.push(s); }
+  fics = all; hayCache.clear();
+  drawShelf();
+}
+function drawShelf() {
   const list = $("#shelf-list");
-  if (!fics.some(f => f.sample) && !LS.get("sampleRemoved", false)) { const s = sampleFic(); await DB.put(s); fics.push(s); }
+  const q = clean($("#q").value).toLowerCase();
+  const opened = f => LS.get("opened:" + f.id, f.added || 0);
+  const sorts = {
+    read: (a, b) => opened(b) - opened(a),
+    added: (a, b) => (b.added || 0) - (a.added || 0),
+    title: (a, b) => a.title.localeCompare(b.title),
+    author: (a, b) => (a.author || "").localeCompare(b.author || "") || a.title.localeCompare(b.title)
+  };
+  let shown = fics.slice();
+  if (q) { const words = q.split(" "); shown = shown.filter(f => words.every(w => haystack(f).includes(w))); }
+  shown.sort(sorts[$("#sort").value] || sorts.read);
+  $("#shelf-count").textContent = !fics.length ? "" : q ? `${shown.length} of ${fics.length}` : `${fics.length} fic${fics.length === 1 ? "" : "s"}`;
   if (!fics.length) { list.innerHTML = `<li><p class="empty">Nothing here yet. Tap <b>Open a fic</b> to add your first one.</p></li>`; return; }
-  list.innerHTML = fics.map(f => {
-    const p = pct(f);
-    const chs = f.chapters.length;
+  if (!shown.length) { list.innerHTML = `<li><p class="empty">No fics match “${esc(q)}”. Try fewer words, or a tag, character or fandom name.</p></li>`; return; }
+  list.innerHTML = shown.map(f => {
+    const p = pct(f), chs = f.chapters.length;
+    const fandom = ficField(f, /^fandoms?$/i), rating = ficField(f, /^rating$/i);
+    const sum = ficSummary(f);
+    const tags = ficTags(f).filter(t => t !== fandom);
+    const chipList = tags.slice(0, 8).map(t => `<button class="chip" type="button" data-tag="${esc(t)}">${esc(t)}</button>`).join("");
     return `<li class="fic" data-id="${esc(f.id)}">
       <button class="open" type="button">
         ${f.sample ? '<span class="tag">Example</span>' : ""}
         <span class="t">${esc(f.title)}</span>
         ${f.author ? `<span class="a">by ${esc(f.author)}</span>` : ""}
-        <span class="meta">${chs} chapter${chs === 1 ? "" : "s"} · ${Number(f.words || 0).toLocaleString()} words · ${p ? (p >= 99 ? "Finished" : p + "% read") : "Not started"}</span>
+        ${fandom ? `<span class="fd">${esc(fandom)}</span>` : ""}
+        ${sum ? `<span class="sum">${esc(sum)}</span>` : ""}
+        <span class="meta">${rating ? esc(rating) + " · " : ""}${chs} chapter${chs === 1 ? "" : "s"} · ${Number(f.words || 0).toLocaleString()} words · ${p ? (p >= 99 ? "Finished" : p + "% read") : "Not started"}</span>
         <span class="bar" aria-hidden="true"><i style="width:${p}%"></i></span>
       </button>
       <button class="del" type="button" aria-label="Remove ${esc(f.title)} from your shelf">${ICON_X}</button>
+      ${chipList ? `<div class="chips">${chipList}${tags.length > 8 ? `<span class="more">+${tags.length - 8} more</span>` : ""}</div>` : ""}
     </li>`;
   }).join("");
 }
+$("#sort").value = LS.get("sort", "read");
+$("#q").addEventListener("input", drawShelf);
+$("#sort").addEventListener("change", () => { LS.set("sort", $("#sort").value); drawShelf(); });
 $("#shelf-list").addEventListener("click", async e => {
+  const chip = e.target.closest(".chip");
+  if (chip) { $("#q").value = chip.dataset.tag; drawShelf(); $("#q").scrollIntoView({ block: "start", behavior: "smooth" }); return; }
   const li = e.target.closest(".fic"); if (!li) return;
   const id = li.dataset.id;
   if (e.target.closest(".open")) return openFic(id);
@@ -938,6 +1017,60 @@ function sampleFic() {
     chapters, words: 420, added: 0 };
 }
 
+/* ---------------- app-only: fic folder + updates ---------------- */
+const Android = window.FicNookAndroid || null;
+let syncing = false, lastSync = 0;
+function folderUI() {
+  if (!Android) return;
+  $("#folder-card").hidden = false;
+  const name = Android.folderName();
+  $("#folder-text").innerHTML = name
+    ? `<b>Fic folder</b><small>${esc(name)} · new fics there get added by themselves</small>`
+    : `<b>Add fics automatically</b><small>Choose the folder where your AO3 downloads go (usually Download), and new fics will show up here by themselves.</small>`;
+  $("#folder-pick").textContent = name ? "Change folder" : "Choose folder";
+  $("#folder-sync").hidden = !name;
+}
+async function syncFolder(manual) {
+  if (!Android || syncing || !Android.folderName()) return;
+  syncing = true; lastSync = Date.now();
+  let added = 0, failed = 0, last = null;
+  try {
+    if (manual) busy("Checking your fic folder…");
+    const res = await fetch("/fn/list", { cache: "no-store" });
+    if (!res.ok) throw new Error("Couldn't open your fic folder. Try choosing it again.");
+    const files = await res.json();
+    const seen = LS.get("folderSeen", {});
+    const fresh = files.filter(f => !seen[f.name + "|" + f.size + "|" + f.modified]);
+    for (let i = 0; i < fresh.length; i++) {
+      const f = fresh[i], key = f.name + "|" + f.size + "|" + f.modified;
+      busy(fresh.length > 1 ? `Adding fics from your folder (${i + 1} of ${fresh.length})…` : `Adding “${f.name}”…`);
+      try {
+        const r = await fetch("/fn/file?u=" + encodeURIComponent(f.uri), { cache: "no-store" });
+        if (!r.ok) throw new Error("read failed");
+        last = await openFile(new File([await r.arrayBuffer()], f.name));
+        seen[key] = 1; added++;
+      } catch (e) { console.error(f.name, e); seen[key] = "err"; failed++; }
+      LS.set("folderSeen", seen);
+    }
+    busy(null);
+    if (added || failed) {
+      await renderShelf();
+      toast(`Added ${added} fic${added === 1 ? "" : "s"} from your folder.` + (failed ? ` ${failed} file${failed === 1 ? "" : "s"} couldn't be read.` : ""));
+    } else if (manual) toast("No new fics in your folder.");
+  } catch (e) {
+    busy(null);
+    if (manual) toast(e.message || "Couldn't check your fic folder.");
+  } finally { syncing = false; }
+}
+window.ficNookFolderChanged = () => { folderUI(); syncFolder(true); };
+window.ficNookResume = () => { if (!fic && Date.now() - lastSync > 15000) syncFolder(false); };
+window.ficNookUpdateAvailable = ver => { $("#update-msg").textContent = `A new version of Fic Nook (${ver}) is ready.`; $("#update-bar").hidden = false; };
+window.ficNookUpdateStatus = (msg, canTap) => { const b = $("#update-btn"); b.textContent = msg; b.disabled = !canTap; };
+$("#update-btn").addEventListener("click", () => { if (Android) { $("#update-btn").disabled = true; Android.installUpdate(); } });
+$("#folder-pick").addEventListener("click", () => Android && Android.pickFolder());
+$("#folder-sync").addEventListener("click", () => syncFolder(true));
+if (Android) { try { $("#app-version").textContent = `Fic Nook ${Android.version()}. `; } catch {} folderUI(); }
+
 /* Android Back button (used by the app version): close a panel, or leave the fic. */
 window.ficNookBack = () => {
   if (!$("#scrim").hidden) { closeSheets(); return true; }
@@ -947,7 +1080,7 @@ window.ficNookBack = () => {
 
 /* ---------------- start ---------------- */
 applySettings();
-DB.open().then(renderShelf);
+DB.open().then(renderShelf).then(() => syncFolder(false));
 })();
 </script>
 

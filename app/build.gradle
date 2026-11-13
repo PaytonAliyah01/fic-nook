@@ -2,6 +2,9 @@ plugins {
     id 'com.android.application'
 }
 
+// GitHub passes its build number in, so every new build is a newer version.
+def ficVersion = (project.findProperty('ficVersion') ?: '1') as Integer
+
 android {
     namespace 'com.ficnook.app'
     compileSdk 34
@@ -10,8 +13,12 @@ android {
         applicationId 'com.ficnook.app'
         minSdk 26
         targetSdk 34
-        versionCode 1
-        versionName '1.0'
+        versionCode ficVersion
+        versionName "1.${ficVersion}"
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     // A fixed key so each new build installs over the old one (your shelf is kept).
@@ -42,4 +49,5 @@ android {
 
 dependencies {
     implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'androidx.core:core:1.13.1'
 }

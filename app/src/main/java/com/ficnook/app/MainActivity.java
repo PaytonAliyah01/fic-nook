@@ -4,8 +4,14 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
+import android.provider.DocumentsContract.Document;
+import android.provider.Settings;
+import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -14,22 +20,45 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.core.content.FileProvider;
 import androidx.webkit.WebViewAssetLoader;
 
-/** Shows the Fic Nook page (bundled in assets/www) full screen. */
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+
+/** Shows the Fic Nook page (bundled in assets/www) full screen, plus folder access and self-updates. */
 public class MainActivity extends Activity {
     private static final int PICK_FILE = 41;
+    private static final int PICK_FOLDER = 42;
+    private static final String HOST = "appassets.androidplatform.net";
     // A stable https address for the bundled files, so the shelf (IndexedDB) and settings persist.
-    private static final String HOME = "https://appassets.androidplatform.net/assets/www/index.html";
+    private static final String HOME = "https://" + HOST + "/assets/www/index.html";
+    private static final String RELEASES = "https://api.github.com/repos/PaytonAliyah01/fic-nook/releases/latest";
 
     private WebView web;
+    private SharedPreferences prefs;
     private ValueCallback<Uri[]> pendingPick;
+    private boolean checkedUpdate = false;
+    private volatile String updateUrl;
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        prefs = getSharedPreferences("ficnook", MODE_PRIVATE);
         web = new WebView(this);
+        web.setBackgroundColor(0xFF17171C);
         setContentView(web);
 
         WebSettings s = web.getSettings();
@@ -44,19 +73,33 @@ public class MainActivity extends Activity {
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
                 .build();
 
+        web.addJavascriptInterface(new Bridge(), "FicNookAndroid");
+
         web.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-                return loader.shouldInterceptRequest(request.getUrl());
+                Uri u = request.getUrl();
+                if (HOST.equals(u.getHost()) && u.getPath() != null && u.getPath().startsWith("/fn/")) {
+                    return serveFolder(u);
+                }
+                return loader.shouldInterceptRequest(u);
             }
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 Uri u = request.getUrl();
-                if ("appassets.androidplatform.net".equals(u.getHost())) return false;
+                if (HOST.equals(u.getHost())) return false;
                 // Links inside fics open in the phone's browser.
                 try { startActivity(new Intent(Intent.ACTION_VIEW, u)); } catch (Exception ignored) { }
                 return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                if (!checkedUpdate) {
+                    checkedUpdate = true;
+                    checkForUpdate();
+                }
             }
         });
 
@@ -83,8 +126,205 @@ public class MainActivity extends Activity {
         else web.loadUrl(HOME);
     }
 
+    /* ---------- talking to the page ---------- */
+
+    private void js(String code) {
+        runOnUiThread(() -> web.evaluateJavascript(code, null));
+    }
+
+    private class Bridge {
+        @JavascriptInterface
+        public String folderName() {
+            String t = prefs.getString("tree", null);
+            if (t == null) return "";
+            try {
+                String id = DocumentsContract.getTreeDocumentId(Uri.parse(t));
+                int i = id.indexOf(':');
+                String vol = i >= 0 ? id.substring(0, i) : "";
+                String rest = i >= 0 ? id.substring(i + 1) : id;
+                if (!rest.isEmpty()) return rest;
+                return "primary".equals(vol) ? "Phone storage" : (vol.isEmpty() ? "Your folder" : vol);
+            } catch (Exception e) {
+                return "Your folder";
+            }
+        }
+
+        @JavascriptInterface
+        public void pickFolder() {
+            runOnUiThread(() -> {
+                Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                try { startActivityForResult(i, PICK_FOLDER); } catch (Exception ignored) { }
+            });
+        }
+
+        @JavascriptInterface
+        public String version() {
+            return BuildConfig.VERSION_NAME;
+        }
+
+        @JavascriptInterface
+        public void installUpdate() {
+            startUpdate();
+        }
+    }
+
+    /* ---------- the fic folder ---------- */
+
+    private WebResourceResponse serveFolder(Uri u) {
+        try {
+            String tree = prefs.getString("tree", null);
+            if (tree == null) return httpError(404);
+            Uri treeUri = Uri.parse(tree);
+            String treeId = DocumentsContract.getTreeDocumentId(treeUri);
+            if ("/fn/list".equals(u.getPath())) {
+                JSONArray arr = new JSONArray();
+                walk(treeUri, treeId, 0, arr);
+                return new WebResourceResponse("application/json", "utf-8",
+                        new ByteArrayInputStream(arr.toString().getBytes(StandardCharsets.UTF_8)));
+            }
+            if ("/fn/file".equals(u.getPath())) {
+                String doc = u.getQueryParameter("u");
+                if (doc == null) return httpError(400);
+                Uri d = Uri.parse(doc);
+                // Only files inside the folder the reader picked.
+                if (!treeUri.getAuthority().equals(d.getAuthority())
+                        || !treeId.equals(DocumentsContract.getTreeDocumentId(d))) return httpError(403);
+                InputStream in = getContentResolver().openInputStream(d);
+                if (in == null) return httpError(404);
+                return new WebResourceResponse("application/octet-stream", null, in);
+            }
+        } catch (Exception ignored) { }
+        return httpError(404);
+    }
+
+    private void walk(Uri tree, String docId, int depth, JSONArray out) throws Exception {
+        Uri kids = DocumentsContract.buildChildDocumentsUriUsingTree(tree, docId);
+        String[] cols = {Document.COLUMN_DOCUMENT_ID, Document.COLUMN_DISPLAY_NAME, Document.COLUMN_MIME_TYPE,
+                Document.COLUMN_SIZE, Document.COLUMN_LAST_MODIFIED};
+        try (Cursor c = getContentResolver().query(kids, cols, null, null, null)) {
+            if (c == null) return;
+            while (c.moveToNext()) {
+                String id = c.getString(0), name = c.getString(1), mime = c.getString(2);
+                if (Document.MIME_TYPE_DIR.equals(mime)) {
+                    if (depth < 3 && out.length() < 3000) walk(tree, id, depth + 1, out);
+                    continue;
+                }
+                if (name == null || !name.toLowerCase(Locale.ROOT).matches(".*\\.(pdf|epub|html?)$")) continue;
+                JSONObject o = new JSONObject();
+                o.put("uri", DocumentsContract.buildDocumentUriUsingTree(tree, id).toString());
+                o.put("name", name);
+                o.put("size", c.isNull(3) ? 0 : c.getLong(3));
+                o.put("modified", c.isNull(4) ? 0 : c.getLong(4));
+                out.put(o);
+            }
+        }
+    }
+
+    private static WebResourceResponse httpError(int code) {
+        return new WebResourceResponse("text/plain", "utf-8", code, "Error", null, new ByteArrayInputStream(new byte[0]));
+    }
+
+    /* ---------- updates ---------- */
+
+    private void checkForUpdate() {
+        new Thread(() -> {
+            try {
+                HttpURLConnection c = (HttpURLConnection) new URL(RELEASES).openConnection();
+                c.setRequestProperty("Accept", "application/vnd.github+json");
+                c.setConnectTimeout(10000);
+                c.setReadTimeout(10000);
+                if (c.getResponseCode() != 200) return;
+                JSONObject o = new JSONObject(readAll(c.getInputStream()));
+                int remote = Integer.parseInt(o.optString("tag_name").replaceAll("[^0-9]", ""));
+                if (remote <= BuildConfig.VERSION_CODE) return;
+                JSONArray assets = o.getJSONArray("assets");
+                for (int i = 0; i < assets.length(); i++) {
+                    JSONObject a = assets.getJSONObject(i);
+                    if (a.optString("name").endsWith(".apk")) updateUrl = a.optString("browser_download_url");
+                }
+                if (updateUrl == null) return;
+                js("window.ficNookUpdateAvailable && window.ficNookUpdateAvailable(" + JSONObject.quote("1." + remote) + ")");
+            } catch (Exception ignored) { }
+        }).start();
+    }
+
+    private void updateStatus(String msg, boolean canTap) {
+        js("window.ficNookUpdateStatus && window.ficNookUpdateStatus(" + JSONObject.quote(msg) + "," + canTap + ")");
+    }
+
+    private void startUpdate() {
+        if (updateUrl == null) return;
+        if (!getPackageManager().canRequestPackageInstalls()) {
+            updateStatus("Allow it, then tap here again", true);
+            runOnUiThread(() -> {
+                try {
+                    startActivity(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())));
+                } catch (Exception ignored) { }
+            });
+            return;
+        }
+        new Thread(() -> {
+            try {
+                updateStatus("Downloading…", false);
+                File dir = new File(getCacheDir(), "updates");
+                //noinspection ResultOfMethodCallIgnored
+                dir.mkdirs();
+                File apk = new File(dir, "FicNook.apk");
+                HttpURLConnection c = (HttpURLConnection) new URL(updateUrl).openConnection();
+                c.setInstanceFollowRedirects(true);
+                c.setConnectTimeout(15000);
+                c.setReadTimeout(30000);
+                int total = c.getContentLength();
+                try (InputStream in = c.getInputStream(); OutputStream out = new FileOutputStream(apk)) {
+                    byte[] buf = new byte[64 * 1024];
+                    long done = 0;
+                    int n, lastPct = -1;
+                    while ((n = in.read(buf)) > 0) {
+                        out.write(buf, 0, n);
+                        done += n;
+                        if (total > 0) {
+                            int pct = (int) (done * 100 / total);
+                            if (pct / 10 != lastPct / 10) { lastPct = pct; updateStatus("Downloading… " + pct + "%", false); }
+                        }
+                    }
+                }
+                Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".files", apk);
+                Intent i = new Intent(Intent.ACTION_VIEW);
+                i.setDataAndType(uri, "application/vnd.android.package-archive");
+                i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+                runOnUiThread(() -> startActivity(i));
+                updateStatus("Install again", true);
+            } catch (Exception e) {
+                updateStatus("Download failed. Try again", true);
+            }
+        }).start();
+    }
+
+    private static String readAll(InputStream in) throws Exception {
+        ByteArrayOutputStream b = new ByteArrayOutputStream();
+        byte[] buf = new byte[16 * 1024];
+        int n;
+        while ((n = in.read(buf)) > 0) b.write(buf, 0, n);
+        in.close();
+        return b.toString("UTF-8");
+    }
+
+    /* ---------- activity plumbing ---------- */
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_FOLDER) {
+            if (resultCode == RESULT_OK && data != null && data.getData() != null) {
+                Uri tree = data.getData();
+                try {
+                    getContentResolver().takePersistableUriPermission(tree, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                } catch (Exception ignored) { }
+                prefs.edit().putString("tree", tree.toString()).apply();
+                js("window.ficNookFolderChanged && window.ficNookFolderChanged()");
+            }
+            return;
+        }
         if (requestCode != PICK_FILE || pendingPick == null) {
             super.onActivityResult(requestCode, resultCode, data);
             return;
@@ -116,6 +356,13 @@ public class MainActivity extends Activity {
         web.evaluateJavascript("(window.ficNookBack && window.ficNookBack()) ? 'yes' : 'no'", value -> {
             if (value == null || !value.contains("yes")) MainActivity.super.onBackPressed();
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Pick up fics that were downloaded while the app was in the background.
+        web.evaluateJavascript("window.ficNookResume && window.ficNookResume()", null);
     }
 
     @Override
