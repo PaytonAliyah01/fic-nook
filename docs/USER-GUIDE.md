@@ -38,6 +38,20 @@ The Android **Back** button closes whatever is open, one step at a time.
 
 ## Your Library
 
+At the top of the Library you can switch between **Home** and **Shelves**.
+
+### Home
+
+Home is for browsing, like a bookstore app. At the top is a big **Keep reading** card for the fic you read last; tap **Continue** to jump back in. Below it are rows of covers you can swipe left and right: New chapters, Still reading, Up next, Your favourites, each of your own shelves, Your top rated, your biggest fandoms, Recently added and Finished. **See all** opens that shelf in the Shelves view. At the bottom, **Browse by tag** shows your most common tags.
+
+Tap a cover to open the fic's **story page**: big cover, number of chapters and words, reading time, summary and tags, a **Start reading** button, and everything from the ⋮ button below.
+
+### Covers
+
+Every fic gets a cover made from its title and author, with its own colors and a small picture. On the story page, tap **New cover colors** for a different one, or **Use a picture** to pick any photo from your phone. **Remove picture** goes back to the made-up cover. A picture you chose stays when you download a new version of the fic.
+
+### Shelves
+
 Each card shows the title, author, fandom, your star rating, how far you've read and how long is left (for example "40% read · 1 h 10 min left"). A ★ before the title means it's a favourite.
 
 - **Tabs** along the top: All, Reading, To read, Finished, Favourites, plus any shelves you made yourself.
@@ -48,7 +62,7 @@ Each card shows the title, author, fandom, your star rating, how far you've read
 
 ### The ⋮ button on a fic
 
-Tap **⋮** on any card to:
+Tap **⋮** (or the cover) on any card to open its story page, where you can:
 
 - Move it between **To read**, **Reading** and **Finished**.
 - Add it to your **favourites**.

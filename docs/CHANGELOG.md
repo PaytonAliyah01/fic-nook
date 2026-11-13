@@ -2,6 +2,13 @@
 
 Version numbers come from the GitHub build number: build 5 is version 1.5, and so on.
 
+## 1.11
+
+- **A new Home page in your Library**, a bit like a bookstore app: a big "Keep reading" card at the top, then rows of covers you can swipe through (New chapters, Still reading, Up next, Favourites, your own shelves, Top rated, your biggest fandoms, Recently added, Finished) and tags to browse by.
+- **Every fic has a cover.** FicNook makes one from the title and author with its own colors and a little picture. Tap **New cover colors** to get a different one, or **Use a picture** to pick any photo from your phone as the cover.
+- **Story page:** tap a cover to see the fic's big cover, chapters, words and reading time, summary and tags, with a **Start reading** button at the top.
+- The old list is still there: tap **Shelves** at the top of the Library. Its cards now show the covers too.
+
 ## 1.10
 
 - **A new app icon**: a rainy arched window with books on the sill, candles and shelves of books on both sides, in dark cozy colors. On phones with themed icons it turns into a simple window-and-books outline.

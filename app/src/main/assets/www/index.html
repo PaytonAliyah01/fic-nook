@@ -406,6 +406,51 @@ body.controls .topbar { transform: none; }
 .spin { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); margin: 0 auto; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 31; background: var(--fg); color: var(--bg); padding: 12px 18px; border-radius: 12px; max-width: min(28rem, calc(100vw - 32px)); font-size: .95rem; }
+
+/* ---------- Covers, browse home, story page (1.11) ---------- */
+.fic.series-card .parts { grid-column: 1 / -1; }
+
+.cover { position: relative; display: block; aspect-ratio: 2 / 3; border-radius: 6px 9px 9px 6px; overflow: hidden; background: linear-gradient(160deg, var(--c1), var(--c2)); color: var(--c3); container-type: inline-size; box-shadow: 0 4px 12px rgba(0,0,0,.28), inset 3px 0 0 rgba(255,255,255,.08), inset 6px 0 6px -4px rgba(0,0,0,.35); flex: none; }
+.cover svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.cover .ct { position: absolute; left: 9%; right: 9%; top: 9%; font-family: var(--book); font-weight: 700; font-size: 13cqw; line-height: 1.12; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; text-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.cover .ca { position: absolute; left: 9%; right: 9%; bottom: 7%; font-size: 7.5cqw; letter-spacing: .08em; text-transform: uppercase; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cover.img { background: #222 center / cover no-repeat; }
+.cover.img .ct, .cover.img .ca, .cover.img svg { display: none; }
+.cover .badge { position: absolute; bottom: 17%; right: 6px; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; }
+.fic.with-cover { grid-template-columns: 58px minmax(0, 1fr) auto; }
+.fic.with-cover > .cover { width: 58px; align-self: start; cursor: pointer; }
+.fic .parts .fic-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+.fic .parts .fic-row > .cover { width: 44px; }
+.lib-mode { margin: 2px 0 0; }
+#home.browse .tools #filter-btn, #home.browse .tools #sort, #home.browse #tabs, #home.browse #filter-note, #home.browse #sync-note, #home.browse #shelf-list { display: none; }
+#home:not(.browse) #browse { display: none; }
+#home { grid-template-columns: minmax(0, 1fr); }
+#browse { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; min-width: 0; }
+.hero { display: grid; grid-template-columns: 104px minmax(0, 1fr); gap: 16px; align-items: center; padding: 16px; border-radius: 16px; background: linear-gradient(135deg, color-mix(in srgb, var(--hc, var(--accent)) 38%, var(--surface)), var(--surface)); border: 1px solid var(--line); min-width: 0; }
+.hero .cover { width: 104px; cursor: pointer; }
+.hero .eyebrow { margin: 0; }
+.hero h2 { font-family: var(--book); font-size: 1.25rem; line-height: 1.25; margin: 2px 0; overflow-wrap: anywhere; }
+.hero p { margin: 0; color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; }
+.hero .bar { height: 5px; border-radius: 5px; background: var(--line); overflow: hidden; margin: 10px 0 12px; }
+.hero .bar i { display: block; height: 100%; background: var(--accent); }
+.shelf-row h3 { font-family: var(--book); font-size: 1.15rem; font-weight: 600; margin: 0 0 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.shelf-row h3 button { all: unset; cursor: pointer; font-family: var(--ui); font-size: .85rem; color: var(--accent); font-weight: 700; }
+.row-scroll { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x proximity; margin: 0 -16px; padding: 4px 16px 8px; scrollbar-width: none; }
+.row-scroll::-webkit-scrollbar { display: none; }
+.tile { all: unset; cursor: pointer; width: 112px; flex: none; display: grid; gap: 6px; align-content: start; scroll-snap-align: start; }
+.tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+.tile .tt { font-size: .86rem; font-weight: 700; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.tile .ta { font-size: .76rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: -4px; }
+.tile .bar { height: 3px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.tile .bar i { display: block; height: 100%; background: var(--accent); }
+.tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+.detail-top { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; align-items: start; margin-bottom: 14px; }
+.detail-top .cover { width: 112px; }
+.detail-top h3 { font-family: var(--book); font-size: 1.3rem; line-height: 1.25; margin: 0 0 4px; overflow-wrap: anywhere; text-transform: none; letter-spacing: 0; color: var(--fg); font-weight: 600; }
+.detail-top .fic-by { margin: 0 0 8px; }
+.detail-stats { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--muted); margin: 0 0 12px; }
+.detail-stats b { color: var(--fg); font-weight: 700; }
+.cover-row { display: flex; flex-wrap: wrap; gap: 8px; }
 @media (prefers-reduced-motion: reduce) { .topbar { transition: none; } .spin { animation-duration: 3s; } }
 </style>
 </head>
@@ -413,6 +458,7 @@ body.controls .topbar { transform: none; }
 
 <main id="home" class="view">
   <div class="view-head"><h1>Library</h1><span id="shelf-count"></span></div>
+  <div class="seg lib-mode" id="lib-mode" role="group" aria-label="How to show your library"><button type="button" data-v="browse">Home</button><button type="button" data-v="shelves">Shelves</button></div>
   <div class="update-bar" hidden role="status"><span class="update-msg"></span><button class="update-btn" type="button">Update now</button></div>
   <div class="tools">
     <label class="sr" for="q">Search your library</label>
@@ -438,6 +484,8 @@ body.controls .topbar { transform: none; }
   <p class="filter-note" id="filter-note" hidden></p>
   <p class="filter-note" id="sync-note" hidden></p>
   <ul id="shelf-list"></ul>
+  <div id="browse"></div>
+  <input type="file" id="cover-file" class="sr" accept="image/*">
   <input type="file" id="file" class="sr" accept=".pdf,.epub,.html,.htm,application/pdf,application/epub+zip,text/html" multiple>
 </main>
 
@@ -1402,6 +1450,7 @@ let fics = [];
 const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
 const ICON_STAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
 const STATUS_NAMES = { toread: "To read", reading: "Reading", finished: "Finished" };
+let libMode = LS.get("libMode", "browse");
 let shelfTab = LS.get("tab", "all");
 let myShelves = LS.get("shelves", []);
 const saveShelves = () => LS.set("shelves", myShelves);
@@ -2236,6 +2285,7 @@ async function openFile(file, progress = busy) {
   const old = all.find(f => !f.sample && (f.id === id || (workId && f.workId === workId) || (norm(f.title) === norm(res.title) && norm(f.author) === norm(res.author))));
   if (old) id = old.id;
   const fic = { id, workId: workId || (old && old.workId) || "", title: res.title, author: res.author, about: res.about, fields: res.fields, chapters: res.chapters, format, words, added: old ? old.added : Date.now() };
+  if (old && old.coverImg) fic.coverImg = old.coverImg;
   await DB.put(fic);
   for (const k of [...chWordsCache.keys()]) if (k.startsWith(id + ":")) chWordsCache.delete(k);
   hayCache.delete(id);
@@ -2309,6 +2359,7 @@ function cardInner(f, partLabel) {
     <button class="more-btn" type="button" aria-label="More about ${esc(f.title)}">${ICON_MORE}</button>`;
 }
 function drawShelf() {
+  if (libMode === "browse") drawBrowse();
   const list = $("#shelf-list");
   const q = clean($("#q").value).toLowerCase();
   const opened = f => LS.get("opened:" + f.id, f.added || 0);
@@ -2357,13 +2408,13 @@ function drawShelf() {
     return;
   }
   list.innerHTML = items.map(it => {
-    if (it.f) return `<li class="fic" data-id="${esc(it.f.id)}">${cardInner(it.f)}</li>`;
+    if (it.f) return `<li class="fic with-cover" data-id="${esc(it.f.id)}">${coverHtml(it.f)}${cardInner(it.f)}</li>`;
     const parts = it.parts, open = expanded.has(it.series) || !!q;
     const fin = parts.filter(f => statusOf(f) === "finished").length;
     const left = parts.reduce((a, f) => a + minsLeft(f), 0);
     const newCh = parts.reduce((a, f) => a + ((lib[f.id] || {}).newCh || 0), 0);
     const first = parts[0], fandom = ficField(first, /^fandoms?$/i);
-    return `<li class="fic series-card" data-series="${esc(it.series)}">
+    return `<li class="fic series-card with-cover" data-series="${esc(it.series)}">${coverHtml(first, { title: it.series, key: "s:" + it.series, img: first.coverImg || "", badge: parts.length + " parts" })}
       <button class="open s-toggle" type="button" aria-expanded="${open}">
         <span class="tag">Series · ${parts.length} parts</span>
         ${newCh ? `<span class="new">${newCh} new chapter${newCh === 1 ? "" : "s"}</span>` : ""}
@@ -2373,10 +2424,11 @@ function drawShelf() {
         <span class="meta">${fin === parts.length ? "All finished" : `${fin} of ${parts.length} finished · ${fmtMins(left)} left`} · ${open ? "tap to fold" : "tap to see parts"}</span>
         <span class="bar" aria-hidden="true"><i style="width:${Math.round(fin / parts.length * 100)}%"></i></span>
       </button>
-      <ul class="parts"${open ? "" : " hidden"}>${parts.map(f => `<li data-id="${esc(f.id)}">${cardInner(f, "Part " + seriesOf(f).part)}</li>`).join("")}</ul>
+      <ul class="parts"${open ? "" : " hidden"}>${parts.map(f => `<li class="fic-row" data-id="${esc(f.id)}">${coverHtml(f)}${cardInner(f, "Part " + seriesOf(f).part)}</li>`).join("")}</ul>
     </li>`;
   }).join("");
 }
+$("#home").classList.toggle("browse", libMode === "browse"); $$("#lib-mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === libMode)));
 $("#sort").value = LS.get("sort", "read");
 $("#q").addEventListener("input", drawShelf);
 $("#sort").addEventListener("change", () => { LS.set("sort", $("#sort").value); drawShelf(); });
@@ -2386,18 +2438,111 @@ $("#shelf-list").addEventListener("click", e => {
   const tog = e.target.closest(".s-toggle");
   if (tog) { const name = tog.closest("[data-series]").dataset.series; if (expanded.has(name)) expanded.delete(name); else expanded.add(name); drawShelf(); return; }
   const holder = e.target.closest("[data-id]"); if (!holder) return;
-  if (e.target.closest(".more-btn")) return openFicSheet(holder.dataset.id);
+  if (e.target.closest(".more-btn") || e.target.closest(".cover")) return openFicSheet(holder.dataset.id);
   if (e.target.closest(".open")) return openFic(holder.dataset.id);
 });
+
+/* ---------------- covers ---------------- */
+const COVER_PAL = [["#2b1d3a","#6a2f5c","#f6dcea"],["#12233a","#2f5378","#dceaf8"],["#182c23","#40664f","#e2f0d8"],["#341611","#82352a","#f8dccb"],["#271d13","#70502a","#f5e3c0"],["#132630","#2d6e6c","#d4f2ec"],["#211d3a","#4d4b92","#e3e1ff"],["#33230f","#a8762c","#fff1d2"],["#2c1520","#924064","#ffd9e8"],["#1b1b22","#4c4c5c","#ecebf3"]];
+const COVER_ART = [
+  // moon and stars
+  c => `<circle cx="72" cy="100" r="16" fill="${c}" opacity=".5"/><circle cx="79" cy="95" r="14" fill="var(--c2)" opacity=".9"/><g fill="${c}" opacity=".55"><circle cx="20" cy="96" r="1.2"/><circle cx="40" cy="112" r="1"/><circle cx="30" cy="128" r="1.4"/><circle cx="58" cy="124" r="1"/><circle cx="88" cy="70" r="1.1"/></g>`,
+  // rain
+  c => `<g stroke="${c}" stroke-width="1.3" stroke-linecap="round" opacity=".35">${[[12,70],[30,84],[48,66],[66,88],[84,72],[20,104],[40,118],[60,100],[80,114],[94,96],[28,134],[70,132]].map(([x,y]) => `<line x1="${x}" y1="${y}" x2="${x-3}" y2="${y+10}"/>`).join("")}</g>`,
+  // waves
+  c => `<g fill="none" stroke="${c}" stroke-width="1.6" opacity=".35">${[92,104,116,128,140].map(y => `<path d="M-5 ${y}q12-8 25 0t25 0 25 0 25 0 25 0"/>`).join("")}</g>`,
+  // leaves on a branch
+  c => `<g fill="${c}" opacity=".4"><path d="M10 150C30 120 55 100 100 88" stroke="${c}" stroke-width="1.5" fill="none"/>${[[30,124,-30],[44,112,-40],[58,104,-20],[72,97,-45],[86,92,-25]].map(([x,y,r]) => `<ellipse cx="${x}" cy="${y}" rx="7" ry="3" transform="rotate(${r} ${x} ${y})"/><ellipse cx="${x+3}" cy="${y+8}" rx="6" ry="2.6" transform="rotate(${r+60} ${x+3} ${y+8})"/>`).join("")}</g>`,
+  // hearts
+  c => `<g fill="${c}" opacity=".38">${[[24,104,1],[62,96,1.6],[80,124,1],[40,130,.8]].map(([x,y,k]) => `<path transform="translate(${x} ${y}) scale(${k})" d="M0 6C-7 1-9-3-6-6-4-8-1-7 0-5 1-7 4-8 6-6 9-3 7 1 0 6z"/>`).join("")}</g>`,
+  // sun and rings
+  c => `<g fill="none" stroke="${c}" opacity=".35"><circle cx="50" cy="118" r="14" fill="${c}" fill-opacity=".5" stroke="none"/><circle cx="50" cy="118" r="22" stroke-width="1.2"/><circle cx="50" cy="118" r="30" stroke-width="1"/><circle cx="50" cy="118" r="38" stroke-width=".8"/></g>`,
+  // window with rain
+  c => `<g opacity=".4"><path d="M30 146V108a20 20 0 0 1 40 0v38z" fill="none" stroke="${c}" stroke-width="2"/><path d="M50 88v58M30 116h40" stroke="${c}" stroke-width="1.4"/><g stroke="${c}" stroke-width="1" stroke-linecap="round"><line x1="38" y1="98" x2="36" y2="104"/><line x1="60" y1="100" x2="58" y2="106"/><line x1="42" y1="124" x2="40" y2="130"/><line x1="62" y1="126" x2="60" y2="132"/></g></g>`,
+  // flowers
+  c => `<g fill="${c}" opacity=".38">${[[22,112,1],[58,128,1.4],[84,100,.9]].map(([x,y,k]) => `<g transform="translate(${x} ${y}) scale(${k})">${[0,72,144,216,288].map(r => `<ellipse cx="0" cy="-6" rx="3.4" ry="6" transform="rotate(${r})"/>`).join("")}<circle r="2.6" fill="var(--c2)"/></g>`).join("")}</g>`
+];
+function coverStyle(id) { const m = lib[id] || {}; return Number.isInteger(m.cs) ? m.cs : parseInt(hashStr(id), 36) % (COVER_PAL.length * COVER_ART.length); }
+function coverHtml(f, opt = {}) {
+  const img = opt.img !== undefined ? opt.img : f.coverImg;
+  const n = coverStyle(opt.key || f.id), pal = COVER_PAL[n % COVER_PAL.length], art = COVER_ART[Math.floor(n / COVER_PAL.length) % COVER_ART.length];
+  const style = img ? `background-image:url('${img}')` : `--c1:${pal[0]};--c2:${pal[1]};--c3:${pal[2]}`;
+  return `<span class="cover${img ? " img" : ""}${opt.cls ? " " + opt.cls : ""}" style="${style}" aria-hidden="true">${img ? "" : `<svg viewBox="0 0 100 150" preserveAspectRatio="xMidYMid slice">${art(pal[2])}</svg>`}<span class="ct">${esc(opt.title || f.title)}</span>${f.author ? `<span class="ca">${esc(f.author)}</span>` : ""}${opt.badge ? `<span class="badge">${esc(opt.badge)}</span>` : ""}</span>`;
+}
+const coverColor = f => f.coverImg ? "" : COVER_PAL[coverStyle(f.id) % COVER_PAL.length][1];
+async function pickCoverImage(f, file) {
+  try {
+    const bmp = await createImageBitmap(file);
+    const W = 400, H = 600, cv = document.createElement("canvas"); cv.width = W; cv.height = H;
+    const k = Math.max(W / bmp.width, H / bmp.height), w = bmp.width * k, h = bmp.height * k;
+    cv.getContext("2d").drawImage(bmp, (W - w) / 2, (H - h) / 2, w, h);
+    f.coverImg = cv.toDataURL("image/jpeg", .82); await DB.put(f); toast("New cover saved.");
+  } catch { toast("That picture couldn't be used. Try another one."); }
+}
+
+/* ---------------- browse home ---------------- */
+function setLibMode(v) { libMode = v; LS.set("libMode", v); $("#home").classList.toggle("browse", v === "browse"); $$("#lib-mode button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === v))); drawShelf(); }
+function tileHtml(f) {
+  const st = statusOf(f), p = barW(f), m = lib[f.id] || {};
+  return `<button class="tile" type="button" data-id="${esc(f.id)}" aria-label="${esc(f.title)}${f.author ? " by " + esc(f.author) : ""}">${coverHtml(f, { badge: m.newCh ? `+${m.newCh}` : "" })}<span class="tt">${esc(f.title)}</span>${f.author ? `<span class="ta">${esc(f.author)}</span>` : ""}${st === "reading" && p ? `<span class="bar"><i style="width:${p}%"></i></span>` : ""}</button>`;
+}
+function rowHtml(title, list, more) {
+  if (!list.length) return "";
+  return `<section class="shelf-row"><h3>${esc(title)}${more ? `<button type="button" data-more="${esc(more)}">See all</button>` : ""}</h3><div class="row-scroll">${list.slice(0, 20).map(tileHtml).join("")}</div></section>`;
+}
+function drawBrowse() {
+  const box = $("#browse");
+  if (!fics.length) { box.innerHTML = `<p class="empty">Nothing here yet. Tap <b>Add a fic</b> to add your first one.</p>`; return; }
+  const opened = f => LS.get("opened:" + f.id, 0);
+  const base = fics.filter(passesFilters), byOpened = [...base].sort((a, b) => opened(b) - opened(a));
+  const reading = byOpened.filter(f => statusOf(f) === "reading" && opened(f));
+  const heroF = reading[0];
+  let html = "";
+  if (heroF) {
+    html += `<section class="hero" style="--hc:${coverColor(heroF) || "var(--accent)"}" data-id="${esc(heroF.id)}">${coverHtml(heroF)}<div>
+      <p class="eyebrow">Keep reading</p><h2>${esc(heroF.title)}</h2>${heroF.author ? `<p>by ${esc(heroF.author)}</p>` : ""}
+      <p>${progressText(heroF)}</p><div class="bar" aria-hidden="true"><i style="width:${barW(heroF)}%"></i></div>
+      <button class="btn-primary" type="button" data-read="${esc(heroF.id)}">Continue</button></div></section>`;
+  }
+  html += rowHtml("New chapters", base.filter(f => (lib[f.id] || {}).newCh));
+  html += rowHtml("Still reading", reading.slice(1), "reading");
+  html += rowHtml("Up next", byOpened.filter(f => statusOf(f) === "toread").sort((a, b) => (b.added || 0) - (a.added || 0)), "toread");
+  html += rowHtml("Your favourites", base.filter(f => (lib[f.id] || {}).fav), "fav");
+  for (const name of myShelves) html += rowHtml(name, base.filter(f => onShelf(f, name)), "c:" + name);
+  html += rowHtml("Your top rated", base.filter(f => ((lib[f.id] || {}).stars || 0) >= 4).sort((a, b) => lib[b.id].stars - lib[a.id].stars));
+  const fandoms = countValues(/^fandoms?$/i, true).filter(([, n]) => n >= 2).slice(0, 3);
+  for (const [fd] of fandoms) html += rowHtml(fd, base.filter(f => splitList(ficField(f, /^fandoms?$/i)).includes(fd) && statusOf(f) !== "finished").concat(base.filter(f => splitList(ficField(f, /^fandoms?$/i)).includes(fd) && statusOf(f) === "finished")));
+  html += rowHtml("Recently added", [...base].sort((a, b) => (b.added || 0) - (a.added || 0)).slice(0, 12));
+  html += rowHtml("Finished", byOpened.filter(f => statusOf(f) === "finished"), "finished");
+  const tc = new Map(); base.forEach(f => ficTags(f).forEach(t => tc.set(t, (tc.get(t) || 0) + 1)));
+  const top = [...tc.entries()].filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1]).slice(0, 14);
+  if (top.length) html += `<section class="shelf-row"><h3>Browse by tag</h3><div class="tag-cloud chips">${top.map(([t, n]) => `<button class="chip" type="button" data-tag="${esc(t)}">${esc(t)} · ${n}</button>`).join("")}</div></section>`;
+  box.innerHTML = html;
+}
+$("#lib-mode").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (b) setLibMode(b.dataset.v); });
+$("#browse").addEventListener("click", e => {
+  const r = e.target.closest("[data-read]"); if (r) return openFic(r.dataset.read);
+  const more = e.target.closest("[data-more]"); if (more) { shelfTab = more.dataset.more; LS.set("tab", shelfTab); setLibMode("shelves"); window.scrollTo(0, 0); return; }
+  const tag = e.target.closest("[data-tag]"); if (tag) { $("#q").value = tag.dataset.tag; shelfTab = "all"; setLibMode("shelves"); return; }
+  const t = e.target.closest(".tile, .hero .cover"); if (t) openFicSheet((t.closest("[data-id]")).dataset.id);
+});
+$("#q").addEventListener("input", () => { if (libMode === "browse" && $("#q").value.trim()) setLibMode("shelves"); });
+$("#cover-file").addEventListener("change", async e => { const file = e.target.files[0]; e.target.value = ""; if (!file || !sheetFic) return; const f = sheetFic; await pickCoverImage(f, file); openFicSheet(f.id); drawShelf(); });
 let sheetFic = null;
 function openFicSheet(id) {
   const f = fics.find(x => x.id === id); if (!f) return;
   sheetFic = f;
   const m = lib[id] || {}, st = statusOf(f), ser = seriesOf(f), ci = chaptersInfo(f), sum = ficSummary(f), tags = ficTags(f), rating = ficField(f, /^rating$/i);
-  $("#fic-h").textContent = f.title;
+  $("#fic-h").textContent = "Story details";
   const facts = [rating, ser ? `Part ${ser.part} of ${esc(ser.name)}` : "", `${f.chapters.length} chapter${f.chapters.length === 1 ? "" : "s"}${ci && !ci.complete ? " · still updating" : ""}`, `${Number(f.words || 0).toLocaleString()} words`].filter(Boolean);
+  const ds = [[f.chapters.length, f.chapters.length === 1 ? "chapter" : "chapters"], [Number(f.words || 0).toLocaleString(), "words"], [fmtMins(minsLeft(f)), pct(f) ? "left" : "to read"]];
   $("#fic-body").innerHTML = `
-    ${f.author ? `<p class="fic-by">by ${esc(f.author)}</p>` : ""}
+    <div class="detail-top">${coverHtml(f)}<div>
+      <h3>${esc(f.title)}</h3>
+      ${f.author ? `<p class="fic-by">by ${esc(f.author)}</p>` : ""}
+      <p class="detail-stats">${ds.map(([n, l]) => `<span><b>${esc(String(n))}</b> ${l}</span>`).join("")}</p>
+      <button class="btn-primary" type="button" id="fs-read-top">${pct(f) ? "Keep reading" : "Start reading"}</button>
+    </div></div>
     <p class="fic-facts">${facts.map(esc).join(" · ").replace(/&amp;/g, "&")}</p>
     ${sum ? `<p class="fic-sum">${esc(sum)}</p>` : ""}
     <div class="row"><span class="lab">Shelf</span><div class="seg" id="fs-status">${Object.entries(STATUS_NAMES).map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${v === st}">${l}</button>`).join("")}</div></div>
@@ -2405,6 +2550,7 @@ function openFicSheet(id) {
     <div class="row"><span class="lab">Your rating</span><div class="stars" id="fs-stars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" class="${(m.stars || 0) >= n ? "on" : ""}" aria-label="${n} star${n === 1 ? "" : "s"}" aria-pressed="${m.stars === n}">★</button>`).join("")}</div></div>
     <div class="row"><span class="lab">Your shelves</span><div class="chips" id="fs-shelves">${myShelves.map(n => `<button class="chip" type="button" data-shelf="${esc(n)}" aria-pressed="${onShelf(f, n)}">${esc(n)}</button>`).join("")}<button class="chip add" type="button" id="fs-newshelf">+ New shelf</button></div>
       <div class="add-row" id="fs-newrow" hidden><label class="sr" for="fs-newname">New shelf name</label><input type="text" id="fs-newname" placeholder="Like Comfort reads" maxlength="40" autocomplete="off"><button class="btn-small" type="button" id="fs-newadd">Add</button></div></div>
+    <div class="row"><span class="lab">Cover</span><div class="cover-row"><button class="btn-small" type="button" id="fs-cover-style"${f.coverImg ? " hidden" : ""}>New cover colors</button><button class="btn-small" type="button" id="fs-cover-pic">${f.coverImg ? "Change picture" : "Use a picture"}</button>${f.coverImg ? `<button class="btn-small" type="button" id="fs-cover-clear">Remove picture</button>` : ""}</div></div>
     <div class="row"><label for="fs-note">Your private notes</label><textarea id="fs-note" placeholder="What did you think? Only you can see this.">${esc(m.note || "")}</textarea></div>
     ${tags.length ? `<div class="row"><span class="lab">Tags</span><div class="chips">${tags.map(t => `<button class="chip" type="button" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}</div><small class="hint">Tap a tag to find other fics with it.</small></div>` : ""}
     <div class="sheet-actions"><button class="btn-small warn" type="button" id="fs-del">Remove from library</button><button class="btn-primary" type="button" id="fs-read">${pct(f) ? "Keep reading" : "Start reading"}</button></div>`;
@@ -2423,7 +2569,10 @@ $("#fic-body").addEventListener("click", async e => {
   if (e.target.closest("#fs-newadd")) { const n = addShelf($("#fs-newname").value); if (n) { if (!onShelf(f, n)) toggleShelf(f, n); keepNote(); openFicSheet(f.id); drawShelf(); } return; }
   const chip = e.target.closest(".chip");
   if (chip) { closeSheets(); $("#q").value = chip.dataset.tag; shelfTab = "all"; drawShelf(); return; }
-  if (e.target.closest("#fs-read")) { closeSheets(); openFic(f.id); return; }
+  if (e.target.closest("#fs-read") || e.target.closest("#fs-read-top")) { closeSheets(); openFic(f.id); return; }
+  if (e.target.closest("#fs-cover-style")) { const m = lib[f.id] || (lib[f.id] = {}); m.cs = (coverStyle(f.id) + 1 + Math.floor(Math.random() * 20)) % (COVER_PAL.length * COVER_ART.length); saveLib(); keepNote(); openFicSheet(f.id); drawShelf(); return; }
+  if (e.target.closest("#fs-cover-pic")) { keepNote(); $("#cover-file").click(); return; }
+  if (e.target.closest("#fs-cover-clear")) { delete f.coverImg; await DB.put(f); keepNote(); openFicSheet(f.id); drawShelf(); return; }
   const del = e.target.closest("#fs-del");
   if (del) {
     if (del.dataset.armed) { closeSheets(); await removeFic(f); }

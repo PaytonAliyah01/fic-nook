@@ -131,7 +131,9 @@ public class MainActivity extends Activity {
                 pendingPick = callback;
                 Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("*/*");
+                String[] accept = params.getAcceptTypes();
+                boolean image = accept != null && accept.length > 0 && accept[0] != null && accept[0].startsWith("image/");
+                i.setType(image ? "image/*" : "*/*");
                 i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, params.getMode() == FileChooserParams.MODE_OPEN_MULTIPLE);
                 try {
                     startActivityForResult(i, PICK_FILE);
