@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
 import android.view.KeyEvent;
+import android.util.Base64;
 import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
 import android.provider.Settings;
@@ -62,6 +63,7 @@ public class MainActivity extends Activity {
     private volatile int ttsLast = -1;
     private volatile boolean volumeKeys = false;
     private volatile String pendingBackup;
+    private volatile String launchAction;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable sleepTask = () -> {
         if (tts != null) tts.stop();
@@ -72,6 +74,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getIntent() != null && ReadingWidget.ACTION_RESUME.equals(getIntent().getAction())) launchAction = "resume";
         prefs = getSharedPreferences("ficnook", MODE_PRIVATE);
         web = new WebView(this);
         web.setBackgroundColor(0xFF17171C);
@@ -219,6 +222,48 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void setVolumeKeys(boolean on) {
             volumeKeys = on;
+        }
+
+        /* Home screen widget: the page tells us which fic you're reading. */
+        @JavascriptInterface
+        public void setWidget(String title, String info) {
+            prefs.edit().putString("w_title", title == null ? "" : title).putString("w_info", info == null ? "" : info).apply();
+            try { ReadingWidget.refresh(MainActivity.this); } catch (Exception ignored) { }
+        }
+
+        /* Opened from the widget? Answered once, then forgotten. */
+        @JavascriptInterface
+        public String takeLaunch() {
+            String a = launchAction;
+            launchAction = null;
+            return a == null ? "" : a;
+        }
+
+        /* Quote cards: save the picture and open Android's share menu (Photos, Drive, messages...). */
+        @JavascriptInterface
+        public void shareImage(String base64, String filename) {
+            try {
+                File dir = new File(getCacheDir(), "shared");
+                //noinspection ResultOfMethodCallIgnored
+                dir.mkdirs();
+                String safe = filename == null ? "quote.png" : filename.replaceAll("[^A-Za-z0-9 ._-]", "");
+                if (!safe.endsWith(".png")) safe = safe + ".png";
+                File f = new File(dir, safe);
+                try (OutputStream out = new FileOutputStream(f)) {
+                    out.write(Base64.decode(base64, Base64.DEFAULT));
+                }
+                Uri uri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".files", f);
+                Intent send = new Intent(Intent.ACTION_SEND);
+                send.setType("image/png");
+                send.putExtra(Intent.EXTRA_STREAM, uri);
+                send.setClipData(ClipData.newRawUri("", uri));
+                send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                Intent chooser = Intent.createChooser(send, "Share your quote");
+                chooser.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                runOnUiThread(() -> startActivity(chooser));
+            } catch (Exception e) {
+                js("window.ficNookToast && window.ficNookToast('Couldn\\'t share the picture.')");
+            }
         }
 
         /* Backup: ask where to save (Google Drive shows up in the list), then write the file there. */
@@ -496,6 +541,15 @@ public class MainActivity extends Activity {
         web.evaluateJavascript("(window.ficNookBack && window.ficNookBack()) ? 'yes' : 'no'", value -> {
             if (value == null || !value.contains("yes")) MainActivity.super.onBackPressed();
         });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        if (intent != null && ReadingWidget.ACTION_RESUME.equals(intent.getAction())) {
+            js("window.ficNookOpenLast && window.ficNookOpenLast()");
+        }
     }
 
     @Override

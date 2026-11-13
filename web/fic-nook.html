@@ -1,0 +1,2675 @@
+<title>Fic Nook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A comfy reader for fics you downloaded from AO3 (PDF, EPUB or HTML).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
+<style>
+/* Layout: a bookshelf home screen, then a single centered reading column (scrolling or page-flipping) with a slim bar on top. */
+:root {
+  --bg: #f6f6f2;
+  --surface: #ffffff;
+  --fg: #26252b;
+  --muted: #6c6a74;
+  --line: #dcdbe2;
+  --accent: #4446a0;
+  --accent-ink: #ffffff;
+  --note-bg: #ececf3;
+  --hl: rgba(255, 205, 64, .45);
+  --star: #d99a1e;
+  --warn: #b3261e;
+  --ui: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --book: "Literata", Georgia, "Times New Roman", serif;
+  --read-font: var(--book);
+  --fs: 19px;
+  --lh: 1.65;
+  --measure: 34em;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17171c; --surface: #212128; --fg: #dcdad3; --muted: #9a98a3; --line: #34343e;
+    --accent: #a5a8f2; --accent-ink: #15152a; --note-bg: #24242d; --hl: rgba(255, 200, 60, .3); --warn: #f2b8b5; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17171c; --surface: #212128; --fg: #dcdad3; --muted: #9a98a3; --line: #34343e;
+  --accent: #a5a8f2; --accent-ink: #15152a; --note-bg: #24242d; --hl: rgba(255, 200, 60, .3); --warn: #f2b8b5; color-scheme: dark;
+}
+/* Reading themes picked inside the app (these win over the system setting) */
+:root.t-paper { --bg: #f6f6f2; --surface: #ffffff; --fg: #26252b; --muted: #6c6a74; --line: #dcdbe2; --accent: #4446a0; --accent-ink: #fff; --note-bg: #ececf3; --hl: rgba(255, 205, 64, .45); --warn: #b3261e; color-scheme: light; }
+:root.t-sepia { --bg: #f1e6d2; --surface: #f8efdf; --fg: #46382a; --muted: #7d6b58; --line: #dccbb0; --accent: #7a4f2a; --accent-ink: #fff; --note-bg: #e8dbc3; --hl: rgba(240, 180, 40, .4); --warn: #a1261c; color-scheme: light; }
+:root.t-dark  { --bg: #17171c; --surface: #212128; --fg: #dcdad3; --muted: #9a98a3; --line: #34343e; --accent: #a5a8f2; --accent-ink: #15152a; --note-bg: #24242d; --hl: rgba(255, 200, 60, .3); --warn: #f2b8b5; color-scheme: dark; }
+:root.t-night { --bg: #000000; --surface: #111114; --fg: #b9b7b0; --muted: #85838c; --line: #26262c; --accent: #9093d8; --accent-ink: #000; --note-bg: #121216; --hl: rgba(255, 200, 60, .25); --warn: #f2b8b5; color-scheme: dark; }
+
+[hidden] { display: none !important; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 16px; line-height: 1.5; min-height: 100%;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Home / shelf ---------- */
+#home, #stats { max-width: 40rem; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 28px; }
+.brand { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-family: var(--book); font-weight: 600; font-size: 2rem; margin: 0; letter-spacing: -0.01em; }
+.brand p { margin: 0; color: var(--muted); }
+.open-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 12px; }
+.open-card.drag { border-color: var(--accent); border-style: dashed; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 14px 22px; font-weight: 700; font-size: 1.05rem; justify-self: start; display: inline-flex; gap: 8px; align-items: center; }
+.btn-primary svg { width: 20px; height: 20px; }
+.open-card p { margin: 0; color: var(--muted); font-size: .95rem; }
+.formats { display: flex; gap: 6px; flex-wrap: wrap; }
+.formats span { font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; color: var(--muted); }
+.shelf h2, .help h2, .library h2 { font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; font-weight: 700; }
+.shelf ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.shelf-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.shelf-head span { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tools { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+.tools input[type="search"] { flex: 1 1 100%; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 11px 16px; font-size: 1rem; }
+.tools select, .tools .btn-small { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px; }
+.tools .btn-small.on { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.tabs { display: flex; gap: 6px; overflow-x: auto; margin: 0 -2px 12px; padding: 2px; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tabs button { flex: none; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 7px 13px; font-size: .9rem; display: inline-flex; gap: 6px; align-items: center; }
+.tabs button span { font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tabs button[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.tabs button[aria-selected="true"] span { color: inherit; opacity: .8; }
+.filter-note { margin: -4px 0 12px; font-size: .88rem; color: var(--muted); }
+.filter-note button { background: none; border: 0; color: var(--accent); padding: 0; text-decoration: underline; }
+.fic { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 12px 14px 16px; }
+.fic button.open { all: unset; cursor: pointer; display: grid; gap: 3px; min-width: 0; }
+.fic button.open:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+.fic .t { font-family: var(--book); font-weight: 600; font-size: 1.08rem; line-height: 1.3; overflow-wrap: anywhere; }
+.fic .a { color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; }
+.fic .fd { font-size: .85rem; color: var(--accent); overflow-wrap: anywhere; }
+.fic .sum { font-size: .92rem; line-height: 1.45; opacity: .9; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; margin-top: 4px; }
+.fic .bar { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 6px; }
+.fic .bar i { display: block; height: 100%; background: var(--accent); }
+.fic .meta { font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fic .tag { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.fic .side { display: flex; flex-direction: column; gap: 2px; align-items: center; }
+.fic .side button { background: none; border: 0; color: var(--muted); padding: 8px; border-radius: 8px; }
+.fic .side svg { width: 20px; height: 20px; display: block; }
+.fic .star[aria-pressed="true"] { color: var(--star); }
+.fic .star[aria-pressed="true"] svg { fill: currentColor; }
+.fic .foot { grid-column: 1 / -1; display: flex; gap: 8px 10px; align-items: center; flex-wrap: wrap; }
+.fic select.status { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 10px; font-size: .82rem; }
+.fic .series { font-size: .82rem; color: var(--accent); font-weight: 700; overflow-wrap: anywhere; }
+.fic.in-series { border-left: 3px solid var(--accent); }
+.fic .confirm { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem; }
+.btn-small { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 14px; }
+.btn-small.warn { border-color: currentColor; color: var(--warn); }
+.chips { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 3px 10px; font-size: .78rem; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip:hover { color: var(--fg); border-color: var(--muted); }
+.chips .more { font-size: .78rem; color: var(--muted); align-self: center; }
+.empty { color: var(--muted); margin: 0; }
+.folder-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; gap: 10px 12px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.folder-card p { margin: 0; flex: 1 1 12rem; min-width: 0; font-size: .92rem; overflow-wrap: anywhere; }
+.folder-card b { display: block; }
+.folder-card small { color: var(--muted); font-size: .88rem; }
+.update-bar { background: var(--accent); color: var(--accent-ink); border-radius: 12px; padding: 12px 16px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: space-between; font-weight: 700; }
+.update-bar button { background: var(--accent-ink); color: var(--accent); border: 0; border-radius: 999px; padding: 8px 16px; font-weight: 700; }
+.update-bar button:disabled { opacity: .7; }
+.library { display: grid; gap: 10px; }
+.library p { margin: 0; color: var(--muted); font-size: .92rem; }
+.library .row-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.help details { border-top: 1px solid var(--line); padding-block: 12px; }
+.help details:last-child { border-bottom: 1px solid var(--line); }
+.help summary { cursor: pointer; font-weight: 700; }
+.help ol, .help p { margin: 10px 0 0; color: var(--fg); }
+.help li { margin-bottom: 4px; }
+.privacy { font-size: .88rem; color: var(--muted); margin: 0; }
+
+/* ---------- Stats ---------- */
+.stats-top { display: flex; align-items: center; gap: 8px; }
+.stats-top h1 { font-family: var(--book); font-weight: 600; font-size: 1.6rem; margin: 0; flex: 1; }
+.stats-top select { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; }
+.recap { background: var(--accent); color: var(--accent-ink); border-radius: 18px; padding: 24px 22px; display: grid; gap: 6px; }
+.recap .eyebrow { margin: 0; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; opacity: .85; font-weight: 700; }
+.recap h2 { margin: 0; font-family: var(--book); font-weight: 600; font-size: 1.7rem; line-height: 1.2; text-wrap: balance; }
+.recap p { margin: 0; opacity: .9; }
+.tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 2px; }
+.tile b { font-size: 1.5rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.tile span { font-size: .85rem; color: var(--muted); }
+.chart { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; }
+.chart figcaption { font-weight: 700; }
+.bars { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: end; gap: 4px; height: 140px; border-bottom: 1px solid var(--line); }
+.bar-col { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; cursor: default; position: relative; }
+.bar-col .b { width: min(18px, 70%); background: var(--accent); border-radius: 4px 4px 0 0; min-height: 0; }
+.bar-col:hover .b, .bar-col:focus .b, .bar-col.sel .b { opacity: .75; }
+.bar-col:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.months { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 4px; font-size: .72rem; color: var(--muted); text-align: center; }
+.readout { margin: 0; font-size: .88rem; color: var(--muted); font-variant-numeric: tabular-nums; min-height: 1.4em; }
+.toplists { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: 10px; }
+.toplist { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.toplist h3, .finished-list h3 { margin: 0 0 8px; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.toplist ol { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+.toplist li { overflow-wrap: anywhere; }
+.toplist small { color: var(--muted); font-variant-numeric: tabular-nums; }
+.finished-list ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.finished-list li { border-bottom: 1px solid var(--line); padding-bottom: 6px; overflow-wrap: anywhere; }
+.finished-list small { color: var(--muted); }
+
+/* ---------- Reader ---------- */
+#reader { max-width: calc(var(--measure) + 2rem); margin: 0 auto; padding-block: 0 96px; }
+body.reading::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; align-items: center; gap: 2px; padding-block: 8px; border-bottom: 1px solid var(--line); transition: transform .25s ease; margin-inline: -4px; }
+.topbar.away { transform: translateY(calc(-100% - env(safe-area-inset-top, 0px) - 2px)); }
+.icon-btn { background: none; border: 0; border-radius: 10px; padding: 9px; display: inline-flex; align-items: center; gap: 6px; color: var(--fg); }
+.icon-btn:hover { background: var(--note-bg); }
+.icon-btn svg { width: 22px; height: 22px; display: block; }
+.topbar .where { flex: 1; min-width: 0; text-align: center; font-size: .88rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.progress { position: fixed; left: 0; right: 0; bottom: 0; height: calc(3px + env(safe-area-inset-bottom, 0px)); z-index: 5; pointer-events: none; }
+.progress i { display: block; height: 3px; width: 0; background: var(--accent); opacity: .7; }
+
+#page { font-family: var(--read-font); font-size: var(--fs); line-height: var(--lh); max-width: var(--measure); margin: 0 auto; padding-top: 28px; overflow-wrap: break-word; }
+#page.justify p { text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+.ch-head { margin-bottom: 1.8em; display: grid; gap: .3em; }
+.ch-head .eyebrow { font-family: var(--ui); font-size: .72em; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.ch-head h1 { font-family: var(--read-font); font-size: 1.45em; line-height: 1.25; margin: 0; text-wrap: balance; font-weight: 600; }
+.ch-head .by, .ch-head .ch-time { margin: 0; color: var(--muted); font-size: .9em; }
+.ch-head .ch-time { font-family: var(--ui); font-size: .75em; }
+#page p { margin: 0 0 .85em; }
+#page p.c, #page [align="center"], #page .c { text-align: center; }
+#page [align="right"], #page .r { text-align: right; }
+#page h2, #page h3, #page h4 { font-size: 1.1em; line-height: 1.3; margin: 1.6em 0 .6em; }
+#page blockquote { margin: 0 0 .85em; padding-left: 1.1em; border-left: 2px solid var(--line); }
+#page hr { border: 0; text-align: center; margin: 1.6em 0; color: var(--muted); }
+#page hr::after { content: "\2042"; font-size: 1.1em; }
+#page a { color: var(--accent); }
+#page table { border-collapse: collapse; display: block; overflow-x: auto; max-width: 100%; }
+#page td, #page th { border: 1px solid var(--line); padding: .3em .5em; }
+#page ul, #page ol { padding-left: 1.4em; }
+#page img { max-width: 100%; height: auto; }
+#page .img-note { color: var(--muted); font-style: italic; font-size: .9em; }
+#page .f-mono { font-family: ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, "Roboto Mono", monospace; font-size: .88em; }
+#page .f-sans { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: .95em; }
+#page .f-alt { font-family: Georgia, "Times New Roman", serif; }
+#page mark { background: var(--hl); color: inherit; border-radius: 2px; cursor: pointer; }
+#page mark.has-note { text-decoration: underline dotted var(--accent); text-underline-offset: 3px; }
+#page .speaking { background: color-mix(in srgb, var(--accent) 16%, transparent); border-radius: 4px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); }
+
+.fn-note { background: var(--note-bg); border-radius: 10px; margin: 1.2em 0 1.6em; font-size: .88em; line-height: 1.55; color: var(--fg); break-inside: avoid-column; }
+.fn-note > summary { font-family: var(--ui); cursor: pointer; padding: .7em 1em; font-size: .82em; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 1em; }
+.fn-note > summary::-webkit-details-marker { display: none; }
+.fn-note > summary::after { content: "Show"; text-transform: none; letter-spacing: 0; font-weight: 400; }
+.fn-note[open] > summary::after { content: "Hide"; }
+.fn-note .note-body { padding: 0 1em .4em; }
+.fn-note blockquote { border: 0 !important; padding: 0 !important; }
+
+.about dl { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: .35em 1em; font-family: var(--ui); font-size: .82em; margin: 0 0 1.6em; }
+.about dt { color: var(--muted); font-weight: 700; }
+.about dd { margin: 0; overflow-wrap: anywhere; }
+.about h2.lbl { font-family: var(--ui); font-size: .72em; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 1.6em 0 .4em; }
+@media (max-width: 30rem) { .about dl { grid-template-columns: 1fr; } .about dd { margin-bottom: .5em; } }
+
+.ch-nav { display: flex; gap: 10px; justify-content: space-between; margin-top: 2.4em; padding-top: 1.4em; border-top: 1px solid var(--line); font-family: var(--ui); flex-wrap: wrap; break-inside: avoid-column; }
+.ch-nav button { flex: 1 1 10rem; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 14px; text-align: left; display: grid; gap: 2px; min-width: 0; font-size: 1rem; line-height: 1.35; }
+.ch-nav button.next { text-align: right; }
+.ch-nav button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.ch-nav small { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+.ch-nav span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.the-end { text-align: center; color: var(--muted); font-family: var(--ui); margin-top: 2em; font-size: 1rem; }
+
+/* Page-flip mode */
+body.paged { overflow: hidden; }
+body.paged #reader { padding-bottom: 0; }
+body.paged #page { padding-top: 18px; overflow: hidden; column-gap: 40px; column-fill: auto; touch-action: pan-y; }
+.pager { display: flex; justify-content: space-between; gap: 12px; font-size: .8rem; color: var(--muted); padding-block: 6px 10px; font-variant-numeric: tabular-nums; max-width: var(--measure); margin: 0 auto; }
+
+/* Read-aloud player and highlight bar */
+.player { position: fixed; z-index: 6; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.player .pl-play { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 50%; width: 44px; height: 44px; display: grid; place-items: center; flex: none; }
+.player .pl-play svg { width: 20px; height: 20px; }
+.player .pl-mid { flex: 1 1 8rem; min-width: 0; font-size: .88rem; }
+.player .pl-mid b { display: block; }
+.player .pl-mid span { color: var(--muted); }
+.player select { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 10px; font-size: .85rem; }
+.hl-bar { position: fixed; z-index: 7; left: 50%; transform: translateX(-50%); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; box-shadow: 0 6px 24px rgba(0,0,0,.25); display: flex; gap: 4px; padding: 6px; }
+.hl-bar button { border: 0; background: transparent; border-radius: 999px; padding: 9px 14px; font-weight: 700; display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+.hl-bar button:first-child { background: var(--hl); }
+
+/* ---------- Sheets ---------- */
+.scrim { position: fixed; inset: 0; background: rgba(10, 10, 20, .45); z-index: 20; }
+.sheet { position: fixed; z-index: 21; left: 0; right: 0; bottom: 0; max-height: 84vh; overflow-y: auto; background: var(--surface); color: var(--fg);
+  border-radius: 18px 18px 0 0; border-top: 1px solid var(--line); box-shadow: 0 -8px 30px rgba(0,0,0,.18);
+  padding: 8px max(18px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); }
+@media (min-width: 46rem) { .sheet { left: 50%; right: auto; width: 34rem; transform: translateX(-50%); } }
+.sheet .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 4px auto 10px; }
+.sheet header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; }
+.sheet h2 { margin: 0; font-size: 1.1rem; }
+.sheet h3 { margin: 18px 0 4px; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.row { display: grid; gap: 8px; padding-block: 12px; border-top: 1px solid var(--line); }
+.row > label, .row > .lab { font-weight: 700; font-size: .9rem; display: flex; justify-content: space-between; gap: 8px; }
+.row output { color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+.row small.hint { color: var(--muted); font-size: .82rem; }
+.row select, .row textarea, .row input[type="text"] { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; }
+.row textarea { min-height: 7rem; resize: vertical; }
+.seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: 6px; }
+.seg button { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 6px; font-size: .9rem; }
+.seg button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); font-weight: 700; }
+.swatch { display: grid; gap: 4px; justify-items: center; }
+.swatch i { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(128,128,128,.4); display: block; font-style: normal; font-family: var(--book); line-height: 28px; font-size: 14px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 700; font-size: .95rem; }
+.toggle small { display: block; font-weight: 400; color: var(--muted); font-size: .82rem; }
+.toggle input { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+.add-row { display: flex; gap: 8px; }
+.add-row input { flex: 1; min-width: 0; }
+.hide-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.hide-chips button { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 10px; font-size: .85rem; }
+.quote { font-family: var(--book); border-left: 3px solid var(--hl); padding-left: 12px; margin: 4px 0 8px; overflow-wrap: anywhere; }
+.sheet-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; padding-top: 8px; }
+#toc-list, #hl-list { list-style: none; margin: 0; padding: 0; }
+#toc-list button, #hl-list button { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; padding: 12px 8px; border-top: 1px solid var(--line); display: flex; gap: 12px; align-items: baseline; overflow-wrap: anywhere; }
+#toc-list button:focus-visible, #hl-list button:focus-visible { outline: 2px solid var(--accent); }
+#toc-list .n { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 2ch; font-size: .85rem; }
+#toc-list .cur { color: var(--accent); font-weight: 700; }
+#hl-list button { display: grid; gap: 2px; }
+#hl-list small { color: var(--muted); }
+#hl-list em { font-family: var(--book); }
+
+/* ---------- Navigation, Me, reader controls, setup ---------- */
+body.has-nav { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
+#home, #me, #stats { padding-block: 22px 24px; gap: 14px; }
+#me { gap: 12px; }
+.view-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.view-head h1 { font-family: var(--book); font-weight: 600; font-size: 1.9rem; margin: 0; }
+.view-head span { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tools { margin-bottom: 0; }
+.tabs { margin-bottom: 0; }
+.tabbar { position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border-top: 1px solid var(--line);
+  padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); }
+.tabbar button { background: none; border: 0; display: grid; justify-items: center; align-content: center; gap: 3px; padding: 6px 4px; font-size: .8rem; color: var(--muted); border-radius: 12px; min-height: 58px; }
+.tabbar svg { width: 24px; height: 24px; }
+.tabbar button[aria-current="page"] { color: var(--accent); font-weight: 700; }
+.fab { position: fixed; z-index: 8; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 15px 20px; font-weight: 700; font-size: 1rem; display: inline-flex; gap: 8px; align-items: center; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
+.fab svg { width: 20px; height: 20px; }
+.me-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+.me-card h2 { margin: 0; font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.me-card p { margin: 0; color: var(--muted); font-size: .92rem; overflow-wrap: anywhere; }
+.btn-wide { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 14px; font-weight: 700; }
+.btn-wide[aria-pressed="true"] { color: var(--star); border-color: var(--star); }
+.row-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.row-btns .btn-small { padding: 10px 16px; }
+.me-hl { list-style: none; margin: 0; padding: 0; display: grid; max-height: 24rem; overflow-y: auto; }
+.me-hl button { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; padding: 10px 0; border-top: 1px solid var(--line); display: grid; gap: 2px; overflow-wrap: anywhere; }
+.me-hl button:focus-visible { outline: 2px solid var(--accent); }
+.me-hl small { color: var(--muted); }
+.me-hl em { font-family: var(--book); }
+.fic { padding: 14px 6px 14px 16px; }
+.fic .more-btn { background: none; border: 0; color: var(--muted); padding: 10px 8px; border-radius: 10px; align-self: start; min-width: 40px; }
+.fic .more-btn svg { width: 22px; height: 22px; display: block; margin: 0 auto; }
+.fic .new { justify-self: start; background: var(--accent); color: var(--accent-ink); font-size: .72rem; font-weight: 700; border-radius: 999px; padding: 2px 9px; }
+.fic .fav-mark { color: var(--star); }
+.series-card .s-toggle { grid-column: 1 / -1; padding-right: 10px; }
+.parts { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; display: grid; }
+.parts li { display: grid; grid-template-columns: minmax(0, 1fr) auto; border-top: 1px solid var(--line); padding-top: 10px; margin-top: 8px; }
+.parts .t { font-size: 1rem; }
+.fic-by { margin: 0; color: var(--muted); }
+.fic-facts { margin: 4px 0 10px; font-size: .88rem; color: var(--muted); }
+.fic-sum { font-family: var(--book); line-height: 1.55; margin: 0 0 6px; }
+#sheet-fic .chips { margin-top: 2px; }
+
+#reader { padding-block: 0 40px; }
+.topbar { position: fixed; top: 0; left: 0; right: 0; margin: 0; z-index: 6; transform: translateY(-110%); border-bottom: 1px solid var(--line);
+  padding: calc(6px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) 6px max(12px, env(safe-area-inset-left, 0px)); }
+body.controls .topbar { transform: none; }
+.quick { position: fixed; z-index: 6; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); border-radius: 18px 18px 0 0; box-shadow: 0 -8px 30px rgba(0,0,0,.22); display: grid; gap: 12px;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+@media (min-width: 46rem) { .quick { left: 50%; right: auto; width: 34rem; transform: translateX(-50%); } }
+.q-info { margin: 0; text-align: center; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.q-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.q-size { display: flex; align-items: center; gap: 6px; }
+.q-size button { width: 48px; height: 48px; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; font-family: var(--book); font-size: 1.15rem; }
+.q-size small { font-size: .8em; }
+.q-size span { min-width: 3.2em; text-align: center; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.q-themes { display: flex; gap: 8px; }
+.q-themes button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(128,128,128,.45); font-family: var(--book); }
+.q-themes button[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--accent); }
+.q-main { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.q-main button { border: 1px solid var(--line); background: var(--bg); border-radius: 14px; padding: 12px 6px; display: grid; justify-items: center; gap: 4px; font-size: .88rem; font-weight: 700; min-height: 66px; }
+.q-main svg { width: 24px; height: 24px; }
+.q-main button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.coach { position: fixed; inset: 0; z-index: 25; display: grid; place-items: center; background: rgba(10,10,20,.55); padding: 24px; }
+.coach > div { background: var(--surface); border-radius: 16px; padding: 20px; max-width: 22rem; display: grid; gap: 12px; }
+.coach p { margin: 0; }
+.setup { position: fixed; inset: 0; z-index: 40; background: var(--bg); display: grid; place-items: center; padding: 24px max(24px, env(safe-area-inset-right, 0px)) 24px max(24px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.setup-card { max-width: 24rem; width: 100%; display: grid; gap: 12px; }
+.setup-card .eyebrow { margin: 0; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.setup-card h2 { margin: 0 0 6px; font-family: var(--book); font-size: 1.7rem; font-weight: 600; text-wrap: balance; }
+.setup-card p { margin: 0 0 14px; color: var(--muted); }
+#setup-1, #setup-2 { display: grid; }
+.btn-link { background: none; border: 0; color: var(--muted); text-decoration: underline; padding: 14px 4px; justify-self: start; }
+.setup-themes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.setup-themes button { border: 1px solid rgba(128,128,128,.45); border-radius: 16px; padding: 40px 10px; font-family: var(--book); font-size: 1.2rem; font-weight: 600; }
+#shelf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.player select#tts-sleep { flex: 0 1 auto; }
+
+/* ---------- 1.5: warm theme, night light, shelves, stars, bookmarks, auto-scroll, quote cards, goals ---------- */
+:root.t-warm { --bg: #1d1812; --surface: #27211a; --fg: #e8d2ac; --muted: #a8916f; --line: #3b3127; --accent: #e3a55e; --accent-ink: #1d1208; --note-bg: #2a231b; --hl: rgba(255, 170, 60, .28); --warn: #f2b8b5; --star: #e3a55e; color-scheme: dark; }
+#nightlight { position: fixed; inset: 0; pointer-events: none; z-index: 60; background: #ff8f1f; mix-blend-mode: multiply; opacity: 0; transition: opacity .6s ease; }
+.q-row { justify-content: center; }
+.q-themes button { width: 42px; height: 42px; }
+.q-main { grid-template-columns: repeat(4, 1fr); }
+.q-main button { font-size: .82rem; padding: 12px 2px; }
+#bm-btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+#bm-btn[aria-pressed="true"] svg { fill: currentColor; }
+.fic .rate { color: var(--star); letter-spacing: 1px; }
+.stars { display: flex; gap: 2px; }
+.stars button { background: none; border: 0; font-size: 2rem; line-height: 1; color: var(--line); padding: 4px 6px; border-radius: 8px; }
+.stars button.on { color: var(--star); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.chip.add { border-style: dashed; }
+.my-shelves { list-style: none; margin: 0; padding: 0; display: grid; }
+.my-shelves li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+.my-shelves li span { overflow-wrap: anywhere; }
+.my-shelves small { color: var(--muted); }
+.row select, .row textarea, .row input[type="text"], .add-row input { box-sizing: border-box; }
+.add-row input { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; }
+#bm-list { list-style: none; margin: 0; padding: 0; }
+#bm-list li { display: flex; align-items: center; border-top: 1px solid var(--line); }
+#bm-list .go { all: unset; box-sizing: border-box; cursor: pointer; flex: 1; min-width: 0; padding: 12px 8px; display: grid; gap: 2px; overflow-wrap: anywhere; }
+#bm-list .go:focus-visible { outline: 2px solid var(--accent); }
+#bm-list small { color: var(--muted); }
+#bm-list em { font-family: var(--book); }
+#bm-list .x { background: none; border: 0; color: var(--muted); padding: 10px; border-radius: 8px; }
+#bm-list .x svg { width: 20px; height: 20px; display: block; }
+.as-speed { display: flex; align-items: center; gap: 4px; }
+.as-speed button { width: 44px; height: 44px; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; font-size: 1.3rem; }
+.as-speed span { min-width: 3em; text-align: center; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+#qc-canvas { width: 100%; height: auto; border-radius: 12px; display: block; border: 1px solid var(--line); margin-bottom: 4px; }
+.goal-text { margin: 0; font-size: 1rem; color: var(--fg) !important; }
+.goal-text b { font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+.goal-bar { height: 10px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.goal-bar i { display: block; height: 100%; background: var(--accent); border-radius: 6px; }
+.goal-edit { display: grid; gap: 8px; }
+.goal-edit .add-row select { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 8px; flex: 1; min-width: 0; }
+.goal-edit .add-row input { width: 5.5em; flex: none; }
+
+/* ---------- Busy / message ---------- */
+.busy { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 85%, transparent); padding: 24px; }
+.busy div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 24px; max-width: 22rem; text-align: center; display: grid; gap: 12px; }
+.busy p { margin: 0; }
+.spin { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); margin: 0 auto; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 31; background: var(--fg); color: var(--bg); padding: 12px 18px; border-radius: 12px; max-width: min(28rem, calc(100vw - 32px)); font-size: .95rem; }
+@media (prefers-reduced-motion: reduce) { .topbar { transition: none; } .spin { animation-duration: 3s; } }
+</style>
+
+<main id="home" class="view">
+  <div class="view-head"><h1>Library</h1><span id="shelf-count"></span></div>
+  <div class="tools">
+    <label class="sr" for="q">Search your library</label>
+    <input type="search" id="q" placeholder="Search titles, tags, summaries…" autocomplete="off" enterkeyhint="search">
+    <button class="btn-small" type="button" id="filter-btn">Filters</button>
+    <label class="sr" for="sort">Sort by</label>
+    <select id="sort">
+      <option value="read">Last read</option>
+      <option value="added">Newest added</option>
+      <option value="title">Title A–Z</option>
+      <option value="author">Author A–Z</option>
+      <option value="short">Shortest first</option>
+      <option value="stars">Your rating</option>
+    </select>
+  </div>
+  <div class="tabs" id="tabs" role="tablist" aria-label="Shelves">
+    <button type="button" role="tab" data-tab="all">All <span></span></button>
+    <button type="button" role="tab" data-tab="reading">Reading <span></span></button>
+    <button type="button" role="tab" data-tab="toread">To read <span></span></button>
+    <button type="button" role="tab" data-tab="finished">Finished <span></span></button>
+    <button type="button" role="tab" data-tab="fav">Favourites <span></span></button>
+  </div>
+  <p class="filter-note" id="filter-note" hidden></p>
+  <p class="filter-note" id="sync-note" hidden></p>
+  <ul id="shelf-list"></ul>
+  <input type="file" id="file" class="sr" accept=".pdf,.epub,.html,.htm,application/pdf,application/epub+zip,text/html" multiple>
+</main>
+
+<main id="me" class="view" hidden>
+  <div class="view-head"><h1>Me</h1></div>
+  <div class="update-bar" id="update-bar" hidden role="status"><span id="update-msg"></span><button id="update-btn" type="button">Update now</button></div>
+  <section class="me-card">
+    <h2>Your reading this year</h2>
+    <div class="tiles" id="me-tiles"></div>
+    <button class="btn-wide" type="button" id="stats-btn">See your yearly recap</button>
+  </section>
+  <section class="me-card" id="goal-card">
+    <h2>Your reading goal</h2>
+    <div id="goal-show"></div>
+    <div class="goal-edit" id="goal-edit" hidden>
+      <div class="add-row">
+        <label class="sr" for="goal-n">How many</label>
+        <input type="number" id="goal-n" min="1" max="9999" inputmode="numeric" value="4">
+        <label class="sr" for="goal-type">What</label>
+        <select id="goal-type">
+          <option value="week">fics a week</option>
+          <option value="month">fics a month</option>
+          <option value="year">fics a year</option>
+          <option value="day">minutes a day</option>
+        </select>
+      </div>
+      <div class="row-btns"><button class="btn-small" type="button" id="goal-save" style="font-weight:700">Save goal</button><button class="btn-small" type="button" id="goal-off">No goal</button></div>
+    </div>
+    <button class="btn-wide" type="button" id="goal-btn">Set a goal</button>
+  </section>
+  <section class="me-card">
+    <h2>Your shelves</h2>
+    <p>Make your own shelves, like "Comfort reads" or "Reread someday". Put fics on them with the ⋮ button on any fic. They show up as tabs in your Library.</p>
+    <ul class="my-shelves" id="my-shelves"></ul>
+    <div class="add-row"><label class="sr" for="new-shelf">New shelf name</label><input type="text" id="new-shelf" placeholder="New shelf name" maxlength="40" autocomplete="off"><button class="btn-small" type="button" id="new-shelf-btn">Add shelf</button></div>
+  </section>
+  <section class="me-card">
+    <h2>Reading settings</h2>
+    <p>Theme, night light, font, text size, scrolling or flipping pages, reading speed and author's notes.</p>
+    <button class="btn-wide" type="button" id="me-settings">Open reading settings</button>
+  </section>
+  <section class="me-card">
+    <h2>Highlights and notes</h2>
+    <ul class="me-hl" id="me-hl"></ul>
+  </section>
+  <section class="me-card" id="folder-card" hidden>
+    <h2>Fic folder</h2>
+    <p id="folder-text"></p>
+    <div class="row-btns">
+      <button class="btn-small" type="button" id="folder-sync" hidden>Check for new fics</button>
+      <button class="btn-small" type="button" id="folder-pick">Choose folder</button>
+    </div>
+  </section>
+  <section class="me-card">
+    <h2>Back up your library</h2>
+    <p id="backup-text">Save everything (your fics, shelves, favourites, highlights and stats) into one backup file. When your phone asks where to save it, pick <b>Drive</b> to keep it in your Google Drive.</p>
+    <div class="row-btns">
+      <button class="btn-small" type="button" id="backup-btn">Back up now</button>
+      <button class="btn-small" type="button" id="restore-btn">Restore from a backup</button>
+    </div>
+    <input type="file" id="restore-file" class="sr" accept=".json,application/json">
+  </section>
+  <section class="help" aria-labelledby="help-h">
+    <h2 id="help-h">Help</h2>
+    <details>
+      <summary>How do I get a fic in here?</summary>
+      <p>On AO3, open the fic, tap <b>Download</b> and pick <b>PDF</b> or <b>EPUB</b> (EPUB comes out a little cleaner). If you chose a fic folder, it shows up by itself. Otherwise tap <b>Add a fic</b> in your Library and pick the file.</p>
+    </details>
+    <details>
+      <summary>A fic got new chapters. What do I do?</summary>
+      <p>Download it again from AO3. Fic Nook sees it's the same fic and updates the one in your Library, keeping your spot, highlights and shelf. The card says how many chapters are new.</p>
+    </details>
+    <details>
+      <summary>How do I use the reading screen?</summary>
+      <p>Tap the middle of the page to show or hide the controls. Tap the right or left edge, swipe, or press your volume buttons to turn pages. The controls have text size, theme, read aloud and chapters. Everything else is under <b>More</b>.</p>
+    </details>
+    <details>
+      <summary>How does read aloud work?</summary>
+      <p>Tap the middle of the page, then <b>Read aloud</b>. It reads from where you are and carries on into the next chapter. The sleep timer stops it after a set time or at the end of the chapter. If nothing plays, check that your phone has a text-to-speech voice (search "text-to-speech" in your phone's Settings).</p>
+    </details>
+    <details>
+      <summary>How do I highlight or add a note?</summary>
+      <p>Press and hold on some words to select them, then tap <b>Highlight</b> or <b>Add note</b>. Tap a highlight to read or change its note. Your highlights are listed here under Me, and under <b>Chapters</b> while reading.</p>
+    </details>
+    <details>
+      <summary>Shelves, ratings, notes and bookmarks</summary>
+      <p>Tap the <b>⋮</b> button on a fic to rate it, write private notes, or put it on your own shelves (make new shelves there or here under Me). While reading, tap the middle, then <b>Bookmark</b> to save a spot. Your bookmarks are under <b>Chapters</b>.</p>
+    </details>
+    <details>
+      <summary>Night light, auto-scroll and quote cards</summary>
+      <p>Under <b>More</b> while reading (or Reading settings here), turn on the <b>Night light</b> to tint the screen amber, or pick the <b>Warm</b> theme. <b>Auto-scroll</b> moves through the fic by itself at your reading speed. To make a quote card, tap a highlight and choose <b>Make a quote card</b>.</p>
+    </details>
+    <details>
+      <summary>Can I put Fic Nook on my home screen?</summary>
+      <p>Yes. Press and hold an empty spot on your home screen, tap <b>Widgets</b>, find <b>Fic Nook</b> and drag the <b>Keep reading</b> widget out. Tapping it opens the fic you were reading.</p>
+    </details>
+    <details>
+      <summary>Something looks wrong in a PDF</summary>
+      <p>PDFs are made for printing, so Fic Nook has to guess where paragraphs and chapters start. It keeps italics, bold and the author's special fonts (like text messages) when it can. If a fic still looks off, download the EPUB version from AO3 instead.</p>
+    </details>
+  </section>
+  <p class="privacy"><span id="app-version"></span>Your fics never leave your device. Fic Nook reads each file right here and keeps your library only on this phone or computer.</p>
+</main>
+
+<main id="stats" class="view" hidden>
+  <div class="stats-top">
+    <button class="icon-btn" id="stats-back" type="button" aria-label="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <h1>Your reading</h1>
+    <label class="sr" for="stats-year">Year</label>
+    <select id="stats-year"></select>
+  </div>
+  <div id="stats-body" style="display:grid;gap:14px"></div>
+</main>
+
+<button class="fab" id="open-btn" type="button">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+  Add a fic
+</button>
+
+<nav class="tabbar" id="tabbar" aria-label="Main">
+  <button type="button" data-view="home" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M9 19V5M14 19l3-14 4 1-3 14z"/></svg>
+    Library
+  </button>
+  <button type="button" data-view="read" id="nav-read">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5.5C5.5 4 9 4 12 6c3-2 6.5-2 9-.5V19c-2.5-1.5-6-1.5-9 .5-3-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>
+    Reading
+  </button>
+  <button type="button" data-view="me">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+    Me
+  </button>
+</nav>
+
+<div id="reader" hidden>
+  <nav class="topbar" id="topbar" aria-label="Reader">
+    <button class="icon-btn" id="back" type="button" aria-label="Back to your library">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="where" id="where"></div>
+  </nav>
+  <article id="page" aria-live="polite"></article>
+  <div class="pager" id="pager" hidden></div>
+</div>
+<div class="progress" id="progress" hidden><i></i></div>
+
+<div class="quick" id="quick" hidden role="region" aria-label="Reading controls">
+  <p class="q-info" id="q-info"></p>
+  <div class="q-row">
+    <div class="q-size">
+      <button type="button" id="q-smaller" aria-label="Smaller text">A<small>−</small></button>
+      <span id="q-size"></span>
+      <button type="button" id="q-bigger" aria-label="Bigger text">A<small>+</small></button>
+    </div>
+    <div class="q-themes" id="q-themes">
+      <button type="button" data-v="paper" aria-label="Light" style="background:#f6f6f2;color:#26252b">A</button>
+      <button type="button" data-v="sepia" aria-label="Sepia" style="background:#f1e6d2;color:#46382a">A</button>
+      <button type="button" data-v="dark" aria-label="Dark" style="background:#17171c;color:#dcdad3">A</button>
+      <button type="button" data-v="night" aria-label="Night" style="background:#000;color:#b9b7b0">A</button>
+      <button type="button" data-v="warm" aria-label="Warm" style="background:#1d1812;color:#e8d2ac">A</button>
+    </div>
+  </div>
+  <div class="q-main">
+    <button type="button" id="tts-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="5" height="7" rx="2"/><rect x="16" y="14" width="5" height="7" rx="2"/></svg>
+      Read aloud
+    </button>
+    <button type="button" id="toc-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+      Chapters
+    </button>
+    <button type="button" id="bm-btn" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12v17l-6-4.2-6 4.2z"/></svg>
+      Bookmark
+    </button>
+    <button type="button" id="set-btn">
+      <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      More
+    </button>
+  </div>
+</div>
+
+<div class="coach" id="hint" hidden role="dialog" aria-labelledby="hint-t">
+  <div>
+    <p id="hint-t"><b>Tap the middle</b> of the page to show the controls.</p>
+    <p><b>Tap the edges</b>, swipe, or press the volume buttons to turn pages.</p>
+    <button class="btn-primary" type="button" id="hint-ok">Got it</button>
+  </div>
+</div>
+
+<div class="setup" id="setup" hidden role="dialog" aria-labelledby="setup-h">
+  <div class="setup-card">
+    <p class="eyebrow">Welcome to Fic Nook</p>
+    <div id="setup-1">
+      <h2 id="setup-h">Where do your fics go?</h2>
+      <p>Pick the folder your AO3 downloads are saved in (usually <b>Download</b>). New fics there will show up in your Library by themselves.</p>
+      <button class="btn-primary" type="button" id="setup-folder">Choose folder</button>
+      <button class="btn-link" type="button" id="setup-skip">Skip for now</button>
+    </div>
+    <div id="setup-2" hidden>
+      <h2>Light or dark?</h2>
+      <p>You can change this any time while reading.</p>
+      <div class="setup-themes">
+        <button type="button" data-v="paper" style="background:#f6f6f2;color:#26252b">Light</button>
+        <button type="button" data-v="dark" style="background:#17171c;color:#dcdad3">Dark</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="player" id="player" hidden role="region" aria-label="Read aloud">
+  <button class="pl-play" id="tts-play" type="button" aria-label="Pause"></button>
+  <div class="pl-mid"><b id="tts-title">Reading aloud</b><span id="tts-status"></span></div>
+  <label class="sr" for="tts-rate">Speed</label>
+  <select id="tts-rate">
+    <option value="0.8">0.8×</option><option value="1">1×</option><option value="1.2">1.2×</option><option value="1.5">1.5×</option><option value="1.8">1.8×</option>
+  </select>
+  <label class="sr" for="tts-sleep">Sleep timer</label>
+  <select id="tts-sleep">
+    <option value="0">Sleep timer</option><option value="10">10 min</option><option value="20">20 min</option><option value="30">30 min</option><option value="45">45 min</option><option value="60">1 hour</option><option value="ch">End of chapter</option>
+  </select>
+  <button class="icon-btn" id="tts-close" type="button" aria-label="Stop reading aloud">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+</div>
+
+<div class="player" id="auto-bar" hidden role="region" aria-label="Auto-scroll">
+  <button class="pl-play" id="as-play" type="button" aria-label="Pause"></button>
+  <div class="pl-mid"><b id="as-title">Auto-scroll</b><span id="as-status"></span></div>
+  <div class="as-speed"><button type="button" id="as-slower" aria-label="Slower">−</button><span id="as-speed"></span><button type="button" id="as-faster" aria-label="Faster">+</button></div>
+  <button class="icon-btn" id="as-close" type="button" aria-label="Stop auto-scroll">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+</div>
+
+<div class="hl-bar" id="hl-bar" hidden>
+  <button type="button" id="hl-add">Highlight</button>
+  <button type="button" id="hl-add-note">Add note</button>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<section class="sheet" id="sheet-settings" hidden aria-labelledby="set-h" role="dialog">
+  <div class="grab"></div>
+  <header><h2 id="set-h">Reading settings</h2><button class="btn-small" type="button" data-close>Done</button></header>
+  <div class="row">
+    <span class="lab">Theme</span>
+    <div class="seg" id="seg-theme">
+      <button type="button" data-v="auto" class="swatch"><i style="background:linear-gradient(135deg,#f6f6f2 50%,#17171c 50%)"></i>Auto</button>
+      <button type="button" data-v="paper" class="swatch"><i style="background:#f6f6f2;color:#26252b">A</i>Light</button>
+      <button type="button" data-v="sepia" class="swatch"><i style="background:#f1e6d2;color:#46382a">A</i>Sepia</button>
+      <button type="button" data-v="dark" class="swatch"><i style="background:#17171c;color:#dcdad3">A</i>Dark</button>
+      <button type="button" data-v="night" class="swatch"><i style="background:#000;color:#b9b7b0">A</i>Night</button>
+      <button type="button" data-v="warm" class="swatch"><i style="background:#1d1812;color:#e8d2ac">A</i>Warm</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="lab">Night light</span>
+    <div class="seg" id="seg-nl">
+      <button type="button" data-v="off">Off</button>
+      <button type="button" data-v="on">On</button>
+      <button type="button" data-v="eve">Evenings</button>
+    </div>
+    <small class="hint">Tints the screen amber so it's easier on your eyes in bed. "Evenings" turns it on from 8 pm to 7 am.</small>
+  </div>
+  <div class="row" id="row-nl-str">
+    <label for="r-nl">Night light strength <output id="o-nl"></output></label>
+    <input type="range" id="r-nl" min="10" max="60" step="5">
+  </div>
+  <div class="row" id="row-auto" hidden>
+    <span class="lab">Auto-scroll</span>
+    <button class="btn-wide" type="button" id="as-start">Start auto-scroll</button>
+    <small class="hint">Moves through the fic by itself at your reading speed, so you can read hands-free. Change the speed with − and + while it runs.</small>
+  </div>
+  <div class="row">
+    <span class="lab">Turning pages</span>
+    <div class="seg" id="seg-mode">
+      <button type="button" data-v="scroll">Scroll</button>
+      <button type="button" data-v="pages">Flip pages</button>
+    </div>
+  </div>
+  <div class="row" id="row-vol" hidden>
+    <label class="toggle" for="c-vol"><span>Volume buttons turn pages<small>Volume down goes forward, volume up goes back. Turned off while reading aloud.</small></span><input type="checkbox" id="c-vol"></label>
+  </div>
+  <div class="row">
+    <span class="lab">Font</span>
+    <div class="seg" id="seg-font">
+      <button type="button" data-v="book" style="font-family:var(--book)">Bookish</button>
+      <button type="button" data-v="classic" style="font-family:Georgia,serif">Classic</button>
+      <button type="button" data-v="easy" style="font-family:var(--ui)">Easy read</button>
+      <button type="button" data-v="plain" style="font-family:system-ui,sans-serif">Plain</button>
+    </div>
+  </div>
+  <div class="row">
+    <label for="r-size">Text size <output id="o-size"></output></label>
+    <input type="range" id="r-size" min="14" max="30" step="1">
+  </div>
+  <div class="row">
+    <label for="r-lh">Line spacing <output id="o-lh"></output></label>
+    <input type="range" id="r-lh" min="1.3" max="2.2" step="0.05">
+  </div>
+  <div class="row">
+    <span class="lab">Page width</span>
+    <div class="seg" id="seg-width">
+      <button type="button" data-v="narrow">Narrow</button>
+      <button type="button" data-v="normal">Normal</button>
+      <button type="button" data-v="wide">Wide</button>
+    </div>
+  </div>
+  <div class="row">
+    <label for="r-wpm">Your reading speed <output id="o-wpm"></output></label>
+    <input type="range" id="r-wpm" min="120" max="500" step="10">
+    <small class="hint">Used for the "time left" on each fic. Most people read 200 to 300 words a minute.</small>
+  </div>
+  <div class="row">
+    <label class="toggle" for="c-notes"><span>Show author's notes<small>When off, notes fold into a small bar you can tap to open.</small></span><input type="checkbox" id="c-notes"></label>
+  </div>
+  <div class="row">
+    <label class="toggle" for="c-about"><span>Show the info page<small>Tags, summary and stats before chapter 1.</small></span><input type="checkbox" id="c-about"></label>
+  </div>
+  <div class="row">
+    <label class="toggle" for="c-justify"><span>Straight right edge<small>Lines up text on both sides, like a printed book.</small></span><input type="checkbox" id="c-justify"></label>
+  </div>
+</section>
+
+<section class="sheet" id="sheet-toc" hidden aria-labelledby="toc-h" role="dialog">
+  <div class="grab"></div>
+  <header><h2 id="toc-h">Chapters</h2><button class="btn-small" type="button" data-close>Close</button></header>
+  <ul id="toc-list"></ul>
+  <h3 id="bm-h">Your bookmarks</h3>
+  <ul id="bm-list"></ul>
+  <h3 id="hl-h">Your highlights</h3>
+  <ul id="hl-list"></ul>
+</section>
+
+<section class="sheet" id="sheet-filter" hidden aria-labelledby="flt-h" role="dialog">
+  <div class="grab"></div>
+  <header><h2 id="flt-h">Filters</h2><button class="btn-small" type="button" data-close>Done</button></header>
+  <div class="row"><label for="f-fandom">Fandom</label><select id="f-fandom"></select></div>
+  <div class="row"><label for="f-ship">Ship</label><select id="f-ship"></select></div>
+  <div class="row"><label for="f-rating">Rating</label><select id="f-rating"></select></div>
+  <div class="row">
+    <span class="lab">Finished being written?</span>
+    <div class="seg" id="f-done">
+      <button type="button" data-v="">Any</button>
+      <button type="button" data-v="complete">Complete</button>
+      <button type="button" data-v="wip">Still updating</button>
+    </div>
+  </div>
+  <div class="row">
+    <label for="f-hide-input">Hide fics with these tags</label>
+    <div class="hide-chips" id="f-hide-list"></div>
+    <div class="add-row"><input type="text" id="f-hide-input" list="f-tag-list" placeholder="Type a tag, like Major Character Death" autocomplete="off"><button class="btn-small" type="button" id="f-hide-add">Hide</button></div>
+    <datalist id="f-tag-list"></datalist>
+  </div>
+  <div class="sheet-actions"><button class="btn-small" type="button" id="f-clear">Clear all filters</button></div>
+</section>
+
+<section class="sheet" id="sheet-fic" hidden aria-labelledby="fic-h" role="dialog">
+  <div class="grab"></div>
+  <header><h2 id="fic-h"></h2><button class="btn-small" type="button" data-close>Close</button></header>
+  <div id="fic-body"></div>
+</section>
+
+<section class="sheet" id="sheet-hl" hidden aria-labelledby="hl-sheet-h" role="dialog">
+  <div class="grab"></div>
+  <header><h2 id="hl-sheet-h">Highlight</h2><button class="btn-small" type="button" data-close>Close</button></header>
+  <p class="quote" id="hl-quote"></p>
+  <div class="row"><label for="hl-note">Your note</label><textarea id="hl-note" placeholder="What did you think about this bit?"></textarea></div>
+  <div class="sheet-actions">
+    <button class="btn-small warn" type="button" id="hl-remove">Remove highlight</button>
+    <button class="btn-small" type="button" id="hl-card">Make a quote card</button>
+    <button class="btn-small" type="button" id="hl-save" style="font-weight:700">Save note</button>
+  </div>
+</section>
+
+<section class="sheet" id="sheet-qc" hidden aria-labelledby="qc-h" role="dialog">
+  <div class="grab"></div>
+  <header><h2 id="qc-h">Quote card</h2><button class="btn-small" type="button" data-close>Close</button></header>
+  <canvas id="qc-canvas" width="1080" height="1350" role="img" aria-label="Your quote as a picture"></canvas>
+  <div class="row">
+    <span class="lab">Style</span>
+    <div class="seg" id="qc-style">
+      <button type="button" data-v="dark">Dark</button>
+      <button type="button" data-v="paper">Light</button>
+      <button type="button" data-v="rose">Rose</button>
+      <button type="button" data-v="warm">Warm</button>
+    </div>
+  </div>
+  <div class="sheet-actions"><span></span><button class="btn-primary" type="button" id="qc-share">Share or save</button></div>
+</section>
+
+<div class="busy" id="busy" hidden><div><div class="spin"></div><p id="busy-msg">Opening your fic…</p></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+<div id="nightlight" aria-hidden="true"></div>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clean = s => (s || "").replace(/\s+/g, " ").trim();
+const Android = window.FicNookAndroid || null;
+
+/* ---------------- storage (never required to work) ---------------- */
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem("ficnook:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("ficnook:" + k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem("ficnook:" + k); } catch {} }
+};
+const DB = {
+  db: null, mem: new Map(),
+  async open() {
+    try {
+      this.db = await new Promise((res, rej) => {
+        const r = indexedDB.open("ficnook", 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("fics", { keyPath: "id" });
+        r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+      });
+    } catch { this.db = null; }
+  },
+  tx(mode, fn) {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction("fics", mode); const st = t.objectStore("fics");
+      const r = fn(st); t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error);
+    });
+  },
+  async all() { if (this.db) { try { return await this.tx("readonly", s => s.getAll()) || []; } catch {} } return [...this.mem.values()]; },
+  async put(f) { this.mem.set(f.id, f); if (this.db) { try { await this.tx("readwrite", s => s.put(f)); } catch {} } },
+  async del(id) { this.mem.delete(id); if (this.db) { try { await this.tx("readwrite", s => s.delete(id)); } catch {} } }
+};
+
+
+
+/* ---------------- settings ---------------- */
+const FONTS = { book: 'var(--book)', classic: 'Georgia, "Times New Roman", serif', easy: 'var(--ui)', plain: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' };
+const WIDTHS = { narrow: "28em", normal: "34em", wide: "44em" };
+const settings = Object.assign({ theme: "dark", font: "book", size: 19, lh: 1.65, width: "normal", notes: true, about: true, justify: false, mode: "pages", volKeys: true, wpm: 230, ttsRate: 1, nl: "off", nlStr: 30, asF: 1 }, LS.get("settings", {}));
+if (!settings.v2) { if (settings.theme === "auto") settings.theme = "dark"; settings.v2 = true; }
+if (!settings.v3) { settings.mode = "pages"; settings.v3 = true; }
+function applySettings() {
+  const root = document.documentElement;
+  root.classList.remove("t-paper", "t-sepia", "t-dark", "t-night", "t-warm");
+  if (settings.theme !== "auto") root.classList.add("t-" + settings.theme);
+  root.style.setProperty("--read-font", FONTS[settings.font] || FONTS.book);
+  root.style.setProperty("--fs", settings.size + "px");
+  root.style.setProperty("--lh", settings.lh);
+  root.style.setProperty("--measure", WIDTHS[settings.width] || WIDTHS.normal);
+  $("#page").classList.toggle("justify", !!settings.justify);
+  for (const [id, key] of [["seg-theme", "theme"], ["seg-font", "font"], ["seg-width", "width"], ["seg-mode", "mode"], ["seg-nl", "nl"]])
+    $$("#" + id + " button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === settings[key])));
+  $("#r-nl").value = settings.nlStr; $("#o-nl").textContent = settings.nlStr + "%"; $("#row-nl-str").hidden = settings.nl === "off";
+  applyNight();
+  $("#r-size").value = settings.size; $("#o-size").textContent = settings.size + "px";
+  $("#r-lh").value = settings.lh; $("#o-lh").textContent = Number(settings.lh).toFixed(2).replace(/0$/, "");
+  $("#r-wpm").value = settings.wpm; $("#o-wpm").textContent = settings.wpm + " words a minute";
+  $("#c-notes").checked = settings.notes; $("#c-about").checked = settings.about; $("#c-justify").checked = settings.justify; $("#c-vol").checked = settings.volKeys;
+  $("#row-vol").hidden = !(Android && Android.setVolumeKeys);
+  $("#tts-rate").value = String(settings.ttsRate);
+  $$("#page details.fn-note").forEach(d => { d.open = settings.notes; });
+  LS.set("settings", settings);
+  updVol();
+}
+
+function applyNight() {
+  const h = new Date().getHours();
+  const on = settings.nl === "on" || (settings.nl === "eve" && (h >= 20 || h < 7));
+  $("#nightlight").style.opacity = on ? String(settings.nlStr / 100) : "0";
+}
+setInterval(applyNight, 60000);
+
+/* ---------------- helpers ---------------- */
+function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement("script"); s.src = src; s.onload = res;
+    s.onerror = () => rej(new Error("Couldn't load a helper it needs. Check that you're online and try again."));
+    document.head.appendChild(s);
+  });
+}
+let pdfReady = null, zipReady = null;
+const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+function loadPdfJs() {
+  // The worker is loaded as a plain script so PDF.js runs on the page itself (works inside locked-down frames).
+  return pdfReady ||= (async () => {
+    await loadScript(PDFJS + "pdf.min.js");
+    await loadScript(PDFJS + "pdf.worker.min.js");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js";
+  })().catch(e => { pdfReady = null; throw e; });
+}
+function loadZip() {
+  return zipReady ||= loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js").catch(e => { zipReady = null; throw e; });
+}
+
+/* ---------------- HTML cleaning ---------------- */
+const DROP_SEL = "script,style,link,meta,iframe,frame,object,embed,form,input,button,select,textarea,svg,noscript,head,title,nav,audio,video,canvas,template";
+function cleanHtml(node) {
+  const box = document.createElement("div");
+  box.appendChild(document.importNode(node, true));
+  $$(DROP_SEL, box).forEach(e => e.remove());
+  $$("img", box).forEach(img => {
+    const alt = clean(img.getAttribute("alt"));
+    if (alt && !/^(cover|image)$/i.test(alt)) { const s = document.createElement("span"); s.className = "img-note"; s.textContent = "[image: " + alt + "]"; img.replaceWith(s); }
+    else img.remove();
+  });
+  for (const el of $$("*", box)) {
+    const keep = {};
+    const align = el.getAttribute("align"); if (align && /^(center|right|left)$/i.test(align)) keep.align = align.toLowerCase();
+    const style = el.getAttribute("style") || "";
+    const m = /text-align\s*:\s*(center|right)/i.exec(style); if (m) keep.align = m[1].toLowerCase();
+    const cls = el.getAttribute("class") || "";
+    const ownCls = cls.split(/\s+/).filter(c => /^(fn-note|note-body|lbl|about|c)$/.test(c)).join(" ");
+    const href = el.tagName === "A" ? el.getAttribute("href") : null;
+    for (const a of [...el.attributes]) el.removeAttribute(a.name);
+    if (keep.align) el.setAttribute("align", keep.align);
+    if (ownCls) el.setAttribute("class", ownCls);
+    if (href && /^https?:/i.test(href)) { el.setAttribute("href", href); el.setAttribute("target", "_blank"); el.setAttribute("rel", "noopener noreferrer"); }
+  }
+  return box.innerHTML.replace(/(<p>\s*(&nbsp;|\s)*<\/p>\s*){2,}/g, "<p>&nbsp;</p>");
+}
+const hasText = n => clean(n.textContent).length > 0;
+function noteHtml(label, innerHtml) {
+  return `<details class="fn-note"><summary>${esc(label)}</summary><div class="note-body">${innerHtml}</div></details>`;
+}
+function noteFromEl(el) {
+  // Pull a "Notes:" style label off the front if the fic has one.
+  let label = "Author's note";
+  const first = el.querySelector("p, h3, h4, b, strong");
+  const t = first ? clean(first.textContent).replace(/:$/, "") : "";
+  if (first && /^(chapter )?(end )?(notes?|summary)$/i.test(t)) { label = t; first.remove(); }
+  if (!hasText(el)) return "";
+  return noteHtml(label, cleanHtml(el));
+}
+
+/* ---------------- AO3 HTML / EPUB parsing ---------------- */
+// roots: array of {el, label}. Works for one AO3 HTML page, or one entry per EPUB file.
+function parseAo3Roots(roots, fallbackTitle, perFile) {
+  let title = "", author = "", about = "", fields = [];
+  const chapters = []; let endNotes = "";
+  for (const { el: root, label } of roots) {
+    $$(".toc-heading, .landmark, #toc, .toc", root).forEach(e => e.remove());
+    const pre = root.querySelector("#preface");
+    if (pre) {
+      const h1 = pre.querySelector("h1"); if (h1) { title ||= clean(h1.textContent); h1.remove(); }
+      const by = pre.querySelector(".byline"); if (by) { author ||= clean(by.textContent).replace(/^by\s+/i, ""); by.remove(); }
+      $$("dl.tags", pre).forEach(dl => {
+        $$("dt", dl).forEach(dt => { const dd = dt.nextElementSibling; fields.push([clean(dt.textContent).replace(/:$/, ""), dd ? clean(dd.textContent) : ""]); });
+        dl.remove();
+      });
+      $$(".message", pre).forEach(e => e.remove());
+      // Label + blockquote pairs (Summary, Notes)
+      let html = "";
+      for (const child of [...(pre.querySelector(".meta") || pre).children]) {
+        if (!hasText(child)) continue;
+        const t = clean(child.textContent);
+        if (child.localName === "p" && /^(summary|notes|series this work belongs to|work text)\s*:?$/i.test(t)) { if (!/work text/i.test(t)) html += `<h2 class="lbl">${esc(t.replace(/:$/, ""))}</h2>`; continue; }
+        html += cleanHtml(child);
+      }
+      about += html;
+      pre.remove();
+    }
+    const aft = root.querySelector("#afterword");
+    if (aft) {
+      $$(".message, #endnotes .message", aft).forEach(e => e.remove());
+      $$("p", aft).forEach(p => { if (/please drop by the archive|posted originally on the archive/i.test(p.textContent)) p.remove(); });
+      $$(".meta, .endnotes, #endnotes, [id^=endnotes], #children, #series", aft).forEach(n => { if (hasText(n) && !n.querySelector(".meta, .endnotes, #endnotes")) endNotes += noteFromEl(n); });
+      if (!endNotes && hasText(aft)) endNotes = noteFromEl(aft);
+      aft.remove();
+    }
+    if (!hasText(root)) continue;
+    $$("p", root).forEach(p => { if (/^\(see the end of the (chapter|work) for (more )?notes\.?\)$/i.test(clean(p.textContent))) p.remove(); });
+    // Lift chapter headings out of the "meta" boxes, then turn note boxes into foldable notes.
+    $$("h2.heading", root).forEach(h => { const box = h.closest(".meta, .notes, .summary"); if (box && root.contains(box)) box.before(h); });
+    const noteBoxes = $$(".notes, .endnotes, .end.notes, .summary, .meta, .chapter-notes, [id^=notes], [id^=endnotes], [id^=summary]", root)
+      .filter(n => !n.parentElement.closest(".notes, .endnotes, .summary, .meta, [id^=notes], [id^=endnotes], [id^=summary]"));
+    for (const n of noteBoxes) {
+      if (n.querySelector("h2.heading")) continue;
+      const html = noteFromEl(n);
+      const ph = document.createElement("div"); ph.setAttribute("data-note", ""); ph.setAttribute("data-html", html); n.replaceWith(ph);
+    }
+    let headings = $$("h2.heading", root);
+    if (!headings.length && perFile) {
+      const h = root.querySelector("h1, h2, h3");
+      if (h && clean(h.textContent).length < 160) headings = [h];
+    }
+    const doc = root.ownerDocument;
+    const fragToHtml = frag => {
+      const box = document.createElement("div"); box.appendChild(document.importNode(frag, true));
+      $$("[data-note]", box).forEach(ph => { const t = document.createElement("template"); t.innerHTML = ph.getAttribute("data-html") || ""; ph.replaceWith(t.content); });
+      return hasText(box) ? cleanHtml(box) : "";
+    };
+    const build = (startNode, endNode) => {
+      const r = doc.createRange();
+      if (startNode) r.setStartAfter(startNode); else r.setStart(root, 0);
+      if (endNode) r.setEndBefore(endNode); else r.setEnd(root, root.childNodes.length);
+      return fragToHtml(r.cloneContents());
+    };
+    if (!headings.length) {
+      const html = build(null, null);
+      if (html) chapters.push({ title: label || "", html });
+      continue;
+    }
+    const lead = build(null, headings[0]);
+    if (lead) { if (chapters.length) chapters[chapters.length - 1].html += lead; else chapters.push({ title: "", html: lead }); }
+    headings.forEach((h, i) => chapters.push({ title: clean(h.textContent), html: build(h, headings[i + 1] || null) }));
+  }
+  if (endNotes && chapters.length) chapters[chapters.length - 1].html += endNotes;
+  return { title: title || fallbackTitle, author, about, fields, chapters };
+}
+
+function parseHtmlText(text, filename) {
+  const doc = new DOMParser().parseFromString(text, "text/html");
+  const fallback = clean(doc.title).replace(/\s*\[Archive of Our Own\]\s*$/i, "") || filename.replace(/\.[^.]+$/, "");
+  const res = parseAo3Roots([{ el: doc.body, label: "" }], fallback, false);
+  res.chapters.forEach(c => { if (!c.title) c.title = res.title; });
+  return res;
+}
+
+async function parseEpub(buf, filename) {
+  await loadZip();
+  const zip = await window.JSZip.loadAsync(buf);
+  const read = p => { const f = zip.file(p) || zip.file(decodeURIComponent(p)); return f ? f.async("string") : Promise.resolve(""); };
+  const container = new DOMParser().parseFromString(await read("META-INF/container.xml"), "application/xml");
+  const opfPath = container.querySelector("rootfile")?.getAttribute("full-path");
+  if (!opfPath) throw new Error("This EPUB looks damaged, so it couldn't be opened.");
+  const base = opfPath.includes("/") ? opfPath.slice(0, opfPath.lastIndexOf("/") + 1) : "";
+  const opf = new DOMParser().parseFromString(await read(opfPath), "application/xml");
+  const meta = (n) => clean(opf.getElementsByTagNameNS("*", n)[0]?.textContent);
+  const manifest = {};
+  for (const it of opf.getElementsByTagNameNS("*", "item")) manifest[it.getAttribute("id")] = { href: it.getAttribute("href"), type: it.getAttribute("media-type") || "", props: it.getAttribute("properties") || "" };
+  const spine = [...opf.getElementsByTagNameNS("*", "itemref")].map(r => manifest[r.getAttribute("idref")]).filter(x => x && /html|xml/.test(x.type) && !/nav/.test(x.props));
+  const roots = [];
+  for (const item of spine) {
+    const src = await read(base + item.href);
+    if (!src) continue;
+    let doc = new DOMParser().parseFromString(src, "application/xhtml+xml");
+    if (doc.querySelector("parsererror") || !doc.body) doc = new DOMParser().parseFromString(src, "text/html");
+    if (!doc.body || clean(doc.body.textContent).length < 2) continue;
+    roots.push({ el: doc.body, label: "" });
+  }
+  const res = parseAo3Roots(roots, meta("title") || filename.replace(/\.[^.]+$/, ""), true);
+  res.title = res.title || meta("title"); res.author = res.author || meta("creator");
+  res.chapters = res.chapters.filter(c => clean(c.html.replace(/<[^>]+>/g, " ")).length > 1);
+  // Calibre title pages repeat the title; drop a tiny first "chapter" that is just that.
+  const plain = h => clean(h.replace(/<[^>]+>/g, " "));
+  while (res.chapters.length > 1 && plain(res.chapters[0].html).length < 200 && (res.chapters[0].title === res.title || plain(res.chapters[0].html).includes(res.title) || !res.chapters[0].title)) res.chapters.shift();
+  res.chapters.forEach((c, i) => { if (!c.title) c.title = res.chapters.length === 1 ? res.title : "Part " + (i + 1); });
+  return res;
+}
+
+/* ---------------- PDF parsing ---------------- */
+const FIELD_RX = /^(Rating|Archive Warnings?|Categor(?:y|ies)|Fandoms?|Relationships?|Characters?|Additional Tags|Language|Series|Collections?|Stats|Published|Updated|Completed|Words|Chapters)\s*:\s*(.*)$/i;
+const LABELS = { "summary": "Summary", "notes": "Notes", "chapter notes": "Chapter notes", "chapter summary": "Chapter summary", "chapter end notes": "Chapter end notes", "end notes": "End notes", "afterword": "Afterword", "author's note": "Author's note", "author's notes": "Author's note", "a/n": "Author's note" };
+const STICKY = new Set(["chapter end notes", "end notes", "afterword"]);
+const DROP_RX = [/^\(see the end of the (chapter|work) for (more )?notes\.?\)$/i, /^(work text|chapter text)\s*:?$/i, /^posted originally on the archive of our own/i, /^please drop by the archive and comment/i, /^archiveofourown\.org/i];
+const CHAP_RX = /^(chapter|part)\s+(\d+|[ivxlcdm]+)\b/i;
+const SCENE_RX = /^[\s*~\-–—•·oO0x#=_+.❀✿♡♥❤︎]{1,30}$/;
+const labelKey = t => t.toLowerCase().replace(/[’]/g, "'").replace(/[:.]$/, "").trim();
+
+async function parsePdf(buf, filename, progress) {
+  await loadPdfJs();
+  const pdf = await window.pdfjsLib.getDocument({ data: buf, isEvalSupported: false }).promise;
+  let info = {}; try { info = (await pdf.getMetadata()).info || {}; } catch {}
+  const pages = [];
+  // Fonts: remember each font's real name so italics, bold and an author's "special" fonts (texts, signs) survive.
+  const fontInfo = {}, baseChars = {};
+  for (let p = 1; p <= pdf.numPages; p++) {
+    progress(`Reading page ${p} of ${pdf.numPages}…`);
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    try { await page.getOperatorList(); } catch {}
+    for (const it of tc.items) {
+      const fn = it.fontName; if (!fn || fontInfo[fn]) continue;
+      let name = ""; try { name = String(page.commonObjs.get(fn).name || ""); } catch {}
+      const fam = (tc.styles[fn] || {}).fontFamily || "";
+      name = name.replace(/^[A-Z]{6}\+/, "");
+      const base = (name.split(/[-,]/)[0] || "").replace(/(PSMT|PS|MT)$/, "") || fam || fn;
+      fontInfo[fn] = { base, fam, i: /italic|oblique/i.test(name), b: /bold|black|heavy|semibold|demi/i.test(name), mono: fam === "monospace" || /mono|courier|consol/i.test(name) };
+    }
+    const items = tc.items.filter(it => typeof it.str === "string" && it.str.length && Math.abs(it.transform[1]) < 0.01)
+      .map(it => ({ s: it.str, x: it.transform[4], y: it.transform[5], w: it.width, size: Math.abs(it.transform[3]) || it.height || 10, f: it.fontName }));
+    for (const it of items) { const fi = fontInfo[it.f]; if (fi && it.s.trim()) baseChars[fi.base] = (baseChars[fi.base] || 0) + it.s.length; }
+    items.sort((a, b) => b.y - a.y || a.x - b.x);
+    const lines = [];
+    for (const it of items) {
+      if (!it.s.trim() && !lines.length) continue;
+      const ln = lines[lines.length - 1];
+      if (ln && Math.abs(ln.y - it.y) < Math.max(ln.size, it.size) * 0.45) ln.items.push(it);
+      else lines.push({ y: it.y, size: it.size, items: [it] });
+    }
+    const out = [];
+    for (const ln of lines) {
+      ln.items.sort((a, b) => a.x - b.x);
+      let text = "", end = null, weights = {}; const toks = [];
+      for (const it of ln.items) {
+        if (end !== null && it.x - end > it.size * 0.12 && !/\s$/.test(text) && !/^\s/.test(it.s)) { text += " "; toks.push({ t: " ", f: null }); }
+        text += it.s; toks.push({ t: it.s, f: it.f }); end = Math.max(end ?? -1e9, it.x + it.w);
+        if (it.s.trim()) { const k = Math.round(it.size * 2) / 2; weights[k] = (weights[k] || 0) + it.s.length; }
+      }
+      text = clean(text);
+      if (!text) continue;
+      const size = Number(Object.entries(weights).sort((a, b) => b[1] - a[1])[0]?.[0] || ln.size);
+      const firstReal = ln.items.find(i => i.s.trim()) || ln.items[0];
+      out.push({ page: p, y: ln.y, x: firstReal.x, end, size, text, toks });
+    }
+    pages.push(out);
+  }
+  // Strip repeating headers / footers and page numbers.
+  const n = pages.length, keyOf = t => t.toLowerCase().replace(/\d+/g, "#").replace(/\s+/g, " ");
+  const counts = {};
+  pages.forEach(pl => { const c = new Set([...pl.slice(0, 2), ...pl.slice(-2)].map(l => keyOf(l.text))); c.forEach(k => counts[k] = (counts[k] || 0) + 1); });
+  pages.forEach((pl, i) => {
+    const edge = new Set([...pl.slice(0, 2), ...pl.slice(-2)]);
+    pages[i] = pl.filter(l => {
+      if (!edge.has(l)) return true;
+      const k = keyOf(l.text);
+      if (/^(page )?#( (of|\/) #)?$|^- ?# ?-$|^# \/ #$/.test(k)) return false;
+      if (n >= 3 && counts[k] >= Math.max(3, n * 0.4) && l.text.length < 120) return false;
+      return true;
+    });
+  });
+  const lines = pages.flat();
+  if (lines.length === 0) throw new Error("This PDF doesn't seem to have any text in it (it might be made of pictures). Try downloading the EPUB version from AO3 instead.");
+
+  // Body text stats
+  const sizeW = {}; lines.forEach(l => sizeW[l.size] = (sizeW[l.size] || 0) + l.text.length);
+  const body = Number(Object.entries(sizeW).sort((a, b) => b[1] - a[1])[0][0]);
+  const bodyLines = lines.filter(l => Math.abs(l.size - body) < 0.6);
+  const xs = {}; bodyLines.forEach(l => { const k = Math.round(l.x / 2) * 2; xs[k] = (xs[k] || 0) + 1; });
+  const margin = Number(Object.entries(xs).sort((a, b) => b[1] - a[1])[0][0]);
+  const ends = bodyLines.map(l => l.end).sort((a, b) => a - b);
+  const right = ends[Math.floor(ends.length * 0.9)] || margin + 400;
+  const gaps = [];
+  for (let i = 1; i < bodyLines.length; i++) { const a = bodyLines[i - 1], b = bodyLines[i]; if (a.page === b.page) { const g = a.y - b.y; if (g > body * 0.8 && g < body * 3) gaps.push(g); } }
+  gaps.sort((a, b) => a - b);
+  const lineGap = gaps[Math.floor(gaps.length / 2)] || body * 1.3;
+
+  // Lines -> paragraphs
+  const paras = []; let cur = null, prev = null;
+  const startsBlock = t => FIELD_RX.test(t) || LABELS[labelKey(t)] || CHAP_RX.test(t) || DROP_RX.some(r => r.test(t));
+  for (const l of lines) {
+    const head = l.size >= body * 1.18;
+    let brk = !cur;
+    if (!brk) {
+      if (head !== cur.head) brk = true;
+      else if (prev.page === l.page && (prev.y - l.y > lineGap * (head ? 1.9 : 1.4) || prev.y - l.y < -2)) brk = true;
+      else if (l.x > prev.x + body * 0.8) brk = true;                     // first-line indent
+      else if (!head && prev.end < right - body * 4) brk = true;          // previous line was short
+      else if (startsBlock(l.text) || startsBlock(prev.text) && !head) brk = true;
+    }
+    if (brk) { cur = { head, lines: [], page: l.page }; paras.push(cur); }
+    cur.lines.push(l); prev = l;
+  }
+  for (const p of paras) {
+    let t = ""; const toks = [];
+    for (const l of p.lines) {
+      if (!t) t = l.text;
+      else if (/[-–—\/]$/.test(t) && !/\s[-–]$/.test(t)) t += l.text;
+      else { t += " " + l.text; toks.push({ t: " ", f: null }); }
+      toks.push(...l.toks);
+    }
+    p.text = t; p.toks = toks;
+    p.minX = Math.min(...p.lines.map(l => l.x));
+    const f = p.lines[0];
+    p.center = p.lines.length <= 2 && f.x > margin + body * 2 && Math.abs((f.x - margin) - (right - f.end)) < body * 2.5;
+    p.quote = !p.center && p.minX > margin + body * 1.5;
+  }
+
+  // Paragraphs -> about page + chapters
+  const hasFields = paras.slice(0, 80).some(p => FIELD_RX.test(p.text));
+  let section = hasFields ? "about" : "text";
+  const about = { titleParas: [], fields: [], blocks: [] };
+  const chapters = []; let chap = null, note = null, lastField = null;
+  // Inline styles: compare each font with the main body font.
+  const bodyBase = (Object.entries(baseChars).sort((a, b) => b[1] - a[1])[0] || [""])[0];
+  const styleKey = f => {
+    const fi = f && fontInfo[f]; if (!fi) return null;
+    let k = fi.mono ? "m" : (fi.base && fi.base !== bodyBase ? (fi.fam === "serif" ? "r" : "s") : "");
+    return k + (fi.b ? "b" : "") + (fi.i ? "i" : "");
+  };
+  const wrapRun = (k, h) => {
+    if (k.includes("i")) h = `<em>${h}</em>`;
+    if (k.includes("b")) h = `<strong>${h}</strong>`;
+    const c = { m: "f-mono", s: "f-sans", r: "f-alt" }[k[0]];
+    return c ? `<span class="${c}">${h}</span>` : h;
+  };
+  const fmt = p => {
+    if (!p.toks || !Object.keys(fontInfo).length) return esc(p.text);
+    const runs = [];
+    for (const tk of p.toks) {
+      const t = tk.t.replace(/\s+/g, " "); if (!t) continue;
+      const last = runs[runs.length - 1], k = styleKey(tk.f);
+      if (last && (k === null || !t.trim() || k === last.k)) { last.t += t; continue; }
+      runs.push({ k: k || "", t });
+    }
+    let h = "";
+    runs.forEach((r, i) => {
+      let t = r.t;
+      if (i === 0) t = t.replace(/^\s+/, "");
+      if (i === runs.length - 1) t = t.replace(/\s+$/, "");
+      if (h.endsWith(" ") && t.startsWith(" ")) t = t.slice(1);
+      const lead = r.k && /^\s/.test(t) ? " " : "", trail = r.k && /\s$/.test(t) && i < runs.length - 1 ? " " : "";
+      if (r.k) t = t.trim();
+      h += t ? lead + wrapRun(r.k, esc(t)) + trail : lead + trail;
+    });
+    return h.replace(/ {2,}/g, " ") || esc(p.text);
+  };
+  const renderPara = p => {
+    if (SCENE_RX.test(p.text) && p.text.replace(/\s/g, "").length) return `<hr>`;
+    if (p.head) return `<h3>${esc(p.text)}</h3>`;
+    if (p.center) return `<p class="c">${fmt(p)}</p>`;
+    if (p.quote && !note) return `<blockquote><p>${fmt(p)}</p></blockquote>`;
+    return `<p>${fmt(p)}</p>`;
+  };
+  const newChap = title => { chap = { title, parts: [] }; chapters.push(chap); note = null; section = "text"; };
+  const closeNote = () => { note = null; };
+  for (const p of paras) {
+    const t = p.text, key = labelKey(t);
+    if (DROP_RX.some(r => r.test(t))) continue;
+    if (LABELS[key]) {
+      if (section === "about" && (key === "summary" || key === "notes")) { about.blocks.push({ label: LABELS[key], paras: [] }); note = about.blocks[about.blocks.length - 1]; note.about = true; continue; }
+      if (!chap) newChap("");
+      note = { label: LABELS[key], paras: [], sticky: STICKY.has(key) }; chap.parts.push(note); continue;
+    }
+    if (CHAP_RX.test(t) && t.length < 150 && (p.head || p.lines.length <= 2)) { newChap(t); continue; }
+    if (section === "about") {
+      const m = FIELD_RX.exec(t);
+      if (m) { lastField = [m[1], m[2]]; about.fields.push(lastField); closeNote(); continue; }
+      if (note && note.about) {
+        // Summary/notes are indented quotes; a paragraph back at the margin means the fic has started.
+        if (note.paras.length && !p.quote && about.fields.length) { newChap(""); chap.parts.push(p); continue; }
+        note.paras.push(p); continue;
+      }
+      if (!about.fields.length || (!about.blocks.length && (p.head || /^by\s+\S/i.test(t)) && t.length < 200)) { about.titleParas.push(p); continue; }
+      if (lastField && !about.blocks.length && p.minX > margin + body) { lastField[1] += " " + t; continue; }
+      newChap(""); chap.parts.push(p); continue;
+    }
+    if (!chap) newChap("");
+    if (note && !note.sticky && note.paras.length && !p.quote) note = null;
+    if (note) { note.paras.push(p); continue; }
+    chap.parts.push(p);
+  }
+
+  // Title and author
+  const tp = about.titleParas;
+  let title = clean(info.Title), author = clean(info.Author);
+  const headT = tp.find(p => p.head);
+  title = title.replace(/\s*\[Archive of Our Own\]\s*$/i, "");
+  if (headT && (!title || /^untitled|\.pdf$|^microsoft|^document/i.test(title) || title.startsWith(headT.text + " - "))) title = headT.text;
+  const byP = tp.find(p => /^by\s+/i.test(p.text));
+  if (byP) author = byP.text.replace(/^by\s+/i, "");
+  else if (!author && headT) { const i = tp.indexOf(headT); if (tp[i + 1] && !tp[i + 1].head) author = tp[i + 1].text; }
+  if (!title) title = filename.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
+
+  const renderParts = parts => parts.map(x => x.paras ? (x.paras.length ? noteHtml(x.label, x.paras.map(renderPara).join("")) : "") : renderPara(x)).join("");
+  let aboutHtml = "";
+  for (const b of about.blocks) aboutHtml += `<h2 class="lbl">${esc(b.label)}</h2>` + b.paras.map(p => `<p>${fmt(p)}</p>`).join("");
+  const extra = tp.filter(p => p !== headT && p !== byP);
+  if (extra.length && !aboutHtml) aboutHtml = extra.map(renderPara).join("");
+  const outChapters = chapters.map(c => ({ title: c.title || "", html: renderParts(c.parts) })).filter(c => c.html || c.title);
+  if (!outChapters.length) outChapters.push({ title, html: paras.map(renderPara).join("") });
+  outChapters.forEach((c, i) => { if (!c.title) c.title = outChapters.length === 1 ? title : (i === 0 ? "Beginning" : "Part " + (i + 1)); });
+  const wm = /archiveofourown\.org\/works\/\s*(\d+)/i.exec(lines.map(l => l.text).join(" "));
+  return { title, author, about: aboutHtml, fields: about.fields, chapters: outChapters, workId: wm ? wm[1] : "" };
+}
+
+
+
+/* ---------------- library info: shelves, series, words, time ---------------- */
+const lib = LS.get("lib", {});
+const saveLib = () => LS.set("lib", lib);
+const TAG_FIELDS = /^(fandoms?|relationships?|characters?|additional tags)$/i;
+const unesc = t => t.replace(/&nbsp;/g, " ").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&");
+const plainText = h => clean(unesc(String(h || "").replace(/<\/(p|div|li|h\d|blockquote|dd|dt)>|<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, "")));
+const ficField = (f, rx) => { const x = (f.fields || []).find(([k]) => rx.test(k)); return x ? clean(x[1]) : ""; };
+const splitList = v => String(v || "").split(/,\s*/).map(clean).filter(Boolean);
+const ficTags = f => (f.fields || []).filter(([k]) => TAG_FIELDS.test(k)).flatMap(([, v]) => splitList(v));
+const ficSummary = f => plainText(String(f.about || "").replace(/<h2 class="lbl">\s*(Notes|Series this work belongs to)[\s\S]*$/i, "").replace(/<h2 class="lbl">\s*Summary\s*<\/h2>/i, ""));
+function seriesOf(f) {
+  const m = /Part\s+(\d+)\s+of\s+(.+?)(?:\s*,\s*Part\s+\d+\s+of\s.*)?$/i.exec(ficField(f, /^series$/i));
+  return m ? { part: Number(m[1]), name: clean(m[2]) } : null;
+}
+function chaptersInfo(f) {
+  const all = (f.fields || []).map(x => x[0] + ": " + x[1]).join(" ");
+  const m = /Chapters:\s*(\d+)\s*\/\s*(\d+|\?)/i.exec(all);
+  if (!m) return null;
+  return { done: +m[1], total: m[2] === "?" ? null : +m[2], complete: m[2] !== "?" && +m[1] >= +m[2] };
+}
+function pct(f) {
+  const pr = LS.get("pos:" + f.id, null); if (!pr) return 0;
+  const n = f.chapters.length; const ch = Math.max(0, pr.ch);
+  return Math.min(100, Math.round(((ch + (pr.ch < 0 ? 0 : pr.frac || 0)) / n) * 100));
+}
+function statusOf(f) {
+  const m = lib[f.id]; if (m && m.s) return m.s;
+  const p = pct(f); return p >= 99 ? "finished" : p > 0 ? "reading" : "toread";
+}
+function setStatus(f, s) {
+  const m = lib[f.id] || (lib[f.id] = {});
+  m.s = s; if (s === "finished") m.fin ||= Date.now(); else delete m.fin;
+  saveLib();
+}
+const chWordsCache = new Map();
+function chWords(f, i) {
+  if (i < 0) return 0;
+  const k = f.id + ":" + i; let n = chWordsCache.get(k);
+  if (n == null) { n = (plainText(f.chapters[i].html).match(/\S+/g) || []).length; chWordsCache.set(k, n); }
+  return n;
+}
+function fmtMins(m) {
+  m = Math.round(m); if (m < 1) return "under a minute";
+  if (m < 60) return m + " min";
+  const h = Math.floor(m / 60), r = m % 60; return r ? `${h} h ${r} min` : `${h} h`;
+}
+const minsLeft = f => (f.words || 0) * (1 - pct(f) / 100) / settings.wpm;
+
+/* ---------------- reading stats ---------------- */
+const stats = Object.assign({ days: {}, read: {}, fin: {} }, LS.get("stats", {}));
+const saveStats = () => LS.set("stats", stats);
+const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const today = () => stats.days[dayKey()] || (stats.days[dayKey()] = { s: 0, w: 0 });
+let activeUntil = 0;
+const poke = () => { activeUntil = Date.now() + 90000; };
+setInterval(() => {
+  if (fic && (TTS.playing || (!document.hidden && Date.now() < activeUntil))) { today().s += 15; saveStats(); }
+}, 15000);
+function markChapterRead(i) {
+  if (!fic || i < 0) return;
+  const k = fic.id + ":" + i;
+  if (!stats.read[k]) { stats.read[k] = 1; today().w += chWords(fic, i); saveStats(); }
+  if (i === fic.chapters.length - 1 && (statusOf(fic) !== "finished" || !stats.fin[fic.id])) finishFic(fic);
+}
+function finishFic(f) {
+  setStatus(f, "finished");
+  stats.fin[f.id] = { t: f.title, a: f.author, w: f.words, d: Date.now(), fandom: ficField(f, /^fandoms?$/i), ships: ficField(f, /^relationships?$/i), tags: ficTags(f).slice(0, 40) };
+  saveStats();
+}
+
+/* ---------------- shelf ---------------- */
+let fics = [];
+const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+const ICON_STAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
+const STATUS_NAMES = { toread: "To read", reading: "Reading", finished: "Finished" };
+let shelfTab = LS.get("tab", "all");
+let myShelves = LS.get("shelves", []);
+const saveShelves = () => LS.set("shelves", myShelves);
+const onShelf = (f, name) => ((lib[f.id] || {}).shelves || []).includes(name);
+const filters = Object.assign({ fandom: "", ship: "", rating: "", done: "", hide: [] }, LS.get("filters", {}));
+const hayCache = new Map();
+function haystack(f) {
+  let h = hayCache.get(f.id);
+  if (!h) { h = [f.title, f.author, ...(f.fields || []).map(x => x[1]), ficSummary(f), (lib[f.id] || {}).note || ""].join(" \n ").toLowerCase(); hayCache.set(f.id, h); }
+  return h;
+}
+function passesFilters(f) {
+  if (filters.fandom && !splitList(ficField(f, /^fandoms?$/i)).includes(filters.fandom)) return false;
+  if (filters.ship && !splitList(ficField(f, /^relationships?$/i)).includes(filters.ship)) return false;
+  if (filters.rating && ficField(f, /^rating$/i) !== filters.rating) return false;
+  if (filters.done) {
+    const c = chaptersInfo(f), done = c ? c.complete : true;
+    if (filters.done === "complete" ? !done : done) return false;
+  }
+  if (filters.hide.length) {
+    const tags = ficTags(f).map(t => t.toLowerCase());
+    if (filters.hide.some(h => tags.includes(h.toLowerCase()))) return false;
+  }
+  return true;
+}
+const filterCount = () => ["fandom", "ship", "rating", "done"].filter(k => filters[k]).length + (filters.hide.length ? 1 : 0);
+async function renderShelf() {
+  const all = await DB.all();
+  if (!all.some(f => f.sample) && !LS.get("sampleRemoved", false)) { const s = sampleFic(); await DB.put(s); all.push(s); }
+  fics = all; hayCache.clear();
+  drawShelf(); updateWidget();
+}
+function updateWidget() {
+  if (!Android || !Android.setWidget) return;
+  try {
+    const id = lastFicId(), f = id && fics.find(x => x.id === id);
+    Android.setWidget(f ? f.title : "", f ? (f.author ? "by " + f.author + " · " : "") + progressText(f) : "");
+  } catch {}
+}
+/* ---------------- filters ---------------- */
+function countValues(rx, multi) {
+  const c = new Map();
+  for (const f of fics) { const v = ficField(f, rx); for (const x of (multi ? splitList(v) : v ? [v] : [])) c.set(x, (c.get(x) || 0) + 1); }
+  return [...c.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+}
+function fillSelect(sel, entries, current, anyLabel) {
+  sel.innerHTML = `<option value="">${anyLabel}</option>` + entries.map(([v, n]) => `<option value="${esc(v)}">${esc(v)} (${n})</option>`).join("");
+  if (current && !entries.some(([v]) => v === current)) sel.insertAdjacentHTML("beforeend", `<option value="${esc(current)}">${esc(current)}</option>`);
+  sel.value = current || "";
+}
+function drawFilterSheet() {
+  fillSelect($("#f-fandom"), countValues(/^fandoms?$/i, true), filters.fandom, "Any fandom");
+  fillSelect($("#f-ship"), countValues(/^relationships?$/i, true), filters.ship, "Any ship");
+  fillSelect($("#f-rating"), countValues(/^rating$/i, false), filters.rating, "Any rating");
+  $$("#f-done button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === filters.done)));
+  $("#f-hide-list").innerHTML = filters.hide.length
+    ? filters.hide.map((t, i) => `<button type="button" data-i="${i}" aria-label="Stop hiding ${esc(t)}">${esc(t)} ✕</button>`).join("")
+    : `<small class="hint">No hidden tags. Fics with a tag you add here won't show on your shelf.</small>`;
+  const all = new Set(); fics.forEach(f => ficTags(f).forEach(t => all.add(t)));
+  $("#f-tag-list").innerHTML = [...all].sort().map(t => `<option value="${esc(t)}"></option>`).join("");
+}
+function saveFilters() { LS.set("filters", filters); drawFilterSheet(); drawShelf(); }
+function clearFilters() { Object.assign(filters, { fandom: "", ship: "", rating: "", done: "", hide: [] }); saveFilters(); }
+$("#filter-btn").addEventListener("click", () => { drawFilterSheet(); openSheet("#sheet-filter"); });
+$("#f-fandom").addEventListener("change", e => { filters.fandom = e.target.value; saveFilters(); });
+$("#f-ship").addEventListener("change", e => { filters.ship = e.target.value; saveFilters(); });
+$("#f-rating").addEventListener("change", e => { filters.rating = e.target.value; saveFilters(); });
+$("#f-done").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; filters.done = b.dataset.v; saveFilters(); });
+function addHidden() { const t = clean($("#f-hide-input").value); if (t && !filters.hide.some(h => h.toLowerCase() === t.toLowerCase())) filters.hide.push(t); $("#f-hide-input").value = ""; saveFilters(); }
+$("#f-hide-add").addEventListener("click", addHidden);
+$("#f-hide-input").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addHidden(); } });
+$("#f-hide-list").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (!b) return; filters.hide.splice(Number(b.dataset.i), 1); saveFilters(); });
+$("#f-clear").addEventListener("click", clearFilters);
+
+/* ---------------- reader ---------------- */
+let fic = null, idx = 0, curPage = 0, pages = 1, saveT;   // idx -1 = info page
+const GAP = 40;
+const paged = () => settings.mode === "pages" && !!fic;
+const hasAbout = f => !!(f.about || (f.fields && f.fields.length));
+function minIdx() { return settings.about && hasAbout(fic) ? -1 : 0; }
+async function openFic(id) {
+  fic = fics.find(f => f.id === id) || (await DB.all()).find(f => f.id === id);
+  if (!fic) return;
+  LS.set("opened:" + id, Date.now());
+  if (statusOf(fic) === "toread" || !(lib[id] && lib[id].s)) { if (statusOf(fic) !== "finished") setStatus(fic, "reading"); }
+  hls = LS.get("hl:" + id, []); bms = LS.get("bm:" + id, []);
+  if (lib[id] && lib[id].newCh) { delete lib[id].newCh; saveLib(); }
+  const pos = LS.get("pos:" + id, null);
+  for (const v of ["home", "me", "stats"]) $("#" + v).hidden = true;
+  $("#tabbar").hidden = true; $("#open-btn").hidden = true; document.body.classList.remove("has-nav"); setControls(false);
+  $("#reader").hidden = false; $("#progress").hidden = false;
+  showHint();
+  document.body.classList.add("reading");
+  document.body.classList.toggle("paged", paged());
+  $("#pager").hidden = true;
+  poke(); updVol();
+  if (pos) { idx = Math.max(minIdx(), Math.min(fic.chapters.length - 1, pos.ch)); showChapter(idx, pos.ch === idx ? pos.frac : 0); }
+  else showChapter(minIdx(), 0);
+  try { history.replaceState(null, "", "#reading"); } catch {}
+  updateWidget();
+}
+function closeReader() {
+  TTS.stop(); AS.stop(); savePos(); fic = null;
+  $("#reader").hidden = true; $("#progress").hidden = true; $("#hl-bar").hidden = true;
+  $("#tabbar").hidden = false; document.body.classList.add("has-nav"); setControls(false); showView("home");
+  document.body.classList.remove("reading", "paged"); closeSheets(); updVol();
+  const pg = $("#page"); pg.style.height = ""; pg.style.columnWidth = "";
+  try { history.replaceState(null, "", location.pathname + location.search); } catch {}
+  renderShelf(); window.scrollTo(0, 0);
+}
+function chapterLabel(i) { return i < 0 ? "About this fic" : (fic.chapters.length > 1 ? `Chapter ${i + 1} of ${fic.chapters.length}` : ""); }
+function showChapter(i, frac = 0) {
+  if (TTS.playing && !TTS.advancing) TTS.stop();
+  setControls(false);
+  idx = i;
+  const page = $("#page"), n = fic.chapters.length;
+  let html = "";
+  if (i < 0) {
+    html += `<header class="ch-head"><p class="eyebrow">About this fic</p><h1>${esc(fic.title)}</h1>${fic.author ? `<p class="by">by ${esc(fic.author)}</p>` : ""}<p class="ch-time">About ${fmtMins((fic.words || 0) / settings.wpm)} to read</p></header>`;
+    html += `<div class="about" id="content">`;
+    if (fic.fields && fic.fields.length) html += `<dl>${fic.fields.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`;
+    html += fic.about || "";
+    html += `</div>`;
+  } else {
+    const c = fic.chapters[i];
+    const showTitle = c.title && !(n === 1 && c.title === fic.title);
+    html += `<header class="ch-head">${n > 1 ? `<p class="eyebrow">${esc(chapterLabel(i))}</p>` : ""}<h1>${esc(showTitle ? c.title : fic.title)}</h1>${(i === 0 && fic.author && !(settings.about && hasAbout(fic))) ? `<p class="by">by ${esc(fic.author)}</p>` : ""}<p class="ch-time">${fmtMins(chWords(fic, i) / settings.wpm)} read</p></header>`;
+    html += `<div class="content" id="content">${c.html}</div>`;
+  }
+  const prevI = i - 1 >= minIdx() ? i - 1 : null, nextI = i + 1 < n ? i + 1 : null;
+  html += `<nav class="ch-nav" aria-label="Chapter navigation">`;
+  if (prevI !== null) html += `<button type="button" data-go="${prevI}"><small>Previous</small><span>${esc(prevI < 0 ? "About this fic" : fic.chapters[prevI].title)}</span></button>`;
+  if (nextI !== null) html += `<button type="button" class="next primary" data-go="${nextI}"><small>${i < 0 ? "Start reading" : "Next chapter"}</small><span>${esc(fic.chapters[nextI].title)}</span></button>`;
+  else {
+    const s = seriesOf(fic);
+    const nx = s && fics.find(g => { const t = seriesOf(g); return t && t.name === s.name && t.part === s.part + 1; });
+    if (nx) html += `<button type="button" class="next primary" data-fic="${esc(nx.id)}"><small>Next in the series</small><span>Part ${s.part + 1}: ${esc(nx.title)}</span></button>`;
+    html += `<button type="button" class="next" data-shelf><small>All done</small><span>Back to your shelf</span></button>`;
+  }
+  html += `</nav>`;
+  if (nextI === null && i >= 0) html += `<p class="the-end">The end. If you loved it, go leave the author some kudos.</p>`;
+  page.innerHTML = html;
+  $$("details.fn-note", page).forEach(d => d.open = settings.notes);
+  applyHighlights();
+  $("#where").textContent = i < 0 ? "About this fic" : (n > 1 ? `${i + 1} / ${n} · ${fic.chapters[i].title}` : fic.title);
+  $("#topbar").classList.remove("away");
+  $("#hl-bar").hidden = true;
+  requestAnimationFrame(() => {
+    if (paged()) { layoutPaged(); goPage(Math.round(frac * (pages - 1))); }
+    else { layoutPaged(); const max = document.documentElement.scrollHeight - innerHeight; window.scrollTo(0, frac > 0 ? Math.round(frac * max) : 0); }
+    updateProgress(); savePos();
+  });
+}
+function layoutPaged() {
+  const pg = $("#page");
+  if (!paged()) { pg.style.height = ""; pg.style.columnWidth = ""; pg.scrollLeft = 0; $("#pager").hidden = true; return; }
+  const cs = getComputedStyle(document.documentElement);
+  const avail = innerHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
+  const used = ($("#player").hidden ? 0 : $("#player").offsetHeight) + ($("#auto-bar").hidden ? 0 : $("#auto-bar").offsetHeight) + 4;
+  pg.style.height = Math.max(220, avail - used) + "px";
+  pg.style.columnWidth = pg.clientWidth + "px";
+  pages = Math.max(1, Math.round((pg.scrollWidth + GAP) / (pg.clientWidth + GAP)));
+}
+function goPage(n) {
+  const pg = $("#page");
+  curPage = Math.max(0, Math.min(pages - 1, n));
+  pg.scrollLeft = curPage * (pg.clientWidth + GAP);
+  updatePager(); updateProgress(); poke();
+  if (curPage === pages - 1) markChapterRead(idx);
+  clearTimeout(saveT); saveT = setTimeout(savePos, 300);
+}
+function updatePager() {
+  if (!paged() || !fic) return;
+  $("#pager-l").textContent = `Page ${curPage + 1} of ${pages}`;
+  const left = chWords(fic, idx) * (1 - readFrac()) / settings.wpm;
+  $("#pager-r").textContent = idx < 0 ? "" : left >= 1 ? `${fmtMins(left)} left in chapter` : "End of chapter";
+}
+function flip(d) {
+  if (!fic) return;
+  poke(); setControls(false);
+  if (paged()) {
+    if (d > 0 && curPage >= pages - 1) { if (idx + 1 < fic.chapters.length) showChapter(idx + 1, 0); return; }
+    if (d < 0 && curPage <= 0) { if (idx - 1 >= minIdx()) showChapter(idx - 1, 1); return; }
+    goPage(curPage + d);
+  } else {
+    window.scrollBy({ top: d * innerHeight * 0.85, behavior: "smooth" });
+  }
+}
+function scrollFrac() { const max = document.documentElement.scrollHeight - innerHeight; return max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 1; }
+function readFrac() { return paged() ? (pages > 1 ? curPage / (pages - 1) : 1) : scrollFrac(); }
+function savePos() { if (fic) LS.set("pos:" + fic.id, { ch: idx, frac: idx < 0 ? 0 : +readFrac().toFixed(4) }); }
+function updateProgress() {
+  if (!fic) return;
+  const n = fic.chapters.length, f = idx < 0 ? 0 : (idx + readFrac()) / n;
+  $("#progress i").style.width = (f * 100).toFixed(2) + "%";
+}
+function relayout(f) {
+  requestAnimationFrame(() => {
+    document.body.classList.toggle("paged", paged());
+    layoutPaged();
+    if (paged()) goPage(Math.round(f * (pages - 1)));
+    else { const max = document.documentElement.scrollHeight - innerHeight; scrollTo(0, Math.round(f * max)); }
+    updateProgress();
+  });
+}
+$("#page").addEventListener("click", e => {
+  const b = e.target.closest("[data-go]"); if (b) return showChapter(Number(b.dataset.go), 0);
+  const nf = e.target.closest("[data-fic]"); if (nf) { const id = nf.dataset.fic; savePos(); TTS.stop(); return openFic(id); }
+  if (e.target.closest("[data-shelf]")) { if (idx === fic.chapters.length - 1) markChapterRead(idx); return closeReader(); }
+  const mk = e.target.closest("mark[data-hl]"); if (mk && getSelection().isCollapsed) return openHlSheet(mk.dataset.hl);
+});
+// Taps anywhere on the reading screen (including the side margins): edges turn pages, the middle shows the controls.
+document.addEventListener("click", e => {
+  if (!fic || e.target.closest("#topbar, #quick, #player, #auto-bar, #hl-bar, .sheet, .scrim, .coach, .setup, a, button, summary, select, input, textarea, mark, .toast")) return;
+  if (!getSelection().isCollapsed) return;
+  const x = e.clientX / innerWidth;
+  if (paged() && x < 0.28) flip(-1);
+  else if (paged() && x > 0.72) flip(1);
+  else setControls(!document.body.classList.contains("controls"));
+});
+let touch = null;
+$("#page").addEventListener("touchstart", e => { if (paged() && e.touches.length === 1) touch = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
+$("#page").addEventListener("touchend", e => {
+  if (!touch || !paged()) return;
+  const t = e.changedTouches[0], dx = t.clientX - touch.x, dy = t.clientY - touch.y; touch = null;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && getSelection().isCollapsed) flip(dx < 0 ? 1 : -1);
+}, { passive: true });
+$("#back").addEventListener("click", closeReader);
+let lastY = 0;
+addEventListener("scroll", () => {
+  if (!fic || paged()) return;
+  const y = scrollY;
+  if (document.body.classList.contains("controls") && Math.abs(y - ctrlY) > 60) setControls(false);
+  lastY = y; updateProgress(); poke();
+  if (scrollFrac() >= 0.92) markChapterRead(idx);
+  clearTimeout(saveT); saveT = setTimeout(savePos, 300);
+}, { passive: true });
+let resizeT;
+addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (fic && paged()) relayout(readFrac()); }, 150); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (fic && paged()) relayout(readFrac()); });
+addEventListener("pagehide", () => { savePos(); updateWidget(); });
+document.addEventListener("visibilitychange", () => { if (document.hidden) savePos(); });
+addEventListener("keydown", e => {
+  if (!fic || e.target.closest("input, select, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === "Escape") { if (!$("#scrim").hidden) closeSheets(); return; }
+  if (!$("#scrim").hidden) return;
+  if (paged()) {
+    if (["ArrowRight", "PageDown", " "].includes(e.key)) { e.preventDefault(); flip(1); }
+    if (["ArrowLeft", "PageUp"].includes(e.key)) { e.preventDefault(); flip(-1); }
+    return;
+  }
+  if (e.key === "ArrowRight" && idx + 1 < fic.chapters.length) showChapter(idx + 1, 0);
+  if (e.key === "ArrowLeft" && idx - 1 >= minIdx()) showChapter(idx - 1, 0);
+});
+function updVol() { try { if (Android && Android.setVolumeKeys) Android.setVolumeKeys(!!(fic && settings.volKeys && !TTS.playing)); } catch {} }
+window.ficNookVolume = d => flip(d);
+
+/* ---------------- highlights & notes ---------------- */
+const BLOCK_SEL = "p, li, h2, h3, h4, h5, h6, pre, dt, dd";
+let hls = [], pendingSel = null, selT, hlOpen = null;
+const saveHls = () => { if (fic) LS.set("hl:" + fic.id, hls); };
+const blocks = () => { const c = $("#content"); return c ? $$(BLOCK_SEL, c) : []; };
+function offsetIn(block, node, off) { const r = document.createRange(); r.selectNodeContents(block); r.setEnd(node, off); return r.toString().length; }
+function wrapRange(block, s, e, h) {
+  const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+  let pos = 0, node; const targets = [];
+  while ((node = walker.nextNode())) {
+    const len = node.data.length, a = Math.max(s, pos), z = Math.min(e, pos + len);
+    if (a < z) targets.push([node, a - pos, z - pos]);
+    pos += len; if (pos >= e) break;
+  }
+  for (const [nd, a, z] of targets) {
+    let t = nd; if (a > 0) t = t.splitText(a);
+    if (z - a < t.data.length) t.splitText(z - a);
+    const m = document.createElement("mark"); m.dataset.hl = h.id; if (h.note) m.className = "has-note";
+    t.parentNode.insertBefore(m, t); m.appendChild(t);
+  }
+}
+function applyHighlights() {
+  if (!fic || idx < 0) return;
+  const bl = blocks();
+  for (const h of hls.filter(x => x.ch === idx)) {
+    const b = bl[h.b];
+    if (b && b.textContent.slice(h.s, h.e) === h.text) wrapRange(b, h.s, h.e, h);
+  }
+}
+function checkSel() {
+  const bar = $("#hl-bar"), sel = getSelection();
+  pendingSel = null;
+  if (!fic || idx < 0 || !sel.rangeCount || sel.isCollapsed) { bar.hidden = true; return; }
+  const r = sel.getRangeAt(0), content = $("#content");
+  if (!content || !content.contains(r.startContainer)) { bar.hidden = true; return; }
+  const startEl = (r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement).closest(BLOCK_SEL);
+  if (!startEl || !content.contains(startEl)) { bar.hidden = true; return; }
+  const s = offsetIn(startEl, r.startContainer, r.startOffset);
+  const e = startEl.contains(r.endContainer) ? offsetIn(startEl, r.endContainer, r.endOffset) : startEl.textContent.length;
+  const text = startEl.textContent.slice(s, e);
+  if (!text.trim()) { bar.hidden = true; return; }
+  pendingSel = { b: blocks().indexOf(startEl), s, e, text };
+  bar.hidden = false;
+}
+document.addEventListener("selectionchange", () => { clearTimeout(selT); selT = setTimeout(checkSel, 250); });
+function addHighlight(withNote) {
+  if (!pendingSel || !fic) return;
+  const h = { id: "h" + Date.now().toString(36), ch: idx, ...pendingSel, note: "", at: Date.now() };
+  hls.push(h); saveHls();
+  try { getSelection().removeAllRanges(); } catch {}
+  $("#hl-bar").hidden = true; pendingSel = null;
+  const b = blocks()[h.b]; if (b) wrapRange(b, h.s, h.e, h);
+  if (withNote) openHlSheet(h.id); else toast("Highlighted. Tap it to add a note.", 2500);
+}
+$("#hl-add").addEventListener("mousedown", e => e.preventDefault());
+$("#hl-add-note").addEventListener("mousedown", e => e.preventDefault());
+$("#hl-add").addEventListener("click", () => addHighlight(false));
+$("#hl-add-note").addEventListener("click", () => addHighlight(true));
+function openHlSheet(id) {
+  const h = hls.find(x => x.id === id); if (!h) return;
+  hlOpen = h;
+  $("#hl-quote").textContent = "“" + h.text + "”";
+  $("#hl-note").value = h.note || "";
+  openSheet("#sheet-hl");
+  if (!h.note) setTimeout(() => $("#hl-note").focus(), 50);
+}
+$("#hl-save").addEventListener("click", () => {
+  if (!hlOpen) return;
+  hlOpen.note = $("#hl-note").value.trim(); saveHls();
+  $$(`mark[data-hl="${hlOpen.id}"]`).forEach(m => m.classList.toggle("has-note", !!hlOpen.note));
+  closeSheets(); toast(hlOpen.note ? "Note saved." : "Highlight saved.", 2000);
+});
+$("#hl-remove").addEventListener("click", () => {
+  if (!hlOpen) return;
+  const id = hlOpen.id; hls = hls.filter(x => x.id !== id); saveHls();
+  $$(`mark[data-hl="${id}"]`).forEach(m => { const p = m.parentNode; m.replaceWith(...m.childNodes); p.normalize(); });
+  closeSheets(); toast("Highlight removed.", 2000);
+});
+/* ---------------- bookmarks ---------------- */
+let bms = [];
+const saveBms = () => { if (fic) LS.set("bm:" + fic.id, bms); };
+function firstVisibleText() {
+  if (idx < 0) return "About this fic";
+  const pg = $("#page"), pr = pg.getBoundingClientRect();
+  for (const el of blocks()) {
+    if (el.closest("details:not([open])")) continue;
+    const r = el.getBoundingClientRect(); if (!r.width && !r.height) continue;
+    const vis = paged() ? (r.right > pr.left + 2 && r.left < pr.right - 2) : r.bottom > 60;
+    if (vis) { const t = clean(el.textContent); if (t) return t.length > 110 ? t.slice(0, 110) + "…" : t; }
+  }
+  return "";
+}
+function bmHere() {
+  if (!fic) return null;
+  const f = idx < 0 ? 0 : readFrac(), tol = paged() ? 0.5 / Math.max(1, pages - 1 || 1) : 0.03;
+  return bms.find(b => b.ch === idx && Math.abs(b.frac - f) <= tol) || null;
+}
+function updBmBtn() { $("#bm-btn").setAttribute("aria-pressed", String(!!bmHere())); }
+$("#bm-btn").addEventListener("click", () => {
+  const here = bmHere();
+  if (here) { bms = bms.filter(b => b !== here); saveBms(); updBmBtn(); toast("Bookmark removed.", 2000); return; }
+  bms.push({ id: "b" + Date.now().toString(36), ch: idx, frac: idx < 0 ? 0 : +readFrac().toFixed(4), text: firstVisibleText(), at: Date.now() });
+  saveBms(); updBmBtn(); toast("Bookmarked. Find it under Chapters.", 2500);
+});
+function drawBms() {
+  const sorted = bms.slice().sort((a, b) => a.ch - b.ch || a.frac - b.frac);
+  $("#bm-h").textContent = sorted.length ? `Your bookmarks (${sorted.length})` : "Your bookmarks";
+  $("#bm-list").innerHTML = sorted.length ? sorted.map(b => `<li><button class="go" type="button" data-bm="${b.id}"><small>${b.ch < 0 ? "About this fic" : fic.chapters.length > 1 ? "Chapter " + (b.ch + 1) : "Bookmark"} · ${Math.round((b.ch < 0 ? 0 : b.frac) * 100)}% through</small>${b.text ? `<em>${esc(b.text)}</em>` : ""}</button><button class="x" type="button" data-bmx="${b.id}" aria-label="Remove bookmark">${ICON_X}</button></li>`).join("")
+    : `<li><small class="hint" style="color:var(--muted);padding:12px 8px">Tap <b>Bookmark</b> in the controls to save your spot.</small></li>`;
+}
+$("#bm-list").addEventListener("click", e => {
+  const x = e.target.closest("[data-bmx]");
+  if (x) { bms = bms.filter(b => b.id !== x.dataset.bmx); saveBms(); drawBms(); updBmBtn(); return; }
+  const g = e.target.closest("[data-bm]"); if (!g) return;
+  const b = bms.find(v => v.id === g.dataset.bm); if (!b) return;
+  closeSheets(); showChapter(Math.max(minIdx(), b.ch), b.frac);
+});
+/* ---------------- quote cards ---------------- */
+const QC_STYLES = {
+  dark: { bg: "#17171c", fg: "#ecebe6", mu: "#9a98a3", ac: "#a5a8f2" },
+  paper: { bg: "#f6f4ee", fg: "#26252b", mu: "#6c6a74", ac: "#4446a0" },
+  rose: { bg: "#f7e4e4", fg: "#4a2430", mu: "#8a5a66", ac: "#b0405e" },
+  warm: { bg: "#1d1812", fg: "#efd8b0", mu: "#a8916f", ac: "#e3a55e" }
+};
+const qc = { text: "", title: "", author: "", style: LS.get("qcStyle", "dark") };
+function wrapLines(x, text, max) {
+  const out = []; let cur = "";
+  for (const w of text.split(/\s+/)) { const t = cur ? cur + " " + w : w; if (cur && x.measureText(t).width > max) { out.push(cur); cur = w; } else cur = t; }
+  if (cur) out.push(cur); return out;
+}
+function fitLine(x, t, max) { if (x.measureText(t).width <= max) return t; while (t.length > 1 && x.measureText(t + "…").width > max) t = t.slice(0, -1); return t.trim() + "…"; }
+function drawQuote() {
+  const c = $("#qc-canvas"), x = c.getContext("2d"), s = QC_STYLES[qc.style] || QC_STYLES.dark, W = 1080, H = 1350, pad = 110;
+  const serif = '"Literata", Georgia, "Times New Roman", serif', sans = '"Atkinson Hyperlegible", system-ui, sans-serif';
+  x.fillStyle = s.bg; x.fillRect(0, 0, W, H); x.textBaseline = "top"; x.textAlign = "left";
+  x.fillStyle = s.ac; x.font = `700 240px ${serif}`; x.fillText("“", pad - 14, 70);
+  const top = 330, bottom = H - pad - 170;
+  let size = 66, lines = [];
+  for (; size >= 28; size -= 2) { x.font = `500 ${size}px ${serif}`; lines = wrapLines(x, qc.text, W - pad * 2); if (lines.length * size * 1.42 <= bottom - top) break; }
+  const lh = size * 1.42, maxLines = Math.floor((bottom - top) / lh);
+  if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] = fitLine(x, lines[maxLines - 1] + "…", W - pad * 2); }
+  let y = top + Math.max(0, (bottom - top - lines.length * lh) / 2 - 20);
+  x.fillStyle = s.fg; lines.forEach((l, i) => x.fillText(l, pad, y + i * lh));
+  const by = H - pad - 110;
+  x.fillStyle = s.ac; x.fillRect(pad, by, 90, 6);
+  x.fillStyle = s.fg; x.font = `700 40px ${sans}`; x.fillText(fitLine(x, qc.title, W - pad * 2), pad, by + 30);
+  if (qc.author) { x.fillStyle = s.mu; x.font = `400 34px ${sans}`; x.fillText(fitLine(x, "by " + qc.author, W - pad * 2), pad, by + 84); }
+  $$("#qc-style button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === qc.style)));
+}
+function openQuoteCard(text, f) {
+  qc.text = clean(text); qc.title = f.title; qc.author = f.author || "";
+  openSheet("#sheet-qc"); drawQuote();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawQuote);
+}
+$("#hl-card").addEventListener("click", () => { if (hlOpen && fic) openQuoteCard(hlOpen.text, fic); });
+$("#qc-style").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (!b) return; qc.style = b.dataset.v; LS.set("qcStyle", qc.style); drawQuote(); });
+$("#qc-share").addEventListener("click", () => {
+  const c = $("#qc-canvas"), name = "Quote from " + qc.title.replace(/[^\w ]+/g, "").slice(0, 40).trim() + ".png";
+  if (Android && Android.shareImage) { try { Android.shareImage(c.toDataURL("image/png").split(",")[1], name); } catch { toast("Couldn't share the picture."); } return; }
+  c.toBlob(async blob => {
+    if (!blob) return toast("Couldn't make the picture.");
+    const file = new File([blob], name, { type: "image/png" });
+    try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast("Picture saved.", 2000);
+  }, "image/png");
+});
+
+function revealEl(el) {
+  if (!el) return;
+  if (paged()) {
+    const pg = $("#page");
+    const left = el.getBoundingClientRect().left - pg.getBoundingClientRect().left + pg.scrollLeft;
+    const p = Math.floor((left + 2) / (pg.clientWidth + GAP));
+    if (p !== curPage) goPage(p);
+  } else {
+    const r = el.getBoundingClientRect();
+    if (r.top < 70 || r.bottom > innerHeight - 90) el.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+}
+
+/* ---------------- read aloud ---------------- */
+const WebTTS = {
+  token: 0,
+  speak(texts, start, rate, cb) {
+    this.stop(); const tok = ++this.token;
+    for (let i = start; i < texts.length; i++) {
+      const u = new SpeechSynthesisUtterance(texts[i]); u.rate = rate;
+      u.onstart = () => { if (tok === this.token) cb("start", i); };
+      if (i === texts.length - 1) u.onend = () => { if (tok === this.token) cb("end", i); };
+      u.onerror = ev => { if (tok === this.token && !/cancel|interrupt/.test(ev.error || "")) cb("error", i); };
+      speechSynthesis.speak(u);
+    }
+  },
+  stop() { this.token++; try { speechSynthesis.cancel(); } catch {} }
+};
+const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+function chunkText(t) {
+  if (t.length <= 2500) return [t];
+  const parts = t.match(/[^.!?…]+[.!?…]+["'”’)\]]*\s*|[^.!?…]+$/g) || [t];
+  const out = []; let cur = "";
+  for (const p of parts) { if ((cur + p).length > 2500 && cur) { out.push(cur); cur = ""; } cur += p; }
+  if (cur) out.push(cur);
+  return out;
+}
+const TTS = {
+  playing: false, advancing: false, items: [], i: 0, sleepAt: 0, sleepCh: false, timer: null, lastEl: null,
+  native: !!(Android && Android.ttsSpeak),
+  available() { return this.native || ("speechSynthesis" in window); },
+  collect() {
+    const out = [];
+    const head = $("#page .ch-head h1"); if (head) out.push({ el: head, text: head.textContent });
+    for (const el of blocks()) {
+      if (el.closest("details:not([open])") || el.querySelector(BLOCK_SEL)) continue;
+      const t = clean(el.textContent); if (!t) continue;
+      for (const c of chunkText(t)) out.push({ el, text: c });
+    }
+    return out;
+  },
+  play(from) {
+    if (!fic) return;
+    this.items = this.collect();
+    if (!this.items.length) return;
+    if (from == null) {
+      from = this.items.findIndex(x => { const r = x.el.getBoundingClientRect(); return paged() ? r.left >= 0 && r.left < innerWidth && r.bottom > 0 : r.bottom > 70; });
+      if (from < 0) from = 0;
+    }
+    this.i = from; this.playing = true;
+    showPlayer();
+    const texts = this.items.map(x => x.text);
+    if (this.native) Android.ttsSpeak(JSON.stringify(texts), from, Number(settings.ttsRate));
+    else WebTTS.speak(texts, from, Number(settings.ttsRate), (t, i) => this.event(t, i));
+    updVol();
+  },
+  event(type, i) {
+    if (type === "start") {
+      if (!this.playing) return;
+      this.i = i; const it = this.items[i]; if (!it) return;
+      if (this.lastEl) this.lastEl.classList.remove("speaking");
+      it.el.classList.add("speaking"); this.lastEl = it.el; revealEl(it.el); poke();
+    } else if (type === "end") {
+      if (!this.playing) return;
+      markChapterRead(idx);
+      if (this.sleepCh) { this.stop(); toast("Sleep timer: stopped at the end of the chapter. Sleep well!"); return; }
+      if (idx + 1 < fic.chapters.length) {
+        this.advancing = true; showChapter(idx + 1, 0); this.advancing = false;
+        setTimeout(() => { if (this.playing) this.play(0); }, 400);
+      } else { this.stop(); toast("That's the end of the fic."); }
+    } else if (type === "sleep") {
+      if ($("#player").hidden) return;
+      this.stop(); toast("Sleep timer: reading stopped. Sleep well!");
+    } else if (type === "error") {
+      this.stop(); toast("Read aloud stopped. Check that your phone has a text-to-speech voice installed.");
+    }
+  },
+  halt() { if (this.native) { try { Android.ttsStop(); } catch {} } else WebTTS.stop(); },
+  pause() { this.halt(); this.playing = false; showPlayer(); updVol(); },
+  stop() {
+    this.halt(); this.playing = false; this.setSleep("0");
+    if (this.lastEl) this.lastEl.classList.remove("speaking"); this.lastEl = null;
+    $("#player").hidden = true; $("#tts-sleep").value = "0"; positionQuick();
+    if (fic && paged()) relayout(readFrac());
+    updVol();
+  },
+  setSleep(v) {
+    clearTimeout(this.timer); this.timer = null; this.sleepAt = 0; this.sleepCh = false;
+    if (this.native) { try { Android.ttsSleep(0); } catch {} }
+    if (v === "ch") this.sleepCh = true;
+    else if (Number(v) > 0) {
+      const ms = Number(v) * 60000; this.sleepAt = Date.now() + ms;
+      this.timer = setTimeout(() => this.event("sleep"), ms);
+      if (this.native) { try { Android.ttsSleep(ms); } catch {} }
+    }
+    showPlayer();
+  }
+};
+window.ficNookTts = (type, i) => TTS.event(type, i);
+function showPlayer() {
+  const wasHidden = $("#player").hidden;
+  $("#player").hidden = false;
+  $("#tts-play").innerHTML = TTS.playing ? ICON_PAUSE : ICON_PLAY;
+  $("#tts-play").setAttribute("aria-label", TTS.playing ? "Pause" : "Keep reading aloud");
+  $("#tts-title").textContent = TTS.playing ? "Reading aloud" : "Paused";
+  let s = fic && idx >= 0 ? (fic.chapters.length > 1 ? `Chapter ${idx + 1}` : fic.title) : "";
+  if (TTS.sleepCh) s += " · stops at end of chapter";
+  else if (TTS.sleepAt) s += ` · stops in ${fmtMins((TTS.sleepAt - Date.now()) / 60000)}`;
+  $("#tts-status").textContent = s;
+  if (wasHidden && fic && paged()) relayout(readFrac());
+  positionQuick(); updatePager();
+}
+setInterval(() => { if (!$("#player").hidden && TTS.sleepAt) showPlayer(); }, 20000);
+$("#tts-btn").addEventListener("click", () => { setControls(false); AS.stop(); if (TTS.playing) TTS.pause(); else TTS.play($("#player").hidden ? null : TTS.i); });
+$("#tts-play").addEventListener("click", () => { if (TTS.playing) TTS.pause(); else TTS.play(TTS.i); });
+$("#tts-close").addEventListener("click", () => TTS.stop());
+$("#tts-rate").addEventListener("change", e => { settings.ttsRate = Number(e.target.value); LS.set("settings", settings); if (TTS.playing) TTS.play(TTS.i); });
+$("#tts-sleep").addEventListener("change", e => TTS.setSleep(e.target.value));
+if (!TTS.available()) $("#tts-btn").hidden = true;
+
+/* ---------------- auto-scroll ---------------- */
+const ICON_PAUSE2 = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+const AS = {
+  on: false, paused: false, raf: 0, t: null, last: 0, acc: 0,
+  wpm() { return Math.round(settings.wpm * settings.asF); },
+  start() {
+    if (!fic) return;
+    if (TTS.playing || !$("#player").hidden) TTS.stop();
+    this.on = true; this.paused = false; closeSheets(); setControls(false); this.show(); this.loop();
+  },
+  stop() {
+    this.on = false; cancelAnimationFrame(this.raf); clearTimeout(this.t);
+    if (!$("#auto-bar").hidden) { $("#auto-bar").hidden = true; positionQuick(); if (fic && paged()) relayout(readFrac()); }
+  },
+  toggle() { this.paused = !this.paused; cancelAnimationFrame(this.raf); clearTimeout(this.t); if (!this.paused) this.loop(); this.show(); },
+  show() {
+    const wasHidden = $("#auto-bar").hidden; $("#auto-bar").hidden = false;
+    $("#as-play").innerHTML = this.paused ? ICON_PLAY : ICON_PAUSE2;
+    $("#as-play").setAttribute("aria-label", this.paused ? "Keep going" : "Pause");
+    $("#as-title").textContent = this.paused ? "Auto-scroll paused" : "Auto-scroll";
+    $("#as-status").textContent = `${this.wpm()} words a minute`;
+    $("#as-speed").textContent = settings.asF.toFixed(2).replace(/0$/, "").replace(/\.0$/, "") + "×";
+    positionQuick();
+    if (wasHidden && fic && paged()) relayout(readFrac());
+  },
+  speed(d) { settings.asF = Math.max(0.5, Math.min(3, Math.round((settings.asF + d) * 4) / 4)); LS.set("settings", settings); this.show(); if (this.on && !this.paused) this.loop(); },
+  end() { this.stop(); toast("That's the end of the fic."); },
+  loop() {
+    cancelAnimationFrame(this.raf); clearTimeout(this.t);
+    if (!this.on || this.paused || !fic) return;
+    const wpm = this.wpm(), words = idx < 0 ? 120 : chWords(fic, idx);
+    if (paged()) {
+      const ms = Math.max(2500, (words / Math.max(1, pages)) / wpm * 60000);
+      this.t = setTimeout(() => {
+        if (!this.on || this.paused || !fic) return;
+        if (curPage >= pages - 1 && idx + 1 >= fic.chapters.length) { markChapterRead(idx); return this.end(); }
+        flip(1); setTimeout(() => this.loop(), 60);
+      }, ms);
+      return;
+    }
+    const secs = Math.max(15, words / wpm * 60);
+    this.last = performance.now(); this.acc = 0;
+    const step = now => {
+      if (!this.on || this.paused || !fic || paged()) return;
+      const dt = Math.min(0.25, (now - this.last) / 1000); this.last = now;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      if (scrollY >= max - 2) {
+        const wait = Math.min(20000, Math.max(2000, secs * 1000 * innerHeight / document.documentElement.scrollHeight));
+        this.t = setTimeout(() => {
+          if (!this.on || this.paused || !fic) return;
+          markChapterRead(idx);
+          if (idx + 1 < fic.chapters.length) { showChapter(idx + 1, 0); setTimeout(() => this.loop(), 400); } else this.end();
+        }, wait);
+        return;
+      }
+      this.acc += Math.max(6, max / secs) * dt;
+      if (this.acc >= 1) { const n = Math.floor(this.acc); this.acc -= n; window.scrollBy(0, n); }
+      this.raf = requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  }
+};
+$("#as-start").addEventListener("click", () => AS.start());
+$("#as-play").addEventListener("click", () => AS.toggle());
+$("#as-close").addEventListener("click", () => AS.stop());
+$("#as-slower").addEventListener("click", () => AS.speed(-0.25));
+$("#as-faster").addEventListener("click", () => AS.speed(0.25));
+
+/* ---------------- sheets & settings ---------------- */
+let lastFocus = null;
+function openSheet(id) {
+  closeSheets(); lastFocus = document.activeElement;
+  $("#scrim").hidden = false; const s = $(id); s.hidden = false; s.scrollTop = 0;
+  const focusEl = s.querySelector("#toc-list .cur") || s.querySelector("[data-close]");
+  focusEl && focusEl.focus({ preventScroll: true });
+}
+function closeSheets() { if (!$("#sheet-fic").hidden) { clearTimeout(noteT); keepNote(); drawShelf(); } $("#scrim").hidden = true; $$(".sheet").forEach(s => s.hidden = true); if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true }); lastFocus = null; }
+$("#scrim").addEventListener("click", closeSheets);
+$$("[data-close]").forEach(b => b.addEventListener("click", closeSheets));
+$("#set-btn").addEventListener("click", () => { $("#row-auto").hidden = !fic; openSheet("#sheet-settings"); });
+$("#toc-btn").addEventListener("click", () => {
+  const items = [];
+  if (hasAbout(fic) && settings.about) items.push(`<li><button type="button" data-i="-1" class="${idx === -1 ? "cur" : ""}"><span class="n"></span><span>About this fic</span></button></li>`);
+  fic.chapters.forEach((c, i) => items.push(`<li><button type="button" data-i="${i}" class="${idx === i ? "cur" : ""}"><span class="n">${i + 1}</span><span>${esc(c.title)}</span></button></li>`));
+  $("#toc-list").innerHTML = items.join("");
+  const sorted = hls.slice().sort((a, b) => a.ch - b.ch || a.b - b.b || a.s - b.s);
+  drawBms();
+  $("#hl-h").textContent = sorted.length ? `Your highlights (${sorted.length})` : "Your highlights";
+  $("#hl-list").innerHTML = sorted.length ? sorted.map(h => `<li><button type="button" data-hlgo="${h.id}"><small>${fic.chapters.length > 1 ? "Chapter " + (h.ch + 1) : "Highlight"}</small><em>“${esc(h.text.length > 160 ? h.text.slice(0, 160) + "…" : h.text)}”</em>${h.note ? `<span>${esc(h.note)}</span>` : ""}</button></li>`).join("")
+    : `<li><small class="hint" style="color:var(--muted)">Press and hold on some words while reading to highlight them.</small></li>`;
+  openSheet("#sheet-toc");
+});
+$("#toc-list").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (!b) return; closeSheets(); showChapter(Number(b.dataset.i), 0); });
+$("#hl-list").addEventListener("click", e => {
+  const b = e.target.closest("[data-hlgo]"); if (!b) return;
+  const h = hls.find(x => x.id === b.dataset.hlgo); if (!h) return;
+  closeSheets();
+  if (h.ch !== idx) showChapter(h.ch, 0);
+  setTimeout(() => revealEl($(`mark[data-hl="${h.id}"]`)), 120);
+});
+$("#r-nl").addEventListener("input", e => { settings.nlStr = Number(e.target.value); applySettings(); });
+for (const [id, key] of [["seg-theme", "theme"], ["seg-font", "font"], ["seg-width", "width"], ["seg-mode", "mode"], ["seg-nl", "nl"]])
+  $("#" + id).addEventListener("click", e => {
+    const b = e.target.closest("button[data-v]"); if (!b) return;
+    const f = fic ? readFrac() : 0; settings[key] = b.dataset.v; applySettings();
+    if (fic && key !== "theme" && key !== "nl") { if (key === "mode") AS.stop(); relayout(f); }
+  });
+$("#r-size").addEventListener("input", e => { const f = fic ? readFrac() : 0; settings.size = Number(e.target.value); applySettings(); if (fic) relayout(f); });
+$("#r-lh").addEventListener("input", e => { const f = fic ? readFrac() : 0; settings.lh = Number(e.target.value); applySettings(); if (fic) relayout(f); });
+$("#r-wpm").addEventListener("input", e => { settings.wpm = Number(e.target.value); applySettings(); updatePager(); });
+$("#c-notes").addEventListener("change", e => { const f = fic ? readFrac() : 0; settings.notes = e.target.checked; applySettings(); if (fic) relayout(f); });
+$("#c-justify").addEventListener("change", e => { const f = fic ? readFrac() : 0; settings.justify = e.target.checked; applySettings(); if (fic) relayout(f); });
+$("#c-vol").addEventListener("change", e => { settings.volKeys = e.target.checked; applySettings(); });
+$("#c-about").addEventListener("change", e => { settings.about = e.target.checked; applySettings(); if (fic) { if (idx < minIdx()) showChapter(0, 0); else showChapter(idx, readFrac()); } });
+
+/* ---------------- stats & yearly recap ---------------- */
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+function topOf(list, n = 5) {
+  const c = new Map(); list.forEach(x => c.set(x, (c.get(x) || 0) + 1));
+  return [...c.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, n);
+}
+function showStats() {
+  const years = new Set([new Date().getFullYear()]);
+  Object.keys(stats.days).forEach(k => years.add(Number(k.slice(0, 4))));
+  Object.values(stats.fin).forEach(x => years.add(new Date(x.d).getFullYear()));
+  const sel = $("#stats-year");
+  sel.innerHTML = [...years].sort((a, b) => b - a).map(y => `<option value="${y}">${y}</option>`).join("");
+  sel.value = String(new Date().getFullYear());
+  renderStats(Number(sel.value));
+  showView("stats");
+}
+function computeYear(y) {
+  const days = Object.entries(stats.days).filter(([k]) => k.startsWith(y + "-"));
+  const secs = days.reduce((n, [, d]) => n + (d.s || 0), 0);
+  const words = days.reduce((n, [, d]) => n + (d.w || 0), 0);
+  const readDays = days.filter(([, d]) => d.s >= 60 || d.w > 0).map(([k]) => k).sort();
+  let best = 0, run = 0, prev = null;
+  for (const k of readDays) {
+    const t = new Date(k + "T12:00:00").getTime();
+    run = prev !== null && Math.round((t - prev) / 86400000) === 1 ? run + 1 : 1;
+    best = Math.max(best, run); prev = t;
+  }
+  const fin = Object.values(stats.fin).filter(x => new Date(x.d).getFullYear() === y).sort((a, b) => b.d - a.d);
+  const months = Array(12).fill(0);
+  days.forEach(([k, d]) => { months[Number(k.slice(5, 7)) - 1] += (d.s || 0) / 60; });
+  const maxM = Math.max(...months);
+  const busiest = maxM > 0 ? months.indexOf(maxM) : -1;
+  const fandoms = topOf(fin.flatMap(x => splitList(x.fandom)));
+  const ships = topOf(fin.flatMap(x => splitList(x.ships)));
+  const tags = topOf(fin.flatMap(x => x.tags || []).filter(t => !fin.some(f => splitList(f.fandom).includes(t) || splitList(f.ships).includes(t))));
+  const longest = fin.reduce((a, b) => (!a || (b.w || 0) > (a.w || 0) ? b : a), null);
+  return { days, secs, words, readDays, best, fin, months, maxM, busiest, fandoms, ships, tags, longest };
+}
+function renderStats(y) {
+  const { secs, words, readDays, best, fin, months, maxM, busiest, fandoms, ships, tags, longest } = computeYear(y);
+  const body = $("#stats-body");
+  if (!secs && !fin.length) {
+    body.innerHTML = `<div class="recap"><p class="eyebrow">${y} in fics</p><h2>Your recap starts here</h2><p>Fic Nook counts your reading time, the words you read and the fics you finish from now on. Come back after some reading to see your stats grow.</p></div>`;
+    return;
+  }
+  const list = (title, rows) => `<div class="toplist"><h3>${title}</h3>${rows.length ? `<ol>${rows.map(([v, n]) => `<li>${esc(v)} <small>${n}</small></li>`).join("")}</ol>` : `<p class="empty">Finish some fics to see this.</p>`}</div>`;
+  body.innerHTML = `
+    <div class="recap">
+      <p class="eyebrow">${y} in fics</p>
+      <h2>You finished ${fin.length} fic${fin.length === 1 ? "" : "s"}${fandoms[0] ? `, mostly ${esc(fandoms[0][0])}` : ""}.</h2>
+      <p>${words.toLocaleString()} words and ${fmtMins(secs / 60)} of reading${longest ? `. Your longest was ${esc(longest.t)} (${Number(longest.w || 0).toLocaleString()} words).` : "."}</p>
+    </div>
+    <div class="tiles">
+      <div class="tile"><b>${words.toLocaleString()}</b><span>words read</span></div>
+      <div class="tile"><b>${secs >= 3600 ? (secs / 3600).toFixed(1) + " h" : Math.round(secs / 60) + " min"}</b><span>time reading</span></div>
+      <div class="tile"><b>${readDays.length}</b><span>day${readDays.length === 1 ? "" : "s"} you read</span></div>
+      <div class="tile"><b>${best}</b><span>day${best === 1 ? "" : "s"} in a row, your best streak</span></div>
+    </div>
+    <figure class="chart">
+      <figcaption>Time reading each month</figcaption>
+      <div class="bars" id="bars">${months.map((m, i) => `<div class="bar-col" tabindex="0" data-m="${i}" aria-label="${MONTHS[i]}: ${m >= 1 ? fmtMins(m) : "no reading"}"><div class="b" style="height:${maxM ? (m / maxM * 100).toFixed(1) : 0}%"></div></div>`).join("")}</div>
+      <div class="months" aria-hidden="true">${MONTHS.map(m => `<span>${m[0]}</span>`).join("")}</div>
+      <p class="readout" id="readout">${busiest >= 0 ? `Busiest month: ${MONTHS[busiest]}, ${fmtMins(maxM)}. Tap a bar to see any month.` : "No reading time tracked yet."}</p>
+    </figure>
+    <div class="toplists">${list("Top fandoms", fandoms)}${list("Top ships", ships)}${list("Top tags", tags)}</div>
+    <div class="finished-list"><h3>Finished in ${y}</h3>${fin.length ? `<ul>${fin.map(x => `<li>${esc(x.t)}${x.a ? ` <small>by ${esc(x.a)}</small>` : ""}<br><small>${new Date(x.d).toLocaleDateString(undefined, { month: "long", day: "numeric" })} · ${Number(x.w || 0).toLocaleString()} words</small></li>`).join("")}</ul>` : `<p class="empty">No finished fics this year yet.</p>`}</div>`;
+  const show = el => { $$("#bars .bar-col").forEach(b => b.classList.toggle("sel", b === el)); $("#readout").textContent = el.getAttribute("aria-label"); };
+  $$("#bars .bar-col").forEach(b => { b.addEventListener("mouseenter", () => show(b)); b.addEventListener("focus", () => show(b)); b.addEventListener("click", () => show(b)); });
+}
+$("#stats-btn").addEventListener("click", showStats);
+$("#stats-back").addEventListener("click", () => showView("me"));
+$("#stats-year").addEventListener("change", e => renderStats(Number(e.target.value)));
+
+/* ---------------- backup & restore ---------------- */
+async function makeBackup() {
+  const all = await DB.all();
+  const ls = {};
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith("ficnook:")) ls[k] = localStorage.getItem(k); } } catch {}
+  return JSON.stringify({ app: "ficnook", version: 1, created: new Date().toISOString(), fics: all.filter(f => !f.sample), ls });
+}
+if (!(Android && Android.saveBackup)) {
+  $("#backup-btn").hidden = true;
+  $("#backup-text").textContent = "In the Fic Nook app you can back up your library to Google Drive. Here you can restore a backup you made in the app.";
+}
+$("#backup-btn").addEventListener("click", async () => {
+  busy("Packing up your library…");
+  try { const json = await makeBackup(); busy(null); Android.saveBackup(json, `FicNook backup ${dayKey()}.json`); }
+  catch (e) { busy(null); toast("Couldn't make the backup. Try again."); }
+});
+window.ficNookBackupDone = ok => toast(ok ? "Backup saved." : "The backup wasn't saved.");
+$("#restore-btn").addEventListener("click", () => $("#restore-file").click());
+function mergeJson(k, curStr, incStr) {
+  try {
+    const cur = JSON.parse(curStr), inc = JSON.parse(incStr);
+    if (k === "ficnook:stats") {
+      const out = { days: { ...inc.days }, read: { ...inc.read, ...cur.read }, fin: { ...inc.fin, ...cur.fin } };
+      for (const [d, v] of Object.entries(cur.days || {})) { const o = out.days[d] || { s: 0, w: 0 }; out.days[d] = { s: Math.max(o.s || 0, v.s || 0), w: Math.max(o.w || 0, v.w || 0) }; }
+      return JSON.stringify(out);
+    }
+    if (k === "ficnook:lib" || k === "ficnook:folderSeen") return JSON.stringify({ ...inc, ...cur });
+    if (k === "ficnook:shelves") return JSON.stringify([...new Set([...cur, ...inc])]);
+    if (k.startsWith("ficnook:hl:") || k.startsWith("ficnook:bm:")) { const ids = new Set(cur.map(h => h.id)); return JSON.stringify([...cur, ...inc.filter(h => !ids.has(h.id))]); }
+  } catch {}
+  return curStr;
+}
+$("#restore-file").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = "";
+  if (!file) return;
+  busy("Restoring your library…");
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data || data.app !== "ficnook" || !Array.isArray(data.fics)) throw new Error("bad");
+    for (const f of data.fics) await DB.put(f);
+    for (const [k, v] of Object.entries(data.ls || {})) {
+      if (!k.startsWith("ficnook:")) continue;
+      let cur = null; try { cur = localStorage.getItem(k); } catch {}
+      try { localStorage.setItem(k, cur == null ? v : mergeJson(k, cur, v)); } catch {}
+    }
+    busy(null); toast(`Restored ${data.fics.length} fic${data.fics.length === 1 ? "" : "s"}. Reloading…`, 2000);
+    setTimeout(() => location.reload(), 1500);
+  } catch (err) {
+    busy(null); toast("That file isn't a Fic Nook backup.");
+  }
+});
+
+/* ---------------- opening files ---------------- */
+function busy(msg) { const b = $("#busy"); if (msg == null) { b.hidden = true; return; } $("#busy-msg").textContent = msg; b.hidden = false; }
+let toastT;
+function toast(msg, ms = 4000) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, ms); }
+const WORK_RX = /archiveofourown\.org\/works\/\s*(\d+)/i;
+async function epubWorkId(buf) {
+  try {
+    const zip = await window.JSZip.loadAsync(buf);
+    for (const name of Object.keys(zip.files)) {
+      if (!/\.(x?html?|opf|ncx|xml)$/i.test(name)) continue;
+      const m = WORK_RX.exec(await zip.file(name).async("string"));
+      if (m) return m[1];
+    }
+  } catch {}
+  return "";
+}
+const norm = s => clean(s).toLowerCase();
+// Adds a fic, or updates the one already in the library (same AO3 work, or same title and author).
+async function openFile(file, progress = busy) {
+  const buf = await file.arrayBuffer();
+  const sig = String.fromCharCode(...new Uint8Array(buf.slice(0, 5)));
+  const name = file.name || "fic";
+  let res, format, workId = "";
+  if (sig.startsWith("%PDF")) { format = "PDF"; res = await parsePdf(buf, name, progress); workId = res.workId || ""; }
+  else if (sig.startsWith("PK")) { format = "EPUB"; progress("Unpacking your EPUB…"); res = await parseEpub(buf, name); workId = await epubWorkId(buf); }
+  else if (/\.(mobi|azw3?)$/i.test(name)) throw new Error("MOBI and AZW3 files are for Kindles, so they can't be opened here. On AO3, download the PDF, EPUB or HTML version instead.");
+  else {
+    format = "HTML"; const text = new TextDecoder().decode(buf);
+    if (!/<\w+/.test(text)) throw new Error(`"${name}" doesn't look like a fic file. Pick a PDF, EPUB or HTML you downloaded from AO3.`);
+    res = parseHtmlText(text, name); const m = WORK_RX.exec(text); workId = m ? m[1] : "";
+  }
+  if (!res.chapters.length) throw new Error(`Couldn't find any story text in "${name}".`);
+  const words = res.chapters.reduce((n, c) => n + (c.html.replace(/<[^>]+>/g, " ").match(/\S+/g) || []).length, 0);
+  const all = await DB.all();
+  let id = workId ? "w" + workId : "f" + hashStr(norm(res.title) + "|" + norm(res.author));
+  const old = all.find(f => !f.sample && (f.id === id || (workId && f.workId === workId) || (norm(f.title) === norm(res.title) && norm(f.author) === norm(res.author))));
+  if (old) id = old.id;
+  const fic = { id, workId: workId || (old && old.workId) || "", title: res.title, author: res.author, about: res.about, fields: res.fields, chapters: res.chapters, format, words, added: old ? old.added : Date.now() };
+  await DB.put(fic);
+  for (const k of [...chWordsCache.keys()]) if (k.startsWith(id + ":")) chWordsCache.delete(k);
+  hayCache.delete(id);
+  let note = "";
+  if (old) {
+    const diff = res.chapters.length - old.chapters.length;
+    if (diff > 0) {
+      const m = lib[id] || (lib[id] = {});
+      m.newCh = (m.newCh || 0) + diff;
+      if (m.s === "finished") { m.s = "reading"; delete m.fin; }
+      saveLib();
+      note = `${diff} new chapter${diff === 1 ? "" : "s"}`;
+    } else note = "already up to date";
+  }
+  return { fic, updated: !!old, note };
+}
+async function handleFiles(files) {
+  $("#q").value = "";
+  files = [...files]; if (!files.length) return;
+  let last = null;
+  for (const f of files) {
+    try { busy(`Opening “${f.name}”…`); last = await openFile(f); }
+    catch (e) { console.error(e); busy(null); toast(e && e.message ? e.message : "Something went wrong opening that file."); }
+  }
+  busy(null);
+  await renderShelf();
+  if (last) {
+    if (last.updated) toast(`“${last.fic.title}” is ${last.note === "already up to date" ? "already in your library" : "updated: " + last.note}.`);
+    openFic(last.fic.id);
+  }
+}
+
+/* ---------------- navigation ---------------- */
+function showView(v) {
+  for (const id of ["home", "me", "stats"]) $("#" + id).hidden = id !== v;
+  $$("#tabbar button").forEach(b => { if (b.dataset.view === (v === "stats" ? "me" : v)) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  $("#open-btn").hidden = v !== "home";
+  if (v === "me") renderMe();
+  window.scrollTo(0, 0);
+}
+function lastFicId() {
+  let best = null, t = 0;
+  for (const f of fics) { const o = LS.get("opened:" + f.id, 0); if (o > t) { t = o; best = f.id; } }
+  return best;
+}
+$("#tabbar").addEventListener("click", e => {
+  const b = e.target.closest("[data-view]"); if (!b) return;
+  if (b.dataset.view === "read") { const id = lastFicId(); if (id) openFic(id); else toast("Open a fic from your Library first."); return; }
+  showView(b.dataset.view);
+});
+
+/* ---------------- shelf cards ---------------- */
+const ICON_MORE = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
+const expanded = new Set();
+function progressText(f) {
+  const p = pct(f), st = statusOf(f);
+  return st === "finished" || p >= 99 ? "Finished" : p ? `${p}% read · ${fmtMins(minsLeft(f))} left` : `${fmtMins(minsLeft(f))} to read`;
+}
+const barW = f => statusOf(f) === "finished" ? 100 : pct(f);
+function cardInner(f, partLabel) {
+  const m = lib[f.id] || {}, fandom = ficField(f, /^fandoms?$/i);
+  return `<button class="open" type="button">
+      ${f.sample ? '<span class="tag">Example</span>' : ""}
+      ${m.newCh ? `<span class="new">${m.newCh} new chapter${m.newCh === 1 ? "" : "s"}</span>` : ""}
+      <span class="t">${m.fav ? '<span class="fav-mark" aria-label="Favourite">★</span> ' : ""}${partLabel ? esc(partLabel) + ": " : ""}${esc(f.title)}</span>
+      ${!partLabel && f.author ? `<span class="a">by ${esc(f.author)}</span>` : ""}
+      ${!partLabel && fandom ? `<span class="fd">${esc(fandom)}</span>` : ""}
+      <span class="meta">${m.stars ? `<span class="rate" aria-label="${m.stars} stars">${"★".repeat(m.stars)}</span> · ` : ""}${progressText(f)}</span>
+      <span class="bar" aria-hidden="true"><i style="width:${barW(f)}%"></i></span>
+    </button>
+    <button class="more-btn" type="button" aria-label="More about ${esc(f.title)}">${ICON_MORE}</button>`;
+}
+function drawShelf() {
+  const list = $("#shelf-list");
+  const q = clean($("#q").value).toLowerCase();
+  const opened = f => LS.get("opened:" + f.id, f.added || 0);
+  const sorts = {
+    read: (a, b) => opened(b) - opened(a),
+    added: (a, b) => (b.added || 0) - (a.added || 0),
+    title: (a, b) => a.title.localeCompare(b.title),
+    author: (a, b) => (a.author || "").localeCompare(b.author || "") || a.title.localeCompare(b.title),
+    short: (a, b) => minsLeft(a) - minsLeft(b),
+    stars: (a, b) => ((lib[b.id] || {}).stars || 0) - ((lib[a.id] || {}).stars || 0) || opened(b) - opened(a)
+  };
+  const base = fics.filter(passesFilters);
+  const counts = { all: base.length, reading: 0, toread: 0, finished: 0, fav: 0 };
+  base.forEach(f => { counts[statusOf(f)]++; if (lib[f.id] && lib[f.id].fav) counts.fav++; });
+  if (shelfTab.startsWith("c:") && !myShelves.includes(shelfTab.slice(2))) shelfTab = "all";
+  $$("#tabs [data-custom]").forEach(b => b.remove());
+  for (const name of myShelves) {
+    const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab"); b.dataset.tab = "c:" + name; b.dataset.custom = "1";
+    b.innerHTML = `${esc(name)} <span></span>`; $("#tabs").appendChild(b);
+    counts["c:" + name] = base.filter(f => onShelf(f, name)).length;
+  }
+  $$("#tabs button").forEach(b => { b.setAttribute("aria-selected", String(b.dataset.tab === shelfTab)); b.querySelector("span").textContent = counts[b.dataset.tab]; });
+  let shown = base.filter(f => shelfTab === "all" || (shelfTab.startsWith("c:") ? onShelf(f, shelfTab.slice(2)) : shelfTab === "fav" ? lib[f.id] && lib[f.id].fav : statusOf(f) === shelfTab));
+  if (q) { const words = q.split(" "); shown = shown.filter(f => words.every(w => haystack(f).includes(w))); }
+  shown.sort(sorts[$("#sort").value] || sorts.read);
+  // Series with two or more parts fold into one card, parts in order.
+  const items = [], placed = new Set();
+  for (const f of shown) {
+    if (placed.has(f.id)) continue;
+    const s = seriesOf(f);
+    const parts = s ? shown.filter(g => { const t = seriesOf(g); return t && t.name === s.name; }).sort((a, b) => seriesOf(a).part - seriesOf(b).part) : [];
+    if (parts.length >= 2) { parts.forEach(g => placed.add(g.id)); items.push({ series: s.name, parts }); }
+    else { placed.add(f.id); items.push({ f }); }
+  }
+  const n = filterCount();
+  $("#filter-btn").textContent = n ? `Filters · ${n}` : "Filters";
+  $("#filter-btn").classList.toggle("on", !!n);
+  const hiddenByFilter = fics.length - base.length;
+  $("#filter-note").hidden = !hiddenByFilter;
+  if (hiddenByFilter) $("#filter-note").innerHTML = `${hiddenByFilter} fic${hiddenByFilter === 1 ? " is" : "s are"} hidden by your filters. <button type="button" id="clear-filters">Show all</button>`;
+  $("#shelf-count").textContent = !fics.length ? "" : `${fics.length} fic${fics.length === 1 ? "" : "s"}`;
+  if (!fics.length) { list.innerHTML = `<li><p class="empty">Nothing here yet. Tap <b>Add a fic</b> to add your first one.</p></li>`; return; }
+  if (!items.length) {
+    const tabName = { reading: "Reading", toread: "To read", finished: "Finished", fav: "Favourites" }[shelfTab] || (shelfTab.startsWith("c:") ? `“${esc(shelfTab.slice(2))}”` : "");
+    list.innerHTML = `<li><p class="empty">${q ? `No fics match “${esc(q)}”. Try fewer words, or a tag, character or fandom name.` : tabName ? `Nothing on your ${tabName} shelf yet.` : "No fics to show."}</p></li>`;
+    return;
+  }
+  list.innerHTML = items.map(it => {
+    if (it.f) return `<li class="fic" data-id="${esc(it.f.id)}">${cardInner(it.f)}</li>`;
+    const parts = it.parts, open = expanded.has(it.series) || !!q;
+    const fin = parts.filter(f => statusOf(f) === "finished").length;
+    const left = parts.reduce((a, f) => a + minsLeft(f), 0);
+    const newCh = parts.reduce((a, f) => a + ((lib[f.id] || {}).newCh || 0), 0);
+    const first = parts[0], fandom = ficField(first, /^fandoms?$/i);
+    return `<li class="fic series-card" data-series="${esc(it.series)}">
+      <button class="open s-toggle" type="button" aria-expanded="${open}">
+        <span class="tag">Series · ${parts.length} parts</span>
+        ${newCh ? `<span class="new">${newCh} new chapter${newCh === 1 ? "" : "s"}</span>` : ""}
+        <span class="t">${esc(it.series)}</span>
+        ${first.author ? `<span class="a">by ${esc(first.author)}</span>` : ""}
+        ${fandom ? `<span class="fd">${esc(fandom)}</span>` : ""}
+        <span class="meta">${fin === parts.length ? "All finished" : `${fin} of ${parts.length} finished · ${fmtMins(left)} left`} · ${open ? "tap to fold" : "tap to see parts"}</span>
+        <span class="bar" aria-hidden="true"><i style="width:${Math.round(fin / parts.length * 100)}%"></i></span>
+      </button>
+      <ul class="parts"${open ? "" : " hidden"}>${parts.map(f => `<li data-id="${esc(f.id)}">${cardInner(f, "Part " + seriesOf(f).part)}</li>`).join("")}</ul>
+    </li>`;
+  }).join("");
+}
+$("#sort").value = LS.get("sort", "read");
+$("#q").addEventListener("input", drawShelf);
+$("#sort").addEventListener("change", () => { LS.set("sort", $("#sort").value); drawShelf(); });
+$("#tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (!b) return; shelfTab = b.dataset.tab; LS.set("tab", shelfTab); drawShelf(); });
+$("#filter-note").addEventListener("click", e => { if (e.target.closest("#clear-filters")) clearFilters(); });
+$("#shelf-list").addEventListener("click", e => {
+  const tog = e.target.closest(".s-toggle");
+  if (tog) { const name = tog.closest("[data-series]").dataset.series; if (expanded.has(name)) expanded.delete(name); else expanded.add(name); drawShelf(); return; }
+  const holder = e.target.closest("[data-id]"); if (!holder) return;
+  if (e.target.closest(".more-btn")) return openFicSheet(holder.dataset.id);
+  if (e.target.closest(".open")) return openFic(holder.dataset.id);
+});
+let sheetFic = null;
+function openFicSheet(id) {
+  const f = fics.find(x => x.id === id); if (!f) return;
+  sheetFic = f;
+  const m = lib[id] || {}, st = statusOf(f), ser = seriesOf(f), ci = chaptersInfo(f), sum = ficSummary(f), tags = ficTags(f), rating = ficField(f, /^rating$/i);
+  $("#fic-h").textContent = f.title;
+  const facts = [rating, ser ? `Part ${ser.part} of ${esc(ser.name)}` : "", `${f.chapters.length} chapter${f.chapters.length === 1 ? "" : "s"}${ci && !ci.complete ? " · still updating" : ""}`, `${Number(f.words || 0).toLocaleString()} words`].filter(Boolean);
+  $("#fic-body").innerHTML = `
+    ${f.author ? `<p class="fic-by">by ${esc(f.author)}</p>` : ""}
+    <p class="fic-facts">${facts.map(esc).join(" · ").replace(/&amp;/g, "&")}</p>
+    ${sum ? `<p class="fic-sum">${esc(sum)}</p>` : ""}
+    <div class="row"><span class="lab">Shelf</span><div class="seg" id="fs-status">${Object.entries(STATUS_NAMES).map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${v === st}">${l}</button>`).join("")}</div></div>
+    <div class="row"><button class="btn-wide" type="button" id="fs-fav" aria-pressed="${!!m.fav}">${m.fav ? "★ In your favourites" : "☆ Add to favourites"}</button></div>
+    <div class="row"><span class="lab">Your rating</span><div class="stars" id="fs-stars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" class="${(m.stars || 0) >= n ? "on" : ""}" aria-label="${n} star${n === 1 ? "" : "s"}" aria-pressed="${m.stars === n}">★</button>`).join("")}</div></div>
+    <div class="row"><span class="lab">Your shelves</span><div class="chips" id="fs-shelves">${myShelves.map(n => `<button class="chip" type="button" data-shelf="${esc(n)}" aria-pressed="${onShelf(f, n)}">${esc(n)}</button>`).join("")}<button class="chip add" type="button" id="fs-newshelf">+ New shelf</button></div>
+      <div class="add-row" id="fs-newrow" hidden><label class="sr" for="fs-newname">New shelf name</label><input type="text" id="fs-newname" placeholder="Like Comfort reads" maxlength="40" autocomplete="off"><button class="btn-small" type="button" id="fs-newadd">Add</button></div></div>
+    <div class="row"><label for="fs-note">Your private notes</label><textarea id="fs-note" placeholder="What did you think? Only you can see this.">${esc(m.note || "")}</textarea></div>
+    ${tags.length ? `<div class="row"><span class="lab">Tags</span><div class="chips">${tags.map(t => `<button class="chip" type="button" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}</div><small class="hint">Tap a tag to find other fics with it.</small></div>` : ""}
+    <div class="sheet-actions"><button class="btn-small warn" type="button" id="fs-del">Remove from library</button><button class="btn-primary" type="button" id="fs-read">${pct(f) ? "Keep reading" : "Start reading"}</button></div>`;
+  if ($("#sheet-fic").hidden) openSheet("#sheet-fic");
+}
+$("#fic-body").addEventListener("click", async e => {
+  const f = sheetFic; if (!f) return;
+  const sb = e.target.closest("#fs-status [data-v]");
+  if (sb) { if (sb.dataset.v === "finished" && !stats.fin[f.id]) finishFic(f); else setStatus(f, sb.dataset.v); openFicSheet(f.id); drawShelf(); return; }
+  if (e.target.closest("#fs-fav")) { const m = lib[f.id] || (lib[f.id] = {}); m.fav = !m.fav; saveLib(); openFicSheet(f.id); drawShelf(); return; }
+  const star = e.target.closest("#fs-stars [data-n]");
+  if (star) { const m = lib[f.id] || (lib[f.id] = {}), n = Number(star.dataset.n); m.stars = m.stars === n ? 0 : n; saveLib(); keepNote(); openFicSheet(f.id); drawShelf(); return; }
+  const sh = e.target.closest("#fs-shelves [data-shelf]");
+  if (sh) { toggleShelf(f, sh.dataset.shelf); keepNote(); openFicSheet(f.id); drawShelf(); return; }
+  if (e.target.closest("#fs-newshelf")) { $("#fs-newrow").hidden = false; $("#fs-newname").focus(); return; }
+  if (e.target.closest("#fs-newadd")) { const n = addShelf($("#fs-newname").value); if (n) { if (!onShelf(f, n)) toggleShelf(f, n); keepNote(); openFicSheet(f.id); drawShelf(); } return; }
+  const chip = e.target.closest(".chip");
+  if (chip) { closeSheets(); $("#q").value = chip.dataset.tag; shelfTab = "all"; drawShelf(); return; }
+  if (e.target.closest("#fs-read")) { closeSheets(); openFic(f.id); return; }
+  const del = e.target.closest("#fs-del");
+  if (del) {
+    if (del.dataset.armed) { closeSheets(); await removeFic(f); }
+    else { del.dataset.armed = "1"; del.textContent = "Tap again to remove it"; }
+  }
+});
+function keepNote() { const t = $("#fs-note"); if (t && sheetFic) saveNote(sheetFic, t.value); }
+function saveNote(f, v) { const m = lib[f.id] || (lib[f.id] = {}); v = v.trim(); if ((m.note || "") === v) return; if (v) m.note = v; else delete m.note; saveLib(); hayCache.delete(f.id); }
+let noteT;
+$("#fic-body").addEventListener("input", e => { if (e.target.id === "fs-note" && sheetFic) { const f = sheetFic, v = e.target.value; clearTimeout(noteT); noteT = setTimeout(() => saveNote(f, v), 400); } });
+$("#fic-body").addEventListener("keydown", e => { if (e.target.id === "fs-newname" && e.key === "Enter") { e.preventDefault(); $("#fs-newadd").click(); } });
+function addShelf(name) {
+  name = clean(name).slice(0, 40); if (!name) return "";
+  const have = myShelves.find(n => n.toLowerCase() === name.toLowerCase()); if (have) return have;
+  if (["all", "reading", "to read", "finished", "favourites"].includes(name.toLowerCase())) { toast("You already have that shelf."); return ""; }
+  myShelves.push(name); saveShelves(); return name;
+}
+function toggleShelf(f, name) {
+  const m = lib[f.id] || (lib[f.id] = {}); const list = m.shelves || [];
+  m.shelves = list.includes(name) ? list.filter(n => n !== name) : [...list, name];
+  if (!m.shelves.length) delete m.shelves; saveLib();
+}
+function removeShelf(name) {
+  myShelves = myShelves.filter(n => n !== name); saveShelves();
+  for (const m of Object.values(lib)) if (m.shelves) { m.shelves = m.shelves.filter(n => n !== name); if (!m.shelves.length) delete m.shelves; }
+  saveLib(); if (shelfTab === "c:" + name) { shelfTab = "all"; LS.set("tab", shelfTab); }
+}
+async function removeFic(f) {
+  if (f.sample) LS.set("sampleRemoved", true);
+  await DB.del(f.id); LS.del("pos:" + f.id); LS.del("opened:" + f.id); LS.del("hl:" + f.id); LS.del("bm:" + f.id); delete lib[f.id]; saveLib(); renderShelf();
+}
+
+/* ---------------- Me ---------------- */
+function renderMe() {
+  const y = new Date().getFullYear(), s = computeYear(y);
+  $("#me-tiles").innerHTML = `
+    <div class="tile"><b>${s.fin.length}</b><span>fic${s.fin.length === 1 ? "" : "s"} finished</span></div>
+    <div class="tile"><b>${s.words.toLocaleString()}</b><span>words read</span></div>
+    <div class="tile"><b>${s.secs >= 3600 ? (s.secs / 3600).toFixed(1) + " h" : Math.round(s.secs / 60) + " min"}</b><span>time reading</span></div>
+    <div class="tile"><b>${s.best}</b><span>day${s.best === 1 ? "" : "s"} in a row, your best</span></div>`;
+  $("#stats-btn").textContent = `See your ${y} recap`;
+  renderGoal();
+  $("#my-shelves").innerHTML = myShelves.length
+    ? myShelves.map(n => `<li><span>${esc(n)} <small>· ${fics.filter(f => onShelf(f, n)).length}</small></span><button class="btn-small warn" type="button" data-rm="${esc(n)}">Remove</button></li>`).join("")
+    : "";
+  const rows = [];
+  for (const f of fics) for (const h of LS.get("hl:" + f.id, [])) rows.push({ f, h });
+  rows.sort((a, b) => (b.h.at || 0) - (a.h.at || 0));
+  const trunc = t => t.length > 160 ? t.slice(0, 160) + "…" : t;
+  $("#me-hl").innerHTML = rows.length
+    ? rows.slice(0, 60).map(({ f, h }) => `<li><button type="button" data-f="${esc(f.id)}" data-h="${esc(h.id)}"><small>${esc(f.title)}${f.chapters.length > 1 ? ` · Chapter ${h.ch + 1}` : ""}</small><em>“${esc(trunc(h.text))}”</em>${h.note ? `<span>${esc(h.note)}</span>` : ""}</button></li>`).join("")
+    : `<li><p>Press and hold on some words while reading to highlight them. They'll be collected here.</p></li>`;
+  folderUI();
+}
+$("#me-hl").addEventListener("click", async e => {
+  const b = e.target.closest("[data-h]"); if (!b) return;
+  await openFic(b.dataset.f);
+  const h = hls.find(x => x.id === b.dataset.h); if (!h) return;
+  setTimeout(() => { if (h.ch !== idx) showChapter(h.ch, 0); setTimeout(() => revealEl($(`mark[data-hl="${h.id}"]`)), 150); }, 50);
+});
+$("#me-settings").addEventListener("click", () => { $("#row-auto").hidden = true; openSheet("#sheet-settings"); });
+$("#new-shelf-btn").addEventListener("click", () => { const n = addShelf($("#new-shelf").value); if (n) { $("#new-shelf").value = ""; toast(`Added the “${n}” shelf. Put fics on it with the ⋮ button.`, 3500); renderMe(); drawShelf(); } });
+$("#new-shelf").addEventListener("keydown", e => { if (e.key === "Enter") $("#new-shelf-btn").click(); });
+$("#my-shelves").addEventListener("click", e => {
+  const b = e.target.closest("[data-rm]"); if (!b) return;
+  if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again"; return; }
+  removeShelf(b.dataset.rm); renderMe(); drawShelf(); toast("Shelf removed. The fics are still in your Library.", 3000);
+});
+
+/* ---------------- reading goal ---------------- */
+const GOAL_NAMES = { week: ["fic", "this week"], month: ["fic", "this month"], year: ["fic", "this year"], day: ["minute", "today"] };
+function goalProgress(g) {
+  const now = new Date();
+  if (g.type === "day") return Math.floor(((stats.days[dayKey()] || {}).s || 0) / 60);
+  let from;
+  if (g.type === "week") { from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)); }
+  else if (g.type === "month") from = new Date(now.getFullYear(), now.getMonth(), 1);
+  else from = new Date(now.getFullYear(), 0, 1);
+  return Object.values(stats.fin).filter(x => x.d >= from.getTime()).length;
+}
+function renderGoal() {
+  const g = LS.get("goal", null);
+  $("#goal-edit").hidden = true; $("#goal-btn").hidden = false;
+  if (!g) { $("#goal-show").innerHTML = `<p>Set yourself a little goal, like 4 fics a month or 20 minutes a day.</p>`; $("#goal-btn").textContent = "Set a goal"; return; }
+  const have = goalProgress(g), [unit, when] = GOAL_NAMES[g.type] || GOAL_NAMES.month;
+  const done = have >= g.n, pc = Math.min(100, Math.round(have / g.n * 100));
+  $("#goal-show").innerHTML = `<p class="goal-text"><b>${Math.min(have, 99999)}</b> of ${g.n} ${unit}${g.n === 1 ? "" : "s"} ${when}</p>
+    <div class="goal-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pc}"><i style="width:${pc}%"></i></div>
+    <p>${done ? "You did it! Anything more is a bonus." : `${g.n - have} to go.`}</p>`;
+  $("#goal-btn").textContent = "Change goal";
+}
+$("#goal-btn").addEventListener("click", () => {
+  const g = LS.get("goal", null) || { n: 4, type: "month" };
+  $("#goal-n").value = g.n; $("#goal-type").value = g.type;
+  $("#goal-edit").hidden = false; $("#goal-btn").hidden = true;
+});
+$("#goal-save").addEventListener("click", () => {
+  const n = Math.max(1, Math.min(9999, Math.round(Number($("#goal-n").value) || 0)));
+  LS.set("goal", { n, type: $("#goal-type").value }); renderGoal();
+});
+$("#goal-off").addEventListener("click", () => { LS.del("goal"); renderGoal(); });
+
+/* ---------------- reader controls ---------------- */
+let ctrlY = 0;
+function setControls(on) {
+  document.body.classList.toggle("controls", on); ctrlY = scrollY;
+  $("#quick").hidden = !on;
+  if (on) { updateQuick(); positionQuick(); }
+}
+function positionQuick() { const h = ($("#player").hidden ? 0 : $("#player").offsetHeight) + ($("#auto-bar").hidden ? 0 : $("#auto-bar").offsetHeight); $("#quick").style.bottom = h ? h + "px" : ""; }
+function updateQuick() {
+  if (!fic) return;
+  $("#q-size").textContent = settings.size + "px";
+  $$("#q-themes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === settings.theme)));
+  $("#tts-btn").setAttribute("aria-pressed", String(TTS.playing)); updBmBtn();
+  const n = fic.chapters.length;
+  let info = idx < 0 ? "About this fic" : n > 1 ? `Chapter ${idx + 1} of ${n}` : "";
+  if (paged()) info += (info ? " · " : "") + `page ${curPage + 1} of ${pages}`;
+  if (idx >= 0) { const left = chWords(fic, idx) * (1 - readFrac()) / settings.wpm; info += (info ? " · " : "") + (left >= 1 ? `${fmtMins(left)} left in chapter` : "end of chapter"); }
+  $("#q-info").textContent = info;
+}
+function updatePager() { if (!$("#quick").hidden) updateQuick(); }
+$("#q-smaller").addEventListener("click", () => { if (settings.size <= 14) return; const f = readFrac(); settings.size--; applySettings(); relayout(f); updateQuick(); });
+$("#q-bigger").addEventListener("click", () => { if (settings.size >= 30) return; const f = readFrac(); settings.size++; applySettings(); relayout(f); updateQuick(); });
+$("#q-themes").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (!b) return; settings.theme = b.dataset.v; applySettings(); updateQuick(); });
+function showHint() {
+  if (LS.get("hintReader", false)) return;
+  $("#hint").hidden = false;
+}
+$("#hint-ok").addEventListener("click", () => { $("#hint").hidden = true; LS.set("hintReader", true); });
+
+/* ---------------- first-time setup ---------------- */
+function maybeSetup() {
+  if (LS.get("setupDone", false)) return;
+  const canFolder = !!(Android && Android.pickFolder);
+  const hasFolder = canFolder && !!Android.folderName();
+  $("#setup").hidden = false;
+  const step2 = !canFolder || hasFolder;
+  $("#setup-1").hidden = step2; $("#setup-2").hidden = !step2;
+}
+$("#setup-folder").addEventListener("click", () => Android && Android.pickFolder());
+$("#setup-skip").addEventListener("click", () => { $("#setup-1").hidden = true; $("#setup-2").hidden = false; });
+$("#setup").addEventListener("click", e => {
+  const b = e.target.closest(".setup-themes [data-v]"); if (!b) return;
+  settings.theme = b.dataset.v; applySettings(); LS.set("setupDone", true); $("#setup").hidden = true;
+});
+
+/* ---------------- app-only: fic folder + updates ---------------- */
+let syncing = false, lastSync = 0, syncNoteT;
+function syncNote(msg, ms) {
+  const n = $("#sync-note"); clearTimeout(syncNoteT);
+  if (!msg) { n.hidden = true; return; }
+  n.textContent = msg; n.hidden = false;
+  if (ms) syncNoteT = setTimeout(() => n.hidden = true, ms);
+}
+function folderUI() {
+  if (!Android || !Android.folderName) return;
+  $("#folder-card").hidden = false;
+  const name = Android.folderName();
+  $("#folder-text").textContent = name
+    ? `${name}. New fics saved there show up in your Library by themselves, and re-downloaded fics get updated.`
+    : "Choose the folder where your AO3 downloads go (usually Download), and new fics will show up in your Library by themselves.";
+  $("#folder-pick").textContent = name ? "Change folder" : "Choose folder";
+  $("#folder-sync").hidden = !name;
+}
+async function syncFolder(manual) {
+  if (!Android || !Android.folderName || syncing || !Android.folderName()) return;
+  syncing = true; lastSync = Date.now();
+  let added = 0, failed = 0; const updated = [];
+  try {
+    if (manual) syncNote("Checking your fic folder…");
+    const res = await fetch("/fn/list", { cache: "no-store" });
+    if (!res.ok) throw new Error("Couldn't open your fic folder. Try choosing it again under Me.");
+    const files = await res.json();
+    const seen = LS.get("folderSeen", {});
+    const fresh = files.filter(f => !seen[f.name + "|" + f.size + "|" + f.modified]).sort((a, b) => a.modified - b.modified);
+    for (let i = 0; i < fresh.length; i++) {
+      const f = fresh[i], key = f.name + "|" + f.size + "|" + f.modified;
+      syncNote(fresh.length > 1 ? `Adding fics from your folder (${i + 1} of ${fresh.length})…` : `Adding “${f.name}”…`);
+      try {
+        const r = await fetch("/fn/file?u=" + encodeURIComponent(f.uri), { cache: "no-store" });
+        if (!r.ok) throw new Error("read failed");
+        const out = await openFile(new File([await r.arrayBuffer()], f.name), () => {});
+        if (out.updated) { if (out.note !== "already up to date") updated.push(`${out.fic.title} (${out.note})`); }
+        else added++;
+        seen[key] = 1;
+      } catch (e) { console.error(f.name, e); seen[key] = "err"; failed++; }
+      LS.set("folderSeen", seen);
+    }
+    if (added || updated.length || failed) {
+      await renderShelf();
+      const parts = [];
+      if (added) parts.push(`Added ${added} fic${added === 1 ? "" : "s"}`);
+      if (updated.length) parts.push(`Updated ${updated.join(", ")}`);
+      if (failed) parts.push(`${failed} file${failed === 1 ? "" : "s"} couldn't be read`);
+      syncNote(parts.join(". ") + ".", 8000);
+    } else syncNote(manual ? "No new fics in your folder." : "", 3000);
+  } catch (e) {
+    syncNote(manual ? (e.message || "Couldn't check your fic folder.") : "", 6000);
+  } finally { syncing = false; }
+}
+window.ficNookFolderChanged = () => {
+  folderUI();
+  if (!$("#setup").hidden) { $("#setup-1").hidden = true; $("#setup-2").hidden = false; }
+  LS.set("folderSeen", {});
+  syncFolder(true);
+};
+window.ficNookToast = m => toast(m);
+window.ficNookOpenLast = () => { const id = lastFicId(); if (id && (!fic || fic.id !== id)) { if (fic) closeReader(); openFic(id); } };
+window.ficNookResume = () => { if (!fic && Date.now() - lastSync > 15000) syncFolder(false); };
+window.ficNookUpdateAvailable = ver => { $("#update-msg").textContent = `Fic Nook ${ver} is ready.`; $("#update-bar").hidden = false; };
+window.ficNookUpdateStatus = (msg, canTap) => { const b = $("#update-btn"); b.textContent = msg; b.disabled = !canTap; };
+$("#update-btn").addEventListener("click", () => { if (Android) { $("#update-btn").disabled = true; Android.installUpdate(); } });
+$("#folder-pick").addEventListener("click", () => Android && Android.pickFolder());
+$("#folder-sync").addEventListener("click", () => { showView("home"); syncFolder(true); });
+if (Android) { try { $("#app-version").textContent = `Fic Nook ${Android.version()}. `; } catch {} folderUI(); }
+
+/* Android Back button: close a panel, hide the controls, leave the fic, or go back to the Library. */
+window.ficNookBack = () => {
+  if (!$("#hint").hidden) { $("#hint-ok").click(); return true; }
+  if (!$("#scrim").hidden) { closeSheets(); return true; }
+  if (fic && document.body.classList.contains("controls")) { setControls(false); return true; }
+  if (fic) { closeReader(); return true; }
+  if (!$("#stats").hidden) { showView("me"); return true; }
+  if (!$("#me").hidden) { showView("home"); return true; }
+  return false;
+};
+
+/* ---------------- file picking ---------------- */
+$("#open-btn").addEventListener("click", () => $("#file").click());
+$("#file").addEventListener("change", e => { const fl = e.target.files; handleFiles(fl).finally(() => { e.target.value = ""; }); });
+const drop = document.body;
+["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) { e.preventDefault(); $("#home").classList.add("drag"); } }));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, () => { $("#home").classList.remove("drag"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); if (fic) closeReader(); handleFiles(e.dataTransfer.files); } });
+
+/* ---------------- example fic ---------------- */
+function sampleFic() {
+  const P = a => a.map(t => `<p>${t}</p>`).join("");
+  const chapters = [
+    { title: "Chapter 1: Low Tide", html:
+      noteHtml("Chapter notes", "<p>Hi! This is a little example so you can try out Fic Nook. Tap <b>Aa</b> at the top to change how it looks. This box is an author's note; you can tuck notes away in the settings.</p>") +
+      P(["The kettle had been whistling for a full minute before Wren noticed it, which said a lot about the letter on the table.",
+         "It was only three lines long. She had read it eleven times. The handwriting slanted to the right as if it were in a hurry to get somewhere, and the ink had smudged where the writer had pressed down on the word <em>soon</em>.",
+         "Outside, the tide was pulling back from the rocks, leaving the long ribbons of kelp to dry in the sun. The lighthouse cast no beam in daylight, but she climbed the stairs anyway, cup in hand, because that was what you did when you didn't know what else to do.",
+         "“You're going to wear a groove in those steps,” Abel said from the doorway below.",
+         "“Then they'll know someone lived here,” she said, and kept climbing."]) + "<hr>" +
+      P(["By evening the fog had come in thick and soft, swallowing the harbor one boat at a time. Wren lit the lamp and watched the light sweep out over nothing at all.",
+         "Somewhere out there, a ship was coming. Soon, the letter said. She decided she could wait for soon."]) },
+    { title: "Chapter 2: The Bell Buoy", html:
+      P(["The bell buoy rang twice in the night, which it never did unless something had brushed against it.",
+         "Abel was already in his coat when she came down. He didn't say anything. He just held out the second lantern, and she took it.",
+         "The beach was cold and grey, and the sand squeaked under their boots. At the water's edge, half in and half out of the foam, sat a small wooden box with a brass clasp, the kind sailors kept their letters in.",
+         "Wren knelt and opened it. Inside, wrapped in oilcloth, was a second letter, in the same hurried hand.",
+         "This one only had one word on it.",
+         "<em>Here.</em>"]) +
+      noteHtml("Chapter end notes", "<p>Thanks for reading the example! Now try opening one of your own downloads with the <b>Open a fic</b> button on your shelf.</p>") }
+  ];
+  return { id: "sample-lighthouse", sample: true, title: "The Lighthouse Keeper's Tea", author: "Fic Nook", format: "Example",
+    fields: [["Rating", "General Audiences"], ["Fandom", "Original Work"], ["Characters", "Wren, Abel"], ["Additional Tags", "Lighthouses, Letters, Slow Burn, Fog"], ["Stats", "Words: 420 · Chapters: 2/2"]],
+    about: `<h2 class="lbl">Summary</h2><p>A lighthouse keeper gets a letter that says <em>soon</em>. This is an example fic so you can try the reader before opening your own.</p>`,
+    chapters, words: 420, added: 0 };
+}
+
+
+
+/* ---------------- start ---------------- */
+applySettings();
+document.body.classList.add("has-nav");
+showView("home");
+maybeSetup();
+DB.open().then(renderShelf).then(() => {
+  try { if (Android && Android.takeLaunch && Android.takeLaunch() === "resume" && LS.get("setupDone", false)) window.ficNookOpenLast(); } catch {}
+  return syncFolder(false);
+});
+})();
+</script>

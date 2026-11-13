@@ -191,6 +191,9 @@ body.reading::before { content: ""; position: fixed; inset: 0 0 auto; height: en
 #page ul, #page ol { padding-left: 1.4em; }
 #page img { max-width: 100%; height: auto; }
 #page .img-note { color: var(--muted); font-style: italic; font-size: .9em; }
+#page .f-mono { font-family: ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, "Roboto Mono", monospace; font-size: .88em; }
+#page .f-sans { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: .95em; }
+#page .f-alt { font-family: Georgia, "Times New Roman", serif; }
 #page mark { background: var(--hl); color: inherit; border-radius: 2px; cursor: pointer; }
 #page mark.has-note { text-decoration: underline dotted var(--accent); text-underline-offset: 3px; }
 #page .speaking { background: color-mix(in srgb, var(--accent) 16%, transparent); border-radius: 4px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); }
@@ -353,6 +356,47 @@ body.controls .topbar { transform: none; }
 #shelf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .player select#tts-sleep { flex: 0 1 auto; }
 
+/* ---------- 1.5: warm theme, night light, shelves, stars, bookmarks, auto-scroll, quote cards, goals ---------- */
+:root.t-warm { --bg: #1d1812; --surface: #27211a; --fg: #e8d2ac; --muted: #a8916f; --line: #3b3127; --accent: #e3a55e; --accent-ink: #1d1208; --note-bg: #2a231b; --hl: rgba(255, 170, 60, .28); --warn: #f2b8b5; --star: #e3a55e; color-scheme: dark; }
+#nightlight { position: fixed; inset: 0; pointer-events: none; z-index: 60; background: #ff8f1f; mix-blend-mode: multiply; opacity: 0; transition: opacity .6s ease; }
+.q-row { justify-content: center; }
+.q-themes button { width: 42px; height: 42px; }
+.q-main { grid-template-columns: repeat(4, 1fr); }
+.q-main button { font-size: .82rem; padding: 12px 2px; }
+#bm-btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+#bm-btn[aria-pressed="true"] svg { fill: currentColor; }
+.fic .rate { color: var(--star); letter-spacing: 1px; }
+.stars { display: flex; gap: 2px; }
+.stars button { background: none; border: 0; font-size: 2rem; line-height: 1; color: var(--line); padding: 4px 6px; border-radius: 8px; }
+.stars button.on { color: var(--star); }
+.chip[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.chip.add { border-style: dashed; }
+.my-shelves { list-style: none; margin: 0; padding: 0; display: grid; }
+.my-shelves li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-top: 1px solid var(--line); }
+.my-shelves li span { overflow-wrap: anywhere; }
+.my-shelves small { color: var(--muted); }
+.row select, .row textarea, .row input[type="text"], .add-row input { box-sizing: border-box; }
+.add-row input { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; }
+#bm-list { list-style: none; margin: 0; padding: 0; }
+#bm-list li { display: flex; align-items: center; border-top: 1px solid var(--line); }
+#bm-list .go { all: unset; box-sizing: border-box; cursor: pointer; flex: 1; min-width: 0; padding: 12px 8px; display: grid; gap: 2px; overflow-wrap: anywhere; }
+#bm-list .go:focus-visible { outline: 2px solid var(--accent); }
+#bm-list small { color: var(--muted); }
+#bm-list em { font-family: var(--book); }
+#bm-list .x { background: none; border: 0; color: var(--muted); padding: 10px; border-radius: 8px; }
+#bm-list .x svg { width: 20px; height: 20px; display: block; }
+.as-speed { display: flex; align-items: center; gap: 4px; }
+.as-speed button { width: 44px; height: 44px; border: 1px solid var(--line); background: var(--bg); border-radius: 12px; font-size: 1.3rem; }
+.as-speed span { min-width: 3em; text-align: center; font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+#qc-canvas { width: 100%; height: auto; border-radius: 12px; display: block; border: 1px solid var(--line); margin-bottom: 4px; }
+.goal-text { margin: 0; font-size: 1rem; color: var(--fg) !important; }
+.goal-text b { font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+.goal-bar { height: 10px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.goal-bar i { display: block; height: 100%; background: var(--accent); border-radius: 6px; }
+.goal-edit { display: grid; gap: 8px; }
+.goal-edit .add-row select { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 8px; flex: 1; min-width: 0; }
+.goal-edit .add-row input { width: 5.5em; flex: none; }
+
 /* ---------- Busy / message ---------- */
 .busy { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 85%, transparent); padding: 24px; }
 .busy div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 24px; max-width: 22rem; text-align: center; display: grid; gap: 12px; }
@@ -378,6 +422,7 @@ body.controls .topbar { transform: none; }
       <option value="title">Title A–Z</option>
       <option value="author">Author A–Z</option>
       <option value="short">Shortest first</option>
+      <option value="stars">Your rating</option>
     </select>
   </div>
   <div class="tabs" id="tabs" role="tablist" aria-label="Shelves">
@@ -401,9 +446,34 @@ body.controls .topbar { transform: none; }
     <div class="tiles" id="me-tiles"></div>
     <button class="btn-wide" type="button" id="stats-btn">See your yearly recap</button>
   </section>
+  <section class="me-card" id="goal-card">
+    <h2>Your reading goal</h2>
+    <div id="goal-show"></div>
+    <div class="goal-edit" id="goal-edit" hidden>
+      <div class="add-row">
+        <label class="sr" for="goal-n">How many</label>
+        <input type="number" id="goal-n" min="1" max="9999" inputmode="numeric" value="4">
+        <label class="sr" for="goal-type">What</label>
+        <select id="goal-type">
+          <option value="week">fics a week</option>
+          <option value="month">fics a month</option>
+          <option value="year">fics a year</option>
+          <option value="day">minutes a day</option>
+        </select>
+      </div>
+      <div class="row-btns"><button class="btn-small" type="button" id="goal-save" style="font-weight:700">Save goal</button><button class="btn-small" type="button" id="goal-off">No goal</button></div>
+    </div>
+    <button class="btn-wide" type="button" id="goal-btn">Set a goal</button>
+  </section>
+  <section class="me-card">
+    <h2>Your shelves</h2>
+    <p>Make your own shelves, like "Comfort reads" or "Reread someday". Put fics on them with the ⋮ button on any fic. They show up as tabs in your Library.</p>
+    <ul class="my-shelves" id="my-shelves"></ul>
+    <div class="add-row"><label class="sr" for="new-shelf">New shelf name</label><input type="text" id="new-shelf" placeholder="New shelf name" maxlength="40" autocomplete="off"><button class="btn-small" type="button" id="new-shelf-btn">Add shelf</button></div>
+  </section>
   <section class="me-card">
     <h2>Reading settings</h2>
-    <p>Theme, font, text size, scrolling or flipping pages, reading speed and author's notes.</p>
+    <p>Theme, night light, font, text size, scrolling or flipping pages, reading speed and author's notes.</p>
     <button class="btn-wide" type="button" id="me-settings">Open reading settings</button>
   </section>
   <section class="me-card">
@@ -450,8 +520,20 @@ body.controls .topbar { transform: none; }
       <p>Press and hold on some words to select them, then tap <b>Highlight</b> or <b>Add note</b>. Tap a highlight to read or change its note. Your highlights are listed here under Me, and under <b>Chapters</b> while reading.</p>
     </details>
     <details>
+      <summary>Shelves, ratings, notes and bookmarks</summary>
+      <p>Tap the <b>⋮</b> button on a fic to rate it, write private notes, or put it on your own shelves (make new shelves there or here under Me). While reading, tap the middle, then <b>Bookmark</b> to save a spot. Your bookmarks are under <b>Chapters</b>.</p>
+    </details>
+    <details>
+      <summary>Night light, auto-scroll and quote cards</summary>
+      <p>Under <b>More</b> while reading (or Reading settings here), turn on the <b>Night light</b> to tint the screen amber, or pick the <b>Warm</b> theme. <b>Auto-scroll</b> moves through the fic by itself at your reading speed. To make a quote card, tap a highlight and choose <b>Make a quote card</b>.</p>
+    </details>
+    <details>
+      <summary>Can I put Fic Nook on my home screen?</summary>
+      <p>Yes. Press and hold an empty spot on your home screen, tap <b>Widgets</b>, find <b>Fic Nook</b> and drag the <b>Keep reading</b> widget out. Tapping it opens the fic you were reading.</p>
+    </details>
+    <details>
       <summary>Something looks wrong in a PDF</summary>
-      <p>PDFs are made for printing, so Fic Nook has to guess where paragraphs and chapters start, and italics get lost. If a fic looks off, download the EPUB version from AO3 instead.</p>
+      <p>PDFs are made for printing, so Fic Nook has to guess where paragraphs and chapters start. It keeps italics, bold and the author's special fonts (like text messages) when it can. If a fic still looks off, download the EPUB version from AO3 instead.</p>
     </details>
   </section>
   <p class="privacy"><span id="app-version"></span>Your fics never leave your device. Fic Nook reads each file right here and keeps your library only on this phone or computer.</p>
@@ -514,6 +596,7 @@ body.controls .topbar { transform: none; }
       <button type="button" data-v="sepia" aria-label="Sepia" style="background:#f1e6d2;color:#46382a">A</button>
       <button type="button" data-v="dark" aria-label="Dark" style="background:#17171c;color:#dcdad3">A</button>
       <button type="button" data-v="night" aria-label="Night" style="background:#000;color:#b9b7b0">A</button>
+      <button type="button" data-v="warm" aria-label="Warm" style="background:#1d1812;color:#e8d2ac">A</button>
     </div>
   </div>
   <div class="q-main">
@@ -524,6 +607,10 @@ body.controls .topbar { transform: none; }
     <button type="button" id="toc-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
       Chapters
+    </button>
+    <button type="button" id="bm-btn" aria-pressed="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5h12v17l-6-4.2-6 4.2z"/></svg>
+      Bookmark
     </button>
     <button type="button" id="set-btn">
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
@@ -576,6 +663,15 @@ body.controls .topbar { transform: none; }
   </button>
 </div>
 
+<div class="player" id="auto-bar" hidden role="region" aria-label="Auto-scroll">
+  <button class="pl-play" id="as-play" type="button" aria-label="Pause"></button>
+  <div class="pl-mid"><b id="as-title">Auto-scroll</b><span id="as-status"></span></div>
+  <div class="as-speed"><button type="button" id="as-slower" aria-label="Slower">−</button><span id="as-speed"></span><button type="button" id="as-faster" aria-label="Faster">+</button></div>
+  <button class="icon-btn" id="as-close" type="button" aria-label="Stop auto-scroll">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+</div>
+
 <div class="hl-bar" id="hl-bar" hidden>
   <button type="button" id="hl-add">Highlight</button>
   <button type="button" id="hl-add-note">Add note</button>
@@ -594,7 +690,26 @@ body.controls .topbar { transform: none; }
       <button type="button" data-v="sepia" class="swatch"><i style="background:#f1e6d2;color:#46382a">A</i>Sepia</button>
       <button type="button" data-v="dark" class="swatch"><i style="background:#17171c;color:#dcdad3">A</i>Dark</button>
       <button type="button" data-v="night" class="swatch"><i style="background:#000;color:#b9b7b0">A</i>Night</button>
+      <button type="button" data-v="warm" class="swatch"><i style="background:#1d1812;color:#e8d2ac">A</i>Warm</button>
     </div>
+  </div>
+  <div class="row">
+    <span class="lab">Night light</span>
+    <div class="seg" id="seg-nl">
+      <button type="button" data-v="off">Off</button>
+      <button type="button" data-v="on">On</button>
+      <button type="button" data-v="eve">Evenings</button>
+    </div>
+    <small class="hint">Tints the screen amber so it's easier on your eyes in bed. "Evenings" turns it on from 8 pm to 7 am.</small>
+  </div>
+  <div class="row" id="row-nl-str">
+    <label for="r-nl">Night light strength <output id="o-nl"></output></label>
+    <input type="range" id="r-nl" min="10" max="60" step="5">
+  </div>
+  <div class="row" id="row-auto" hidden>
+    <span class="lab">Auto-scroll</span>
+    <button class="btn-wide" type="button" id="as-start">Start auto-scroll</button>
+    <small class="hint">Moves through the fic by itself at your reading speed, so you can read hands-free. Change the speed with − and + while it runs.</small>
   </div>
   <div class="row">
     <span class="lab">Turning pages</span>
@@ -651,6 +766,8 @@ body.controls .topbar { transform: none; }
   <div class="grab"></div>
   <header><h2 id="toc-h">Chapters</h2><button class="btn-small" type="button" data-close>Close</button></header>
   <ul id="toc-list"></ul>
+  <h3 id="bm-h">Your bookmarks</h3>
+  <ul id="bm-list"></ul>
   <h3 id="hl-h">Your highlights</h3>
   <ul id="hl-list"></ul>
 </section>
@@ -691,12 +808,30 @@ body.controls .topbar { transform: none; }
   <div class="row"><label for="hl-note">Your note</label><textarea id="hl-note" placeholder="What did you think about this bit?"></textarea></div>
   <div class="sheet-actions">
     <button class="btn-small warn" type="button" id="hl-remove">Remove highlight</button>
+    <button class="btn-small" type="button" id="hl-card">Make a quote card</button>
     <button class="btn-small" type="button" id="hl-save" style="font-weight:700">Save note</button>
   </div>
 </section>
 
+<section class="sheet" id="sheet-qc" hidden aria-labelledby="qc-h" role="dialog">
+  <div class="grab"></div>
+  <header><h2 id="qc-h">Quote card</h2><button class="btn-small" type="button" data-close>Close</button></header>
+  <canvas id="qc-canvas" width="1080" height="1350" role="img" aria-label="Your quote as a picture"></canvas>
+  <div class="row">
+    <span class="lab">Style</span>
+    <div class="seg" id="qc-style">
+      <button type="button" data-v="dark">Dark</button>
+      <button type="button" data-v="paper">Light</button>
+      <button type="button" data-v="rose">Rose</button>
+      <button type="button" data-v="warm">Warm</button>
+    </div>
+  </div>
+  <div class="sheet-actions"><span></span><button class="btn-primary" type="button" id="qc-share">Share or save</button></div>
+</section>
+
 <div class="busy" id="busy" hidden><div><div class="spin"></div><p id="busy-msg">Opening your fic…</p></div></div>
 <div class="toast" id="toast" hidden role="status"></div>
+<div id="nightlight" aria-hidden="true"></div>
 
 <script>
 (() => {
@@ -740,20 +875,22 @@ const DB = {
 /* ---------------- settings ---------------- */
 const FONTS = { book: 'var(--book)', classic: 'Georgia, "Times New Roman", serif', easy: 'var(--ui)', plain: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' };
 const WIDTHS = { narrow: "28em", normal: "34em", wide: "44em" };
-const settings = Object.assign({ theme: "dark", font: "book", size: 19, lh: 1.65, width: "normal", notes: true, about: true, justify: false, mode: "pages", volKeys: true, wpm: 230, ttsRate: 1 }, LS.get("settings", {}));
+const settings = Object.assign({ theme: "dark", font: "book", size: 19, lh: 1.65, width: "normal", notes: true, about: true, justify: false, mode: "pages", volKeys: true, wpm: 230, ttsRate: 1, nl: "off", nlStr: 30, asF: 1 }, LS.get("settings", {}));
 if (!settings.v2) { if (settings.theme === "auto") settings.theme = "dark"; settings.v2 = true; }
 if (!settings.v3) { settings.mode = "pages"; settings.v3 = true; }
 function applySettings() {
   const root = document.documentElement;
-  root.classList.remove("t-paper", "t-sepia", "t-dark", "t-night");
+  root.classList.remove("t-paper", "t-sepia", "t-dark", "t-night", "t-warm");
   if (settings.theme !== "auto") root.classList.add("t-" + settings.theme);
   root.style.setProperty("--read-font", FONTS[settings.font] || FONTS.book);
   root.style.setProperty("--fs", settings.size + "px");
   root.style.setProperty("--lh", settings.lh);
   root.style.setProperty("--measure", WIDTHS[settings.width] || WIDTHS.normal);
   $("#page").classList.toggle("justify", !!settings.justify);
-  for (const [id, key] of [["seg-theme", "theme"], ["seg-font", "font"], ["seg-width", "width"], ["seg-mode", "mode"]])
+  for (const [id, key] of [["seg-theme", "theme"], ["seg-font", "font"], ["seg-width", "width"], ["seg-mode", "mode"], ["seg-nl", "nl"]])
     $$("#" + id + " button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === settings[key])));
+  $("#r-nl").value = settings.nlStr; $("#o-nl").textContent = settings.nlStr + "%"; $("#row-nl-str").hidden = settings.nl === "off";
+  applyNight();
   $("#r-size").value = settings.size; $("#o-size").textContent = settings.size + "px";
   $("#r-lh").value = settings.lh; $("#o-lh").textContent = Number(settings.lh).toFixed(2).replace(/0$/, "");
   $("#r-wpm").value = settings.wpm; $("#o-wpm").textContent = settings.wpm + " words a minute";
@@ -764,6 +901,13 @@ function applySettings() {
   LS.set("settings", settings);
   updVol();
 }
+
+function applyNight() {
+  const h = new Date().getHours();
+  const on = settings.nl === "on" || (settings.nl === "eve" && (h >= 20 || h < 7));
+  $("#nightlight").style.opacity = on ? String(settings.nlStr / 100) : "0";
+}
+setInterval(applyNight, 60000);
 
 /* ---------------- helpers ---------------- */
 function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
@@ -958,12 +1102,24 @@ async function parsePdf(buf, filename, progress) {
   const pdf = await window.pdfjsLib.getDocument({ data: buf, isEvalSupported: false }).promise;
   let info = {}; try { info = (await pdf.getMetadata()).info || {}; } catch {}
   const pages = [];
+  // Fonts: remember each font's real name so italics, bold and an author's "special" fonts (texts, signs) survive.
+  const fontInfo = {}, baseChars = {};
   for (let p = 1; p <= pdf.numPages; p++) {
     progress(`Reading page ${p} of ${pdf.numPages}…`);
     const page = await pdf.getPage(p);
     const tc = await page.getTextContent();
+    try { await page.getOperatorList(); } catch {}
+    for (const it of tc.items) {
+      const fn = it.fontName; if (!fn || fontInfo[fn]) continue;
+      let name = ""; try { name = String(page.commonObjs.get(fn).name || ""); } catch {}
+      const fam = (tc.styles[fn] || {}).fontFamily || "";
+      name = name.replace(/^[A-Z]{6}\+/, "");
+      const base = (name.split(/[-,]/)[0] || "").replace(/(PSMT|PS|MT)$/, "") || fam || fn;
+      fontInfo[fn] = { base, fam, i: /italic|oblique/i.test(name), b: /bold|black|heavy|semibold|demi/i.test(name), mono: fam === "monospace" || /mono|courier|consol/i.test(name) };
+    }
     const items = tc.items.filter(it => typeof it.str === "string" && it.str.length && Math.abs(it.transform[1]) < 0.01)
-      .map(it => ({ s: it.str, x: it.transform[4], y: it.transform[5], w: it.width, size: Math.abs(it.transform[3]) || it.height || 10 }));
+      .map(it => ({ s: it.str, x: it.transform[4], y: it.transform[5], w: it.width, size: Math.abs(it.transform[3]) || it.height || 10, f: it.fontName }));
+    for (const it of items) { const fi = fontInfo[it.f]; if (fi && it.s.trim()) baseChars[fi.base] = (baseChars[fi.base] || 0) + it.s.length; }
     items.sort((a, b) => b.y - a.y || a.x - b.x);
     const lines = [];
     for (const it of items) {
@@ -975,17 +1131,17 @@ async function parsePdf(buf, filename, progress) {
     const out = [];
     for (const ln of lines) {
       ln.items.sort((a, b) => a.x - b.x);
-      let text = "", end = null, weights = {};
+      let text = "", end = null, weights = {}; const toks = [];
       for (const it of ln.items) {
-        if (end !== null && it.x - end > it.size * 0.12 && !/\s$/.test(text) && !/^\s/.test(it.s)) text += " ";
-        text += it.s; end = Math.max(end ?? -1e9, it.x + it.w);
+        if (end !== null && it.x - end > it.size * 0.12 && !/\s$/.test(text) && !/^\s/.test(it.s)) { text += " "; toks.push({ t: " ", f: null }); }
+        text += it.s; toks.push({ t: it.s, f: it.f }); end = Math.max(end ?? -1e9, it.x + it.w);
         if (it.s.trim()) { const k = Math.round(it.size * 2) / 2; weights[k] = (weights[k] || 0) + it.s.length; }
       }
       text = clean(text);
       if (!text) continue;
       const size = Number(Object.entries(weights).sort((a, b) => b[1] - a[1])[0]?.[0] || ln.size);
       const firstReal = ln.items.find(i => i.s.trim()) || ln.items[0];
-      out.push({ page: p, y: ln.y, x: firstReal.x, end, size, text });
+      out.push({ page: p, y: ln.y, x: firstReal.x, end, size, text, toks });
     }
     pages.push(out);
   }
@@ -1036,9 +1192,14 @@ async function parsePdf(buf, filename, progress) {
     cur.lines.push(l); prev = l;
   }
   for (const p of paras) {
-    let t = "";
-    for (const l of p.lines) t = !t ? l.text : (/[-–—\/]$/.test(t) && !/\s[-–]$/.test(t) ? t + l.text : t + " " + l.text);
-    p.text = t;
+    let t = ""; const toks = [];
+    for (const l of p.lines) {
+      if (!t) t = l.text;
+      else if (/[-–—\/]$/.test(t) && !/\s[-–]$/.test(t)) t += l.text;
+      else { t += " " + l.text; toks.push({ t: " ", f: null }); }
+      toks.push(...l.toks);
+    }
+    p.text = t; p.toks = toks;
     p.minX = Math.min(...p.lines.map(l => l.x));
     const f = p.lines[0];
     p.center = p.lines.length <= 2 && f.x > margin + body * 2 && Math.abs((f.x - margin) - (right - f.end)) < body * 2.5;
@@ -1050,12 +1211,46 @@ async function parsePdf(buf, filename, progress) {
   let section = hasFields ? "about" : "text";
   const about = { titleParas: [], fields: [], blocks: [] };
   const chapters = []; let chap = null, note = null, lastField = null;
+  // Inline styles: compare each font with the main body font.
+  const bodyBase = (Object.entries(baseChars).sort((a, b) => b[1] - a[1])[0] || [""])[0];
+  const styleKey = f => {
+    const fi = f && fontInfo[f]; if (!fi) return null;
+    let k = fi.mono ? "m" : (fi.base && fi.base !== bodyBase ? (fi.fam === "serif" ? "r" : "s") : "");
+    return k + (fi.b ? "b" : "") + (fi.i ? "i" : "");
+  };
+  const wrapRun = (k, h) => {
+    if (k.includes("i")) h = `<em>${h}</em>`;
+    if (k.includes("b")) h = `<strong>${h}</strong>`;
+    const c = { m: "f-mono", s: "f-sans", r: "f-alt" }[k[0]];
+    return c ? `<span class="${c}">${h}</span>` : h;
+  };
+  const fmt = p => {
+    if (!p.toks || !Object.keys(fontInfo).length) return esc(p.text);
+    const runs = [];
+    for (const tk of p.toks) {
+      const t = tk.t.replace(/\s+/g, " "); if (!t) continue;
+      const last = runs[runs.length - 1], k = styleKey(tk.f);
+      if (last && (k === null || !t.trim() || k === last.k)) { last.t += t; continue; }
+      runs.push({ k: k || "", t });
+    }
+    let h = "";
+    runs.forEach((r, i) => {
+      let t = r.t;
+      if (i === 0) t = t.replace(/^\s+/, "");
+      if (i === runs.length - 1) t = t.replace(/\s+$/, "");
+      if (h.endsWith(" ") && t.startsWith(" ")) t = t.slice(1);
+      const lead = r.k && /^\s/.test(t) ? " " : "", trail = r.k && /\s$/.test(t) && i < runs.length - 1 ? " " : "";
+      if (r.k) t = t.trim();
+      h += t ? lead + wrapRun(r.k, esc(t)) + trail : lead + trail;
+    });
+    return h.replace(/ {2,}/g, " ") || esc(p.text);
+  };
   const renderPara = p => {
     if (SCENE_RX.test(p.text) && p.text.replace(/\s/g, "").length) return `<hr>`;
     if (p.head) return `<h3>${esc(p.text)}</h3>`;
-    if (p.center) return `<p class="c">${esc(p.text)}</p>`;
-    if (p.quote && !note) return `<blockquote><p>${esc(p.text)}</p></blockquote>`;
-    return `<p>${esc(p.text)}</p>`;
+    if (p.center) return `<p class="c">${fmt(p)}</p>`;
+    if (p.quote && !note) return `<blockquote><p>${fmt(p)}</p></blockquote>`;
+    return `<p>${fmt(p)}</p>`;
   };
   const newChap = title => { chap = { title, parts: [] }; chapters.push(chap); note = null; section = "text"; };
   const closeNote = () => { note = null; };
@@ -1099,7 +1294,7 @@ async function parsePdf(buf, filename, progress) {
 
   const renderParts = parts => parts.map(x => x.paras ? (x.paras.length ? noteHtml(x.label, x.paras.map(renderPara).join("")) : "") : renderPara(x)).join("");
   let aboutHtml = "";
-  for (const b of about.blocks) aboutHtml += `<h2 class="lbl">${esc(b.label)}</h2>` + b.paras.map(p => `<p>${esc(p.text)}</p>`).join("");
+  for (const b of about.blocks) aboutHtml += `<h2 class="lbl">${esc(b.label)}</h2>` + b.paras.map(p => `<p>${fmt(p)}</p>`).join("");
   const extra = tp.filter(p => p !== headT && p !== byP);
   if (extra.length && !aboutHtml) aboutHtml = extra.map(renderPara).join("");
   const outChapters = chapters.map(c => ({ title: c.title || "", html: renderParts(c.parts) })).filter(c => c.html || c.title);
@@ -1187,11 +1382,14 @@ const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strok
 const ICON_STAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8-5.2-2.8-5.2 2.8 1-5.8-4.3-4.1 5.9-.9z"/></svg>';
 const STATUS_NAMES = { toread: "To read", reading: "Reading", finished: "Finished" };
 let shelfTab = LS.get("tab", "all");
+let myShelves = LS.get("shelves", []);
+const saveShelves = () => LS.set("shelves", myShelves);
+const onShelf = (f, name) => ((lib[f.id] || {}).shelves || []).includes(name);
 const filters = Object.assign({ fandom: "", ship: "", rating: "", done: "", hide: [] }, LS.get("filters", {}));
 const hayCache = new Map();
 function haystack(f) {
   let h = hayCache.get(f.id);
-  if (!h) { h = [f.title, f.author, ...(f.fields || []).map(x => x[1]), ficSummary(f)].join(" \n ").toLowerCase(); hayCache.set(f.id, h); }
+  if (!h) { h = [f.title, f.author, ...(f.fields || []).map(x => x[1]), ficSummary(f), (lib[f.id] || {}).note || ""].join(" \n ").toLowerCase(); hayCache.set(f.id, h); }
   return h;
 }
 function passesFilters(f) {
@@ -1213,7 +1411,14 @@ async function renderShelf() {
   const all = await DB.all();
   if (!all.some(f => f.sample) && !LS.get("sampleRemoved", false)) { const s = sampleFic(); await DB.put(s); all.push(s); }
   fics = all; hayCache.clear();
-  drawShelf();
+  drawShelf(); updateWidget();
+}
+function updateWidget() {
+  if (!Android || !Android.setWidget) return;
+  try {
+    const id = lastFicId(), f = id && fics.find(x => x.id === id);
+    Android.setWidget(f ? f.title : "", f ? (f.author ? "by " + f.author + " · " : "") + progressText(f) : "");
+  } catch {}
 }
 /* ---------------- filters ---------------- */
 function countValues(rx, multi) {
@@ -1261,7 +1466,7 @@ async function openFic(id) {
   if (!fic) return;
   LS.set("opened:" + id, Date.now());
   if (statusOf(fic) === "toread" || !(lib[id] && lib[id].s)) { if (statusOf(fic) !== "finished") setStatus(fic, "reading"); }
-  hls = LS.get("hl:" + id, []);
+  hls = LS.get("hl:" + id, []); bms = LS.get("bm:" + id, []);
   if (lib[id] && lib[id].newCh) { delete lib[id].newCh; saveLib(); }
   const pos = LS.get("pos:" + id, null);
   for (const v of ["home", "me", "stats"]) $("#" + v).hidden = true;
@@ -1275,9 +1480,10 @@ async function openFic(id) {
   if (pos) { idx = Math.max(minIdx(), Math.min(fic.chapters.length - 1, pos.ch)); showChapter(idx, pos.ch === idx ? pos.frac : 0); }
   else showChapter(minIdx(), 0);
   try { history.replaceState(null, "", "#reading"); } catch {}
+  updateWidget();
 }
 function closeReader() {
-  TTS.stop(); savePos(); fic = null;
+  TTS.stop(); AS.stop(); savePos(); fic = null;
   $("#reader").hidden = true; $("#progress").hidden = true; $("#hl-bar").hidden = true;
   $("#tabbar").hidden = false; document.body.classList.add("has-nav"); setControls(false); showView("home");
   document.body.classList.remove("reading", "paged"); closeSheets(); updVol();
@@ -1333,7 +1539,7 @@ function layoutPaged() {
   if (!paged()) { pg.style.height = ""; pg.style.columnWidth = ""; pg.scrollLeft = 0; $("#pager").hidden = true; return; }
   const cs = getComputedStyle(document.documentElement);
   const avail = innerHeight - (parseFloat(cs.paddingTop) || 0) - (parseFloat(cs.paddingBottom) || 0);
-  const used = ($("#player").hidden ? 0 : $("#player").offsetHeight) + 4;
+  const used = ($("#player").hidden ? 0 : $("#player").offsetHeight) + ($("#auto-bar").hidden ? 0 : $("#auto-bar").offsetHeight) + 4;
   pg.style.height = Math.max(220, avail - used) + "px";
   pg.style.columnWidth = pg.clientWidth + "px";
   pages = Math.max(1, Math.round((pg.scrollWidth + GAP) / (pg.clientWidth + GAP)));
@@ -1388,7 +1594,7 @@ $("#page").addEventListener("click", e => {
 });
 // Taps anywhere on the reading screen (including the side margins): edges turn pages, the middle shows the controls.
 document.addEventListener("click", e => {
-  if (!fic || e.target.closest("#topbar, #quick, #player, #hl-bar, .sheet, .scrim, .coach, .setup, a, button, summary, select, input, textarea, mark, .toast")) return;
+  if (!fic || e.target.closest("#topbar, #quick, #player, #auto-bar, #hl-bar, .sheet, .scrim, .coach, .setup, a, button, summary, select, input, textarea, mark, .toast")) return;
   if (!getSelection().isCollapsed) return;
   const x = e.clientX / innerWidth;
   if (paged() && x < 0.28) flip(-1);
@@ -1415,7 +1621,7 @@ addEventListener("scroll", () => {
 let resizeT;
 addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (fic && paged()) relayout(readFrac()); }, 150); });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (fic && paged()) relayout(readFrac()); });
-addEventListener("pagehide", savePos);
+addEventListener("pagehide", () => { savePos(); updateWidget(); });
 document.addEventListener("visibilitychange", () => { if (document.hidden) savePos(); });
 addEventListener("keydown", e => {
   if (!fic || e.target.closest("input, select, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -1510,6 +1716,96 @@ $("#hl-remove").addEventListener("click", () => {
   $$(`mark[data-hl="${id}"]`).forEach(m => { const p = m.parentNode; m.replaceWith(...m.childNodes); p.normalize(); });
   closeSheets(); toast("Highlight removed.", 2000);
 });
+/* ---------------- bookmarks ---------------- */
+let bms = [];
+const saveBms = () => { if (fic) LS.set("bm:" + fic.id, bms); };
+function firstVisibleText() {
+  if (idx < 0) return "About this fic";
+  const pg = $("#page"), pr = pg.getBoundingClientRect();
+  for (const el of blocks()) {
+    if (el.closest("details:not([open])")) continue;
+    const r = el.getBoundingClientRect(); if (!r.width && !r.height) continue;
+    const vis = paged() ? (r.right > pr.left + 2 && r.left < pr.right - 2) : r.bottom > 60;
+    if (vis) { const t = clean(el.textContent); if (t) return t.length > 110 ? t.slice(0, 110) + "…" : t; }
+  }
+  return "";
+}
+function bmHere() {
+  if (!fic) return null;
+  const f = idx < 0 ? 0 : readFrac(), tol = paged() ? 0.5 / Math.max(1, pages - 1 || 1) : 0.03;
+  return bms.find(b => b.ch === idx && Math.abs(b.frac - f) <= tol) || null;
+}
+function updBmBtn() { $("#bm-btn").setAttribute("aria-pressed", String(!!bmHere())); }
+$("#bm-btn").addEventListener("click", () => {
+  const here = bmHere();
+  if (here) { bms = bms.filter(b => b !== here); saveBms(); updBmBtn(); toast("Bookmark removed.", 2000); return; }
+  bms.push({ id: "b" + Date.now().toString(36), ch: idx, frac: idx < 0 ? 0 : +readFrac().toFixed(4), text: firstVisibleText(), at: Date.now() });
+  saveBms(); updBmBtn(); toast("Bookmarked. Find it under Chapters.", 2500);
+});
+function drawBms() {
+  const sorted = bms.slice().sort((a, b) => a.ch - b.ch || a.frac - b.frac);
+  $("#bm-h").textContent = sorted.length ? `Your bookmarks (${sorted.length})` : "Your bookmarks";
+  $("#bm-list").innerHTML = sorted.length ? sorted.map(b => `<li><button class="go" type="button" data-bm="${b.id}"><small>${b.ch < 0 ? "About this fic" : fic.chapters.length > 1 ? "Chapter " + (b.ch + 1) : "Bookmark"} · ${Math.round((b.ch < 0 ? 0 : b.frac) * 100)}% through</small>${b.text ? `<em>${esc(b.text)}</em>` : ""}</button><button class="x" type="button" data-bmx="${b.id}" aria-label="Remove bookmark">${ICON_X}</button></li>`).join("")
+    : `<li><small class="hint" style="color:var(--muted);padding:12px 8px">Tap <b>Bookmark</b> in the controls to save your spot.</small></li>`;
+}
+$("#bm-list").addEventListener("click", e => {
+  const x = e.target.closest("[data-bmx]");
+  if (x) { bms = bms.filter(b => b.id !== x.dataset.bmx); saveBms(); drawBms(); updBmBtn(); return; }
+  const g = e.target.closest("[data-bm]"); if (!g) return;
+  const b = bms.find(v => v.id === g.dataset.bm); if (!b) return;
+  closeSheets(); showChapter(Math.max(minIdx(), b.ch), b.frac);
+});
+/* ---------------- quote cards ---------------- */
+const QC_STYLES = {
+  dark: { bg: "#17171c", fg: "#ecebe6", mu: "#9a98a3", ac: "#a5a8f2" },
+  paper: { bg: "#f6f4ee", fg: "#26252b", mu: "#6c6a74", ac: "#4446a0" },
+  rose: { bg: "#f7e4e4", fg: "#4a2430", mu: "#8a5a66", ac: "#b0405e" },
+  warm: { bg: "#1d1812", fg: "#efd8b0", mu: "#a8916f", ac: "#e3a55e" }
+};
+const qc = { text: "", title: "", author: "", style: LS.get("qcStyle", "dark") };
+function wrapLines(x, text, max) {
+  const out = []; let cur = "";
+  for (const w of text.split(/\s+/)) { const t = cur ? cur + " " + w : w; if (cur && x.measureText(t).width > max) { out.push(cur); cur = w; } else cur = t; }
+  if (cur) out.push(cur); return out;
+}
+function fitLine(x, t, max) { if (x.measureText(t).width <= max) return t; while (t.length > 1 && x.measureText(t + "…").width > max) t = t.slice(0, -1); return t.trim() + "…"; }
+function drawQuote() {
+  const c = $("#qc-canvas"), x = c.getContext("2d"), s = QC_STYLES[qc.style] || QC_STYLES.dark, W = 1080, H = 1350, pad = 110;
+  const serif = '"Literata", Georgia, "Times New Roman", serif', sans = '"Atkinson Hyperlegible", system-ui, sans-serif';
+  x.fillStyle = s.bg; x.fillRect(0, 0, W, H); x.textBaseline = "top"; x.textAlign = "left";
+  x.fillStyle = s.ac; x.font = `700 240px ${serif}`; x.fillText("“", pad - 14, 70);
+  const top = 330, bottom = H - pad - 170;
+  let size = 66, lines = [];
+  for (; size >= 28; size -= 2) { x.font = `500 ${size}px ${serif}`; lines = wrapLines(x, qc.text, W - pad * 2); if (lines.length * size * 1.42 <= bottom - top) break; }
+  const lh = size * 1.42, maxLines = Math.floor((bottom - top) / lh);
+  if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] = fitLine(x, lines[maxLines - 1] + "…", W - pad * 2); }
+  let y = top + Math.max(0, (bottom - top - lines.length * lh) / 2 - 20);
+  x.fillStyle = s.fg; lines.forEach((l, i) => x.fillText(l, pad, y + i * lh));
+  const by = H - pad - 110;
+  x.fillStyle = s.ac; x.fillRect(pad, by, 90, 6);
+  x.fillStyle = s.fg; x.font = `700 40px ${sans}`; x.fillText(fitLine(x, qc.title, W - pad * 2), pad, by + 30);
+  if (qc.author) { x.fillStyle = s.mu; x.font = `400 34px ${sans}`; x.fillText(fitLine(x, "by " + qc.author, W - pad * 2), pad, by + 84); }
+  $$("#qc-style button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === qc.style)));
+}
+function openQuoteCard(text, f) {
+  qc.text = clean(text); qc.title = f.title; qc.author = f.author || "";
+  openSheet("#sheet-qc"); drawQuote();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(drawQuote);
+}
+$("#hl-card").addEventListener("click", () => { if (hlOpen && fic) openQuoteCard(hlOpen.text, fic); });
+$("#qc-style").addEventListener("click", e => { const b = e.target.closest("[data-v]"); if (!b) return; qc.style = b.dataset.v; LS.set("qcStyle", qc.style); drawQuote(); });
+$("#qc-share").addEventListener("click", () => {
+  const c = $("#qc-canvas"), name = "Quote from " + qc.title.replace(/[^\w ]+/g, "").slice(0, 40).trim() + ".png";
+  if (Android && Android.shareImage) { try { Android.shareImage(c.toDataURL("image/png").split(",")[1], name); } catch { toast("Couldn't share the picture."); } return; }
+  c.toBlob(async blob => {
+    if (!blob) return toast("Couldn't make the picture.");
+    const file = new File([blob], name, { type: "image/png" });
+    try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast("Picture saved.", 2000);
+  }, "image/png");
+});
+
 function revealEl(el) {
   if (!el) return;
   if (paged()) {
@@ -1634,12 +1930,80 @@ function showPlayer() {
   positionQuick(); updatePager();
 }
 setInterval(() => { if (!$("#player").hidden && TTS.sleepAt) showPlayer(); }, 20000);
-$("#tts-btn").addEventListener("click", () => { setControls(false); if (TTS.playing) TTS.pause(); else TTS.play($("#player").hidden ? null : TTS.i); });
+$("#tts-btn").addEventListener("click", () => { setControls(false); AS.stop(); if (TTS.playing) TTS.pause(); else TTS.play($("#player").hidden ? null : TTS.i); });
 $("#tts-play").addEventListener("click", () => { if (TTS.playing) TTS.pause(); else TTS.play(TTS.i); });
 $("#tts-close").addEventListener("click", () => TTS.stop());
 $("#tts-rate").addEventListener("change", e => { settings.ttsRate = Number(e.target.value); LS.set("settings", settings); if (TTS.playing) TTS.play(TTS.i); });
 $("#tts-sleep").addEventListener("change", e => TTS.setSleep(e.target.value));
 if (!TTS.available()) $("#tts-btn").hidden = true;
+
+/* ---------------- auto-scroll ---------------- */
+const ICON_PAUSE2 = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+const AS = {
+  on: false, paused: false, raf: 0, t: null, last: 0, acc: 0,
+  wpm() { return Math.round(settings.wpm * settings.asF); },
+  start() {
+    if (!fic) return;
+    if (TTS.playing || !$("#player").hidden) TTS.stop();
+    this.on = true; this.paused = false; closeSheets(); setControls(false); this.show(); this.loop();
+  },
+  stop() {
+    this.on = false; cancelAnimationFrame(this.raf); clearTimeout(this.t);
+    if (!$("#auto-bar").hidden) { $("#auto-bar").hidden = true; positionQuick(); if (fic && paged()) relayout(readFrac()); }
+  },
+  toggle() { this.paused = !this.paused; cancelAnimationFrame(this.raf); clearTimeout(this.t); if (!this.paused) this.loop(); this.show(); },
+  show() {
+    const wasHidden = $("#auto-bar").hidden; $("#auto-bar").hidden = false;
+    $("#as-play").innerHTML = this.paused ? ICON_PLAY : ICON_PAUSE2;
+    $("#as-play").setAttribute("aria-label", this.paused ? "Keep going" : "Pause");
+    $("#as-title").textContent = this.paused ? "Auto-scroll paused" : "Auto-scroll";
+    $("#as-status").textContent = `${this.wpm()} words a minute`;
+    $("#as-speed").textContent = settings.asF.toFixed(2).replace(/0$/, "").replace(/\.0$/, "") + "×";
+    positionQuick();
+    if (wasHidden && fic && paged()) relayout(readFrac());
+  },
+  speed(d) { settings.asF = Math.max(0.5, Math.min(3, Math.round((settings.asF + d) * 4) / 4)); LS.set("settings", settings); this.show(); if (this.on && !this.paused) this.loop(); },
+  end() { this.stop(); toast("That's the end of the fic."); },
+  loop() {
+    cancelAnimationFrame(this.raf); clearTimeout(this.t);
+    if (!this.on || this.paused || !fic) return;
+    const wpm = this.wpm(), words = idx < 0 ? 120 : chWords(fic, idx);
+    if (paged()) {
+      const ms = Math.max(2500, (words / Math.max(1, pages)) / wpm * 60000);
+      this.t = setTimeout(() => {
+        if (!this.on || this.paused || !fic) return;
+        if (curPage >= pages - 1 && idx + 1 >= fic.chapters.length) { markChapterRead(idx); return this.end(); }
+        flip(1); setTimeout(() => this.loop(), 60);
+      }, ms);
+      return;
+    }
+    const secs = Math.max(15, words / wpm * 60);
+    this.last = performance.now(); this.acc = 0;
+    const step = now => {
+      if (!this.on || this.paused || !fic || paged()) return;
+      const dt = Math.min(0.25, (now - this.last) / 1000); this.last = now;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      if (scrollY >= max - 2) {
+        const wait = Math.min(20000, Math.max(2000, secs * 1000 * innerHeight / document.documentElement.scrollHeight));
+        this.t = setTimeout(() => {
+          if (!this.on || this.paused || !fic) return;
+          markChapterRead(idx);
+          if (idx + 1 < fic.chapters.length) { showChapter(idx + 1, 0); setTimeout(() => this.loop(), 400); } else this.end();
+        }, wait);
+        return;
+      }
+      this.acc += Math.max(6, max / secs) * dt;
+      if (this.acc >= 1) { const n = Math.floor(this.acc); this.acc -= n; window.scrollBy(0, n); }
+      this.raf = requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  }
+};
+$("#as-start").addEventListener("click", () => AS.start());
+$("#as-play").addEventListener("click", () => AS.toggle());
+$("#as-close").addEventListener("click", () => AS.stop());
+$("#as-slower").addEventListener("click", () => AS.speed(-0.25));
+$("#as-faster").addEventListener("click", () => AS.speed(0.25));
 
 /* ---------------- sheets & settings ---------------- */
 let lastFocus = null;
@@ -1649,16 +2013,17 @@ function openSheet(id) {
   const focusEl = s.querySelector("#toc-list .cur") || s.querySelector("[data-close]");
   focusEl && focusEl.focus({ preventScroll: true });
 }
-function closeSheets() { $("#scrim").hidden = true; $$(".sheet").forEach(s => s.hidden = true); if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true }); lastFocus = null; }
+function closeSheets() { if (!$("#sheet-fic").hidden) { clearTimeout(noteT); keepNote(); drawShelf(); } $("#scrim").hidden = true; $$(".sheet").forEach(s => s.hidden = true); if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true }); lastFocus = null; }
 $("#scrim").addEventListener("click", closeSheets);
 $$("[data-close]").forEach(b => b.addEventListener("click", closeSheets));
-$("#set-btn").addEventListener("click", () => openSheet("#sheet-settings"));
+$("#set-btn").addEventListener("click", () => { $("#row-auto").hidden = !fic; openSheet("#sheet-settings"); });
 $("#toc-btn").addEventListener("click", () => {
   const items = [];
   if (hasAbout(fic) && settings.about) items.push(`<li><button type="button" data-i="-1" class="${idx === -1 ? "cur" : ""}"><span class="n"></span><span>About this fic</span></button></li>`);
   fic.chapters.forEach((c, i) => items.push(`<li><button type="button" data-i="${i}" class="${idx === i ? "cur" : ""}"><span class="n">${i + 1}</span><span>${esc(c.title)}</span></button></li>`));
   $("#toc-list").innerHTML = items.join("");
   const sorted = hls.slice().sort((a, b) => a.ch - b.ch || a.b - b.b || a.s - b.s);
+  drawBms();
   $("#hl-h").textContent = sorted.length ? `Your highlights (${sorted.length})` : "Your highlights";
   $("#hl-list").innerHTML = sorted.length ? sorted.map(h => `<li><button type="button" data-hlgo="${h.id}"><small>${fic.chapters.length > 1 ? "Chapter " + (h.ch + 1) : "Highlight"}</small><em>“${esc(h.text.length > 160 ? h.text.slice(0, 160) + "…" : h.text)}”</em>${h.note ? `<span>${esc(h.note)}</span>` : ""}</button></li>`).join("")
     : `<li><small class="hint" style="color:var(--muted)">Press and hold on some words while reading to highlight them.</small></li>`;
@@ -1672,11 +2037,12 @@ $("#hl-list").addEventListener("click", e => {
   if (h.ch !== idx) showChapter(h.ch, 0);
   setTimeout(() => revealEl($(`mark[data-hl="${h.id}"]`)), 120);
 });
-for (const [id, key] of [["seg-theme", "theme"], ["seg-font", "font"], ["seg-width", "width"], ["seg-mode", "mode"]])
+$("#r-nl").addEventListener("input", e => { settings.nlStr = Number(e.target.value); applySettings(); });
+for (const [id, key] of [["seg-theme", "theme"], ["seg-font", "font"], ["seg-width", "width"], ["seg-mode", "mode"], ["seg-nl", "nl"]])
   $("#" + id).addEventListener("click", e => {
     const b = e.target.closest("button[data-v]"); if (!b) return;
     const f = fic ? readFrac() : 0; settings[key] = b.dataset.v; applySettings();
-    if (fic && key !== "theme") relayout(f);
+    if (fic && key !== "theme" && key !== "nl") { if (key === "mode") AS.stop(); relayout(f); }
   });
 $("#r-size").addEventListener("input", e => { const f = fic ? readFrac() : 0; settings.size = Number(e.target.value); applySettings(); if (fic) relayout(f); });
 $("#r-lh").addEventListener("input", e => { const f = fic ? readFrac() : 0; settings.lh = Number(e.target.value); applySettings(); if (fic) relayout(f); });
@@ -1786,7 +2152,8 @@ function mergeJson(k, curStr, incStr) {
       return JSON.stringify(out);
     }
     if (k === "ficnook:lib" || k === "ficnook:folderSeen") return JSON.stringify({ ...inc, ...cur });
-    if (k.startsWith("ficnook:hl:")) { const ids = new Set(cur.map(h => h.id)); return JSON.stringify([...cur, ...inc.filter(h => !ids.has(h.id))]); }
+    if (k === "ficnook:shelves") return JSON.stringify([...new Set([...cur, ...inc])]);
+    if (k.startsWith("ficnook:hl:") || k.startsWith("ficnook:bm:")) { const ids = new Set(cur.map(h => h.id)); return JSON.stringify([...cur, ...inc.filter(h => !ids.has(h.id))]); }
   } catch {}
   return curStr;
 }
@@ -1915,7 +2282,7 @@ function cardInner(f, partLabel) {
       <span class="t">${m.fav ? '<span class="fav-mark" aria-label="Favourite">★</span> ' : ""}${partLabel ? esc(partLabel) + ": " : ""}${esc(f.title)}</span>
       ${!partLabel && f.author ? `<span class="a">by ${esc(f.author)}</span>` : ""}
       ${!partLabel && fandom ? `<span class="fd">${esc(fandom)}</span>` : ""}
-      <span class="meta">${progressText(f)}</span>
+      <span class="meta">${m.stars ? `<span class="rate" aria-label="${m.stars} stars">${"★".repeat(m.stars)}</span> · ` : ""}${progressText(f)}</span>
       <span class="bar" aria-hidden="true"><i style="width:${barW(f)}%"></i></span>
     </button>
     <button class="more-btn" type="button" aria-label="More about ${esc(f.title)}">${ICON_MORE}</button>`;
@@ -1929,13 +2296,21 @@ function drawShelf() {
     added: (a, b) => (b.added || 0) - (a.added || 0),
     title: (a, b) => a.title.localeCompare(b.title),
     author: (a, b) => (a.author || "").localeCompare(b.author || "") || a.title.localeCompare(b.title),
-    short: (a, b) => minsLeft(a) - minsLeft(b)
+    short: (a, b) => minsLeft(a) - minsLeft(b),
+    stars: (a, b) => ((lib[b.id] || {}).stars || 0) - ((lib[a.id] || {}).stars || 0) || opened(b) - opened(a)
   };
   const base = fics.filter(passesFilters);
   const counts = { all: base.length, reading: 0, toread: 0, finished: 0, fav: 0 };
   base.forEach(f => { counts[statusOf(f)]++; if (lib[f.id] && lib[f.id].fav) counts.fav++; });
+  if (shelfTab.startsWith("c:") && !myShelves.includes(shelfTab.slice(2))) shelfTab = "all";
+  $$("#tabs [data-custom]").forEach(b => b.remove());
+  for (const name of myShelves) {
+    const b = document.createElement("button"); b.type = "button"; b.setAttribute("role", "tab"); b.dataset.tab = "c:" + name; b.dataset.custom = "1";
+    b.innerHTML = `${esc(name)} <span></span>`; $("#tabs").appendChild(b);
+    counts["c:" + name] = base.filter(f => onShelf(f, name)).length;
+  }
   $$("#tabs button").forEach(b => { b.setAttribute("aria-selected", String(b.dataset.tab === shelfTab)); b.querySelector("span").textContent = counts[b.dataset.tab]; });
-  let shown = base.filter(f => shelfTab === "all" || (shelfTab === "fav" ? lib[f.id] && lib[f.id].fav : statusOf(f) === shelfTab));
+  let shown = base.filter(f => shelfTab === "all" || (shelfTab.startsWith("c:") ? onShelf(f, shelfTab.slice(2)) : shelfTab === "fav" ? lib[f.id] && lib[f.id].fav : statusOf(f) === shelfTab));
   if (q) { const words = q.split(" "); shown = shown.filter(f => words.every(w => haystack(f).includes(w))); }
   shown.sort(sorts[$("#sort").value] || sorts.read);
   // Series with two or more parts fold into one card, parts in order.
@@ -1956,7 +2331,7 @@ function drawShelf() {
   $("#shelf-count").textContent = !fics.length ? "" : `${fics.length} fic${fics.length === 1 ? "" : "s"}`;
   if (!fics.length) { list.innerHTML = `<li><p class="empty">Nothing here yet. Tap <b>Add a fic</b> to add your first one.</p></li>`; return; }
   if (!items.length) {
-    const tabName = { reading: "Reading", toread: "To read", finished: "Finished", fav: "Favourites" }[shelfTab];
+    const tabName = { reading: "Reading", toread: "To read", finished: "Finished", fav: "Favourites" }[shelfTab] || (shelfTab.startsWith("c:") ? `“${esc(shelfTab.slice(2))}”` : "");
     list.innerHTML = `<li><p class="empty">${q ? `No fics match “${esc(q)}”. Try fewer words, or a tag, character or fandom name.` : tabName ? `Nothing on your ${tabName} shelf yet.` : "No fics to show."}</p></li>`;
     return;
   }
@@ -2006,6 +2381,10 @@ function openFicSheet(id) {
     ${sum ? `<p class="fic-sum">${esc(sum)}</p>` : ""}
     <div class="row"><span class="lab">Shelf</span><div class="seg" id="fs-status">${Object.entries(STATUS_NAMES).map(([v, l]) => `<button type="button" data-v="${v}" aria-pressed="${v === st}">${l}</button>`).join("")}</div></div>
     <div class="row"><button class="btn-wide" type="button" id="fs-fav" aria-pressed="${!!m.fav}">${m.fav ? "★ In your favourites" : "☆ Add to favourites"}</button></div>
+    <div class="row"><span class="lab">Your rating</span><div class="stars" id="fs-stars">${[1, 2, 3, 4, 5].map(n => `<button type="button" data-n="${n}" class="${(m.stars || 0) >= n ? "on" : ""}" aria-label="${n} star${n === 1 ? "" : "s"}" aria-pressed="${m.stars === n}">★</button>`).join("")}</div></div>
+    <div class="row"><span class="lab">Your shelves</span><div class="chips" id="fs-shelves">${myShelves.map(n => `<button class="chip" type="button" data-shelf="${esc(n)}" aria-pressed="${onShelf(f, n)}">${esc(n)}</button>`).join("")}<button class="chip add" type="button" id="fs-newshelf">+ New shelf</button></div>
+      <div class="add-row" id="fs-newrow" hidden><label class="sr" for="fs-newname">New shelf name</label><input type="text" id="fs-newname" placeholder="Like Comfort reads" maxlength="40" autocomplete="off"><button class="btn-small" type="button" id="fs-newadd">Add</button></div></div>
+    <div class="row"><label for="fs-note">Your private notes</label><textarea id="fs-note" placeholder="What did you think? Only you can see this.">${esc(m.note || "")}</textarea></div>
     ${tags.length ? `<div class="row"><span class="lab">Tags</span><div class="chips">${tags.map(t => `<button class="chip" type="button" data-tag="${esc(t)}">${esc(t)}</button>`).join("")}</div><small class="hint">Tap a tag to find other fics with it.</small></div>` : ""}
     <div class="sheet-actions"><button class="btn-small warn" type="button" id="fs-del">Remove from library</button><button class="btn-primary" type="button" id="fs-read">${pct(f) ? "Keep reading" : "Start reading"}</button></div>`;
   if ($("#sheet-fic").hidden) openSheet("#sheet-fic");
@@ -2015,6 +2394,12 @@ $("#fic-body").addEventListener("click", async e => {
   const sb = e.target.closest("#fs-status [data-v]");
   if (sb) { if (sb.dataset.v === "finished" && !stats.fin[f.id]) finishFic(f); else setStatus(f, sb.dataset.v); openFicSheet(f.id); drawShelf(); return; }
   if (e.target.closest("#fs-fav")) { const m = lib[f.id] || (lib[f.id] = {}); m.fav = !m.fav; saveLib(); openFicSheet(f.id); drawShelf(); return; }
+  const star = e.target.closest("#fs-stars [data-n]");
+  if (star) { const m = lib[f.id] || (lib[f.id] = {}), n = Number(star.dataset.n); m.stars = m.stars === n ? 0 : n; saveLib(); keepNote(); openFicSheet(f.id); drawShelf(); return; }
+  const sh = e.target.closest("#fs-shelves [data-shelf]");
+  if (sh) { toggleShelf(f, sh.dataset.shelf); keepNote(); openFicSheet(f.id); drawShelf(); return; }
+  if (e.target.closest("#fs-newshelf")) { $("#fs-newrow").hidden = false; $("#fs-newname").focus(); return; }
+  if (e.target.closest("#fs-newadd")) { const n = addShelf($("#fs-newname").value); if (n) { if (!onShelf(f, n)) toggleShelf(f, n); keepNote(); openFicSheet(f.id); drawShelf(); } return; }
   const chip = e.target.closest(".chip");
   if (chip) { closeSheets(); $("#q").value = chip.dataset.tag; shelfTab = "all"; drawShelf(); return; }
   if (e.target.closest("#fs-read")) { closeSheets(); openFic(f.id); return; }
@@ -2024,9 +2409,30 @@ $("#fic-body").addEventListener("click", async e => {
     else { del.dataset.armed = "1"; del.textContent = "Tap again to remove it"; }
   }
 });
+function keepNote() { const t = $("#fs-note"); if (t && sheetFic) saveNote(sheetFic, t.value); }
+function saveNote(f, v) { const m = lib[f.id] || (lib[f.id] = {}); v = v.trim(); if ((m.note || "") === v) return; if (v) m.note = v; else delete m.note; saveLib(); hayCache.delete(f.id); }
+let noteT;
+$("#fic-body").addEventListener("input", e => { if (e.target.id === "fs-note" && sheetFic) { const f = sheetFic, v = e.target.value; clearTimeout(noteT); noteT = setTimeout(() => saveNote(f, v), 400); } });
+$("#fic-body").addEventListener("keydown", e => { if (e.target.id === "fs-newname" && e.key === "Enter") { e.preventDefault(); $("#fs-newadd").click(); } });
+function addShelf(name) {
+  name = clean(name).slice(0, 40); if (!name) return "";
+  const have = myShelves.find(n => n.toLowerCase() === name.toLowerCase()); if (have) return have;
+  if (["all", "reading", "to read", "finished", "favourites"].includes(name.toLowerCase())) { toast("You already have that shelf."); return ""; }
+  myShelves.push(name); saveShelves(); return name;
+}
+function toggleShelf(f, name) {
+  const m = lib[f.id] || (lib[f.id] = {}); const list = m.shelves || [];
+  m.shelves = list.includes(name) ? list.filter(n => n !== name) : [...list, name];
+  if (!m.shelves.length) delete m.shelves; saveLib();
+}
+function removeShelf(name) {
+  myShelves = myShelves.filter(n => n !== name); saveShelves();
+  for (const m of Object.values(lib)) if (m.shelves) { m.shelves = m.shelves.filter(n => n !== name); if (!m.shelves.length) delete m.shelves; }
+  saveLib(); if (shelfTab === "c:" + name) { shelfTab = "all"; LS.set("tab", shelfTab); }
+}
 async function removeFic(f) {
   if (f.sample) LS.set("sampleRemoved", true);
-  await DB.del(f.id); LS.del("pos:" + f.id); LS.del("opened:" + f.id); LS.del("hl:" + f.id); delete lib[f.id]; saveLib(); renderShelf();
+  await DB.del(f.id); LS.del("pos:" + f.id); LS.del("opened:" + f.id); LS.del("hl:" + f.id); LS.del("bm:" + f.id); delete lib[f.id]; saveLib(); renderShelf();
 }
 
 /* ---------------- Me ---------------- */
@@ -2038,6 +2444,10 @@ function renderMe() {
     <div class="tile"><b>${s.secs >= 3600 ? (s.secs / 3600).toFixed(1) + " h" : Math.round(s.secs / 60) + " min"}</b><span>time reading</span></div>
     <div class="tile"><b>${s.best}</b><span>day${s.best === 1 ? "" : "s"} in a row, your best</span></div>`;
   $("#stats-btn").textContent = `See your ${y} recap`;
+  renderGoal();
+  $("#my-shelves").innerHTML = myShelves.length
+    ? myShelves.map(n => `<li><span>${esc(n)} <small>· ${fics.filter(f => onShelf(f, n)).length}</small></span><button class="btn-small warn" type="button" data-rm="${esc(n)}">Remove</button></li>`).join("")
+    : "";
   const rows = [];
   for (const f of fics) for (const h of LS.get("hl:" + f.id, [])) rows.push({ f, h });
   rows.sort((a, b) => (b.h.at || 0) - (a.h.at || 0));
@@ -2053,7 +2463,47 @@ $("#me-hl").addEventListener("click", async e => {
   const h = hls.find(x => x.id === b.dataset.h); if (!h) return;
   setTimeout(() => { if (h.ch !== idx) showChapter(h.ch, 0); setTimeout(() => revealEl($(`mark[data-hl="${h.id}"]`)), 150); }, 50);
 });
-$("#me-settings").addEventListener("click", () => openSheet("#sheet-settings"));
+$("#me-settings").addEventListener("click", () => { $("#row-auto").hidden = true; openSheet("#sheet-settings"); });
+$("#new-shelf-btn").addEventListener("click", () => { const n = addShelf($("#new-shelf").value); if (n) { $("#new-shelf").value = ""; toast(`Added the “${n}” shelf. Put fics on it with the ⋮ button.`, 3500); renderMe(); drawShelf(); } });
+$("#new-shelf").addEventListener("keydown", e => { if (e.key === "Enter") $("#new-shelf-btn").click(); });
+$("#my-shelves").addEventListener("click", e => {
+  const b = e.target.closest("[data-rm]"); if (!b) return;
+  if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again"; return; }
+  removeShelf(b.dataset.rm); renderMe(); drawShelf(); toast("Shelf removed. The fics are still in your Library.", 3000);
+});
+
+/* ---------------- reading goal ---------------- */
+const GOAL_NAMES = { week: ["fic", "this week"], month: ["fic", "this month"], year: ["fic", "this year"], day: ["minute", "today"] };
+function goalProgress(g) {
+  const now = new Date();
+  if (g.type === "day") return Math.floor(((stats.days[dayKey()] || {}).s || 0) / 60);
+  let from;
+  if (g.type === "week") { from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - ((now.getDay() + 6) % 7)); }
+  else if (g.type === "month") from = new Date(now.getFullYear(), now.getMonth(), 1);
+  else from = new Date(now.getFullYear(), 0, 1);
+  return Object.values(stats.fin).filter(x => x.d >= from.getTime()).length;
+}
+function renderGoal() {
+  const g = LS.get("goal", null);
+  $("#goal-edit").hidden = true; $("#goal-btn").hidden = false;
+  if (!g) { $("#goal-show").innerHTML = `<p>Set yourself a little goal, like 4 fics a month or 20 minutes a day.</p>`; $("#goal-btn").textContent = "Set a goal"; return; }
+  const have = goalProgress(g), [unit, when] = GOAL_NAMES[g.type] || GOAL_NAMES.month;
+  const done = have >= g.n, pc = Math.min(100, Math.round(have / g.n * 100));
+  $("#goal-show").innerHTML = `<p class="goal-text"><b>${Math.min(have, 99999)}</b> of ${g.n} ${unit}${g.n === 1 ? "" : "s"} ${when}</p>
+    <div class="goal-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pc}"><i style="width:${pc}%"></i></div>
+    <p>${done ? "You did it! Anything more is a bonus." : `${g.n - have} to go.`}</p>`;
+  $("#goal-btn").textContent = "Change goal";
+}
+$("#goal-btn").addEventListener("click", () => {
+  const g = LS.get("goal", null) || { n: 4, type: "month" };
+  $("#goal-n").value = g.n; $("#goal-type").value = g.type;
+  $("#goal-edit").hidden = false; $("#goal-btn").hidden = true;
+});
+$("#goal-save").addEventListener("click", () => {
+  const n = Math.max(1, Math.min(9999, Math.round(Number($("#goal-n").value) || 0)));
+  LS.set("goal", { n, type: $("#goal-type").value }); renderGoal();
+});
+$("#goal-off").addEventListener("click", () => { LS.del("goal"); renderGoal(); });
 
 /* ---------------- reader controls ---------------- */
 let ctrlY = 0;
@@ -2062,12 +2512,12 @@ function setControls(on) {
   $("#quick").hidden = !on;
   if (on) { updateQuick(); positionQuick(); }
 }
-function positionQuick() { $("#quick").style.bottom = $("#player").hidden ? "" : $("#player").offsetHeight + "px"; }
+function positionQuick() { const h = ($("#player").hidden ? 0 : $("#player").offsetHeight) + ($("#auto-bar").hidden ? 0 : $("#auto-bar").offsetHeight); $("#quick").style.bottom = h ? h + "px" : ""; }
 function updateQuick() {
   if (!fic) return;
   $("#q-size").textContent = settings.size + "px";
   $$("#q-themes button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === settings.theme)));
-  $("#tts-btn").setAttribute("aria-pressed", String(TTS.playing));
+  $("#tts-btn").setAttribute("aria-pressed", String(TTS.playing)); updBmBtn();
   const n = fic.chapters.length;
   let info = idx < 0 ? "About this fic" : n > 1 ? `Chapter ${idx + 1} of ${n}` : "";
   if (paged()) info += (info ? " · " : "") + `page ${curPage + 1} of ${pages}`;
@@ -2160,6 +2610,8 @@ window.ficNookFolderChanged = () => {
   LS.set("folderSeen", {});
   syncFolder(true);
 };
+window.ficNookToast = m => toast(m);
+window.ficNookOpenLast = () => { const id = lastFicId(); if (id && (!fic || fic.id !== id)) { if (fic) closeReader(); openFic(id); } };
 window.ficNookResume = () => { if (!fic && Date.now() - lastSync > 15000) syncFolder(false); };
 window.ficNookUpdateAvailable = ver => { $("#update-msg").textContent = `Fic Nook ${ver} is ready.`; $("#update-bar").hidden = false; };
 window.ficNookUpdateStatus = (msg, canTap) => { const b = $("#update-btn"); b.textContent = msg; b.disabled = !canTap; };
@@ -2222,7 +2674,10 @@ applySettings();
 document.body.classList.add("has-nav");
 showView("home");
 maybeSetup();
-DB.open().then(renderShelf).then(() => syncFolder(false));
+DB.open().then(renderShelf).then(() => {
+  try { if (Android && Android.takeLaunch && Android.takeLaunch() === "resume" && LS.get("setupDone", false)) window.ficNookOpenLast(); } catch {}
+  return syncFolder(false);
+});
 })();
 </script>
 

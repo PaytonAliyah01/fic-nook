@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Fic Nook</string>
+    <string name="widget_name">Keep reading</string>
+    <string name="widget_desc">Jump back into the fic you\'re reading</string>
 </resources>
