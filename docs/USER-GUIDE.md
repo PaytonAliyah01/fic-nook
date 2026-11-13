@@ -28,10 +28,11 @@ Download it again from AO3. FicNook recognises it's the same fic (it uses the AO
 
 ## Getting around
 
-The bar along the bottom has three buttons:
+The bar along the bottom has four buttons:
 
 - **Library**: all your fics.
 - **Reading**: jumps straight back into the fic you were reading.
+- **Write**: your own stories.
 - **Me**: your goal, shelves, stats, highlights, settings, fic folder, backups and help.
 
 The Android **Back** button closes whatever is open, one step at a time.
@@ -118,6 +119,18 @@ Tap a highlight, then **Make a quote card**. You get a pretty picture of the quo
 ### PDFs with special fonts
 
 Authors sometimes use a different font for text messages, signs or letters. FicNook spots these in PDFs and shows them in a different font too (typewriter-style for text messages, a clean sans-serif for others). It also keeps *italics* and **bold**. PDFs are made for printing, so FicNook has to guess where paragraphs and chapters start. If a fic looks off, try the EPUB download instead.
+
+## Write
+
+The **Write** tab is for your own stories. Everything stays on your phone (and in your backups).
+
+- Tap **Start a new story** (or **+ New story**). The editor opens right away so you can start writing.
+- **The editor:** type the chapter title at the top and the story below. The buttons at the top make text **bold** or *italic*, add a scene break (* * *), or undo and redo. Open **Note at the start** or **Note at the end** to talk to your readers, like author's notes on AO3. It saves by itself while you type; the top line shows the word count and "saved".
+- **Draft or Done:** each chapter starts as a **Draft**. Tap **Draft** at the top right when the chapter is finished to mark it **Done**.
+- Tap **‹ Done** to go back to your story's page. There you can fill in the title, your pen name, description, fandom, ships, tags and rating, pick a cover, and see all chapters. Tap a chapter to keep writing, or **+ Add a chapter**.
+- **Read it like a fic** shows your story in the reader, exactly like a downloaded fic.
+- **Copy all the text** copies the whole story so you can paste it anywhere. In the app, **Save as a file** saves it as a .txt file (Google Drive shows up in the list).
+- **Delete story** (tap twice) removes it for good. **Delete chapter** is in the editor.
 
 ## Me
 

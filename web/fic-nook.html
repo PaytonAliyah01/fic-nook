@@ -285,7 +285,7 @@ body.has-nav { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
 .view-head span { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .tools { margin-bottom: 0; }
 .tabs { margin-bottom: 0; }
-.tabbar { position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border-top: 1px solid var(--line);
+.tabbar { position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-top: 1px solid var(--line);
   padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); }
 .tabbar button { background: none; border: 0; display: grid; justify-items: center; align-content: center; gap: 3px; padding: 6px 4px; font-size: .8rem; color: var(--muted); border-radius: 12px; min-height: 58px; }
 .tabbar svg { width: 24px; height: 24px; }
@@ -446,6 +446,47 @@ body.controls .topbar { transform: none; }
 .detail-stats { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .85rem; color: var(--muted); margin: 0 0 12px; }
 .detail-stats b { color: var(--fg); font-weight: 700; }
 .cover-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ---------- Write your own stories (1.12) ---------- */
+#write, #work { max-width: 40rem; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding-block: 22px 24px; }
+.write-empty { text-align: center; padding: 28px 18px; border: 1px dashed var(--line); border-radius: 16px; display: grid; gap: 10px; justify-items: center; }
+.write-empty h2 { font-family: var(--book); margin: 0; font-size: 1.3rem; }
+.write-empty p { margin: 0; color: var(--muted); }
+#works { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.back-link { all: unset; cursor: pointer; color: var(--accent); font-weight: 700; display: inline-flex; gap: 4px; align-items: center; padding: 6px 0; }
+.work-top { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 16px; align-items: start; }
+.work-top .cover { width: 112px; }
+.field { display: grid; gap: 6px; }
+.field label, .field .lab { font-weight: 700; font-size: .9rem; }
+.field input, .field textarea, .field select { width: 100%; box-sizing: border-box; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 10px; padding: 11px 12px; font: inherit; }
+.field textarea { min-height: 6em; resize: vertical; }
+.field small { color: var(--muted); }
+.chap-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.chap-list button { all: unset; box-sizing: border-box; cursor: pointer; width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.chap-list button:focus-visible { outline: 2px solid var(--accent); }
+.chap-list .ct { font-weight: 700; overflow-wrap: anywhere; }
+.chap-list .cm { grid-column: 1; font-size: .82rem; color: var(--muted); }
+.chap-list .st { grid-row: 1 / span 2; grid-column: 2; align-self: center; font-size: .75rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+.chap-list .st.done { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.work-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+#editor { position: fixed; inset: 0; z-index: 20; background: var(--bg); display: grid; grid-template-rows: auto auto minmax(0, 1fr); }
+#editor[hidden] { display: none; }
+.ed-bar { display: flex; align-items: center; gap: 8px; padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 8px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.ed-bar .grow { flex: 1; min-width: 0; font-size: .82rem; color: var(--muted); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ed-tools { display: flex; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.ed-tools button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 9px; min-width: 42px; padding: 8px 10px; font-size: .95rem; flex: none; }
+.ed-tools button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.ed-scroll { overflow-y: auto; padding: 16px 16px 40vh; }
+.ed-inner { max-width: var(--measure); margin: 0 auto; display: grid; gap: 12px; }
+#ed-title { font-family: var(--book); font-size: 1.4rem; font-weight: 600; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--fg); padding: 8px 0; width: 100%; }
+#ed-title:focus { outline: none; border-color: var(--accent); }
+#ed-body { font-family: var(--read-font); font-size: var(--fs); line-height: var(--lh); min-height: 50vh; outline: none; overflow-wrap: anywhere; }
+#ed-body p { margin: 0 0 .9em; }
+#ed-body hr { border: 0; text-align: center; margin: 1.4em 0; }
+#ed-body hr::after { content: "* * *"; color: var(--muted); }
+#ed-body:empty::before { content: attr(data-placeholder); color: var(--muted); }
+.ed-note summary { cursor: pointer; color: var(--accent); font-weight: 700; font-size: .9rem; padding: 4px 0; }
+.ed-note textarea { width: 100%; box-sizing: border-box; min-height: 4.5em; border: 1px solid var(--line); background: var(--note-bg); color: var(--fg); border-radius: 10px; padding: 10px; font: inherit; margin-top: 6px; }
 @media (prefers-reduced-motion: reduce) { .topbar { transition: none; } .spin { animation-duration: 3s; } }
 </style>
 
@@ -600,6 +641,50 @@ body.controls .topbar { transform: none; }
   <div id="stats-body" style="display:grid;gap:14px"></div>
 </main>
 
+
+<main id="write" class="view" hidden>
+  <div class="view-head"><h1>Write</h1><span id="works-count"></span></div>
+  <div id="write-empty" class="write-empty" hidden>
+    <h2>Your own stories</h2>
+    <p>Write stories chapter by chapter, keep drafts, give them a cover and read them back like a real fic. Everything stays on your phone.</p>
+    <button class="btn-primary" type="button" data-new-work>Start a new story</button>
+  </div>
+  <ul id="works"></ul>
+  <button class="btn-primary" type="button" id="new-work-btn" data-new-work hidden>+ New story</button>
+</main>
+
+<main id="work" class="view" hidden>
+  <button class="back-link" type="button" id="work-back">‹ Your stories</button>
+  <div class="work-top"><span id="work-cover"></span>
+    <div class="field"><label for="wk-title">Title</label><input type="text" id="wk-title" maxlength="200" placeholder="Untitled story" autocomplete="off">
+      <label for="wk-author">Your pen name</label><input type="text" id="wk-author" maxlength="80" placeholder="Like moonlit_writer" autocomplete="off"></div></div>
+  <div class="cover-row"><button class="btn-small" type="button" id="wk-cover-style">New cover colors</button><button class="btn-small" type="button" id="wk-cover-pic">Use a picture</button><button class="btn-small" type="button" id="wk-cover-clear" hidden>Remove picture</button></div>
+  <div class="field"><label for="wk-sum">Description</label><textarea id="wk-sum" placeholder="What is your story about?"></textarea></div>
+  <div class="field"><label for="wk-fandom">Fandom</label><input type="text" id="wk-fandom" placeholder="Leave empty for an original story" autocomplete="off"></div>
+  <div class="field"><label for="wk-ship">Ships</label><input type="text" id="wk-ship" placeholder="Like Kara Danvers/Lena Luthor" autocomplete="off"></div>
+  <div class="field"><label for="wk-tags">Tags</label><input type="text" id="wk-tags" placeholder="Fluff, Slow Burn, Coffee Shop AU" autocomplete="off"><small>Put a comma between tags.</small></div>
+  <div class="field"><label for="wk-rating">Rating</label><select id="wk-rating"><option value="">Not rated</option><option>General Audiences</option><option>Teen And Up Audiences</option><option>Mature</option><option>Explicit</option></select></div>
+  <div class="field"><span class="lab" id="wk-chap-h">Chapters</span><ul class="chap-list" id="wk-chaps" aria-labelledby="wk-chap-h"></ul><button class="btn-small" type="button" id="wk-add-chap">+ Add a chapter</button></div>
+  <div class="work-actions"><button class="btn-small" type="button" id="wk-read">Read it like a fic</button><button class="btn-small" type="button" id="wk-copy">Copy all the text</button><button class="btn-small" type="button" id="wk-save" hidden>Save as a file</button><button class="btn-small warn" type="button" id="wk-del">Delete story</button></div>
+</main>
+
+<div id="editor" hidden role="dialog" aria-label="Write a chapter">
+  <div class="ed-bar"><button class="btn-small" type="button" id="ed-back">‹ Done</button><span class="grow" id="ed-status" role="status"></span><button class="btn-small" type="button" id="ed-state"></button></div>
+  <div class="ed-tools" role="toolbar" aria-label="Formatting">
+    <button type="button" data-cmd="bold" aria-label="Bold"><b>B</b></button>
+    <button type="button" data-cmd="italic" aria-label="Italic"><i>I</i></button>
+    <button type="button" data-cmd="hr" aria-label="Scene break">* * *</button>
+    <button type="button" data-cmd="undo" aria-label="Undo">↶</button>
+    <button type="button" data-cmd="redo" aria-label="Redo">↷</button>
+    <button type="button" id="ed-del" class="warn">Delete chapter</button>
+  </div>
+  <div class="ed-scroll"><div class="ed-inner">
+    <label class="sr" for="ed-title">Chapter title</label><input type="text" id="ed-title" placeholder="Chapter title (optional)" maxlength="200" autocomplete="off">
+    <details class="ed-note" id="ed-note1"><summary>Note at the start</summary><label class="sr" for="ed-start">Note at the start</label><textarea id="ed-start" placeholder="Talk to your readers before the chapter."></textarea></details>
+    <div id="ed-body" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Chapter text" data-placeholder="Start writing here…" spellcheck="true"></div>
+    <details class="ed-note" id="ed-note2"><summary>Note at the end</summary><label class="sr" for="ed-end">Note at the end</label><textarea id="ed-end" placeholder="Thank your readers, tease the next chapter…"></textarea></details>
+  </div></div>
+</div>
 <button class="fab" id="open-btn" type="button">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
   Add a fic
@@ -613,6 +698,10 @@ body.controls .topbar { transform: none; }
   <button type="button" data-view="read" id="nav-read">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5.5C5.5 4 9 4 12 6c3-2 6.5-2 9-.5V19c-2.5-1.5-6-1.5-9 .5-3-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/></svg>
     Reading
+  </button>
+  <button type="button" data-view="write">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>
+    Write
   </button>
   <button type="button" data-view="me">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
@@ -1473,7 +1562,7 @@ const filterCount = () => ["fandom", "ship", "rating", "done"].filter(k => filte
 async function renderShelf() {
   const all = await DB.all();
   if (!all.some(f => f.sample) && !LS.get("sampleRemoved", false)) { const s = sampleFic(); await DB.put(s); all.push(s); }
-  fics = all; hayCache.clear();
+  works = all.filter(f => f.mine); fics = all.filter(f => !f.mine); hayCache.clear();
   drawShelf(); updateWidget();
 }
 function updateWidget() {
@@ -1525,14 +1614,14 @@ const paged = () => settings.mode === "pages" && !!fic;
 const hasAbout = f => !!(f.about || (f.fields && f.fields.length));
 function minIdx() { return settings.about && hasAbout(fic) ? -1 : 0; }
 async function openFic(id) {
-  fic = fics.find(f => f.id === id) || (await DB.all()).find(f => f.id === id);
+  fic = fics.find(f => f.id === id) || works.find(f => f.id === id) || (await DB.all()).find(f => f.id === id);
   if (!fic) return;
   LS.set("opened:" + id, Date.now());
   if (statusOf(fic) === "toread" || !(lib[id] && lib[id].s)) { if (statusOf(fic) !== "finished") setStatus(fic, "reading"); }
   hls = LS.get("hl:" + id, []); bms = LS.get("bm:" + id, []);
   if (lib[id] && lib[id].newCh) { delete lib[id].newCh; saveLib(); }
   const pos = LS.get("pos:" + id, null);
-  for (const v of ["home", "me", "stats"]) $("#" + v).hidden = true;
+  for (const v of ["home", "me", "stats", "write", "work"]) $("#" + v).hidden = true;
   $("#tabbar").hidden = true; $("#open-btn").hidden = true; document.body.classList.remove("has-nav"); setControls(false);
   $("#reader").hidden = false; $("#progress").hidden = false;
   showHint();
@@ -1548,7 +1637,8 @@ async function openFic(id) {
 function closeReader() {
   TTS.stop(); AS.stop(); savePos(); fic = null;
   $("#reader").hidden = true; $("#progress").hidden = true; $("#hl-bar").hidden = true;
-  $("#tabbar").hidden = false; document.body.classList.add("has-nav"); setControls(false); showView("home");
+  const backTo = readerFrom; readerFrom = "";
+  $("#tabbar").hidden = false; document.body.classList.add("has-nav"); setControls(false); if (backTo) openWork(backTo); else showView("home");
   document.body.classList.remove("reading", "paged"); closeSheets(); updVol();
   const pg = $("#page"); pg.style.height = ""; pg.style.columnWidth = "";
   try { history.replaceState(null, "", location.pathname + location.search); } catch {}
@@ -2275,7 +2365,7 @@ async function openFile(file, progress = busy) {
   const words = res.chapters.reduce((n, c) => n + (c.html.replace(/<[^>]+>/g, " ").match(/\S+/g) || []).length, 0);
   const all = await DB.all();
   let id = workId ? "w" + workId : "f" + hashStr(norm(res.title) + "|" + norm(res.author));
-  const old = all.find(f => !f.sample && (f.id === id || (workId && f.workId === workId) || (norm(f.title) === norm(res.title) && norm(f.author) === norm(res.author))));
+  const old = all.find(f => !f.sample && !f.mine && (f.id === id || (workId && f.workId === workId) || (norm(f.title) === norm(res.title) && norm(f.author) === norm(res.author))));
   if (old) id = old.id;
   const fic = { id, workId: workId || (old && old.workId) || "", title: res.title, author: res.author, about: res.about, fields: res.fields, chapters: res.chapters, format, words, added: old ? old.added : Date.now() };
   if (old && old.coverImg) fic.coverImg = old.coverImg;
@@ -2313,8 +2403,10 @@ async function handleFiles(files) {
 
 /* ---------------- navigation ---------------- */
 function showView(v) {
-  for (const id of ["home", "me", "stats"]) $("#" + id).hidden = id !== v;
-  $$("#tabbar button").forEach(b => { if (b.dataset.view === (v === "stats" ? "me" : v)) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  for (const id of ["home", "me", "stats", "write", "work"]) $("#" + id).hidden = id !== v;
+  const tab = { stats: "me", work: "write" }[v] || v;
+  $$("#tabbar button").forEach(b => { if (b.dataset.view === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  if (v === "write") renderWrite();
   $("#open-btn").hidden = v !== "home";
   if (v === "me") renderMe();
   window.scrollTo(0, 0);
@@ -2520,7 +2612,176 @@ $("#browse").addEventListener("click", e => {
   const t = e.target.closest(".tile, .hero .cover"); if (t) openFicSheet((t.closest("[data-id]")).dataset.id);
 });
 $("#q").addEventListener("input", () => { if (libMode === "browse" && $("#q").value.trim()) setLibMode("shelves"); });
-$("#cover-file").addEventListener("change", async e => { const file = e.target.files[0]; e.target.value = ""; if (!file || !sheetFic) return; const f = sheetFic; await pickCoverImage(f, file); openFicSheet(f.id); drawShelf(); });
+let coverTarget = null;
+$("#cover-file").addEventListener("change", async e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  if (coverTarget) { const w = coverTarget; coverTarget = null; await pickCoverImage(w, file); await saveWork(w); drawWork(); return; }
+  if (!sheetFic) return; const f = sheetFic; await pickCoverImage(f, file); openFicSheet(f.id); drawShelf();
+});
+
+/* ---------------- write your own stories ---------------- */
+let works = [], work = null, edIdx = -1, readerFrom = "", workT, edT;
+const wordsOf = html => (plainText(html || "").match(/\S+/g) || []).length;
+const paras = t => String(t || "").split(/\n{2,}|\r?\n/).map(x => x.trim()).filter(Boolean).map(x => `<p>${esc(x)}</p>`).join("");
+function ago(t) { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 1440 ? `${Math.round(m / 60)} h ago` : new Date(t).toLocaleDateString(); }
+function workHtml(w) {
+  w.chapters.forEach(c => { c.html = (c.startNote ? noteHtml("Notes", paras(c.startNote)) : "") + (c.body || "") + (c.endNote ? noteHtml("End notes", paras(c.endNote)) : ""); });
+  w.words = w.chapters.reduce((n, c) => n + wordsOf(c.body), 0);
+  const fields = [];
+  const v = { Rating: w.rating, Fandom: w.fandom, Relationship: w.ship, "Additional Tags": w.tags };
+  for (const [k, x] of Object.entries(v)) if (x) fields.push([k, x]);
+  w.fields = fields; w.about = w.summary ? `<h2 class="lbl">Summary</h2>${paras(w.summary)}` : "";
+}
+async function saveWork(w) { w.updated = Date.now(); workHtml(w); await DB.put(w); const i = works.findIndex(x => x.id === w.id); if (i < 0) works.push(w); else works[i] = w; }
+function renderWrite() {
+  const list = [...works].sort((a, b) => (b.updated || 0) - (a.updated || 0));
+  $("#write-empty").hidden = !!list.length; $("#new-work-btn").hidden = !list.length;
+  $("#works-count").textContent = list.length ? `${list.length} stor${list.length === 1 ? "y" : "ies"}` : "";
+  $("#works").innerHTML = list.map(w => {
+    const drafts = w.chapters.filter(c => c.draft).length;
+    return `<li class="fic with-cover" data-work="${esc(w.id)}">${coverHtml(w)}<button class="open" type="button">
+      <span class="t">${esc(w.title || "Untitled story")}</span>
+      ${w.author ? `<span class="a">by ${esc(w.author)}</span>` : ""}
+      ${w.fandom ? `<span class="fd">${esc(w.fandom)}</span>` : ""}
+      <span class="meta">${w.chapters.length} chapter${w.chapters.length === 1 ? "" : "s"}${drafts ? ` (${drafts} draft${drafts === 1 ? "" : "s"})` : ""} · ${Number(w.words || 0).toLocaleString()} words · edited ${ago(w.updated || w.added)}</span>
+    </button><span></span></li>`;
+  }).join("");
+}
+async function newWork() {
+  const w = { id: "m" + Date.now().toString(36), mine: true, title: "", author: LS.get("penName", ""), summary: "", fandom: "", ship: "", tags: "", rating: "", chapters: [{ title: "", body: "", draft: true }], format: "Your story", added: Date.now() };
+  await saveWork(w); openWork(w.id); openEditor(0);
+}
+function openWork(id) {
+  work = works.find(w => w.id === id); if (!work) return showView("write");
+  showView("work");
+  $("#wk-title").value = work.title || ""; $("#wk-author").value = work.author || ""; $("#wk-sum").value = work.summary || "";
+  $("#wk-fandom").value = work.fandom || ""; $("#wk-ship").value = work.ship || ""; $("#wk-tags").value = work.tags || ""; $("#wk-rating").value = work.rating || "";
+  $("#wk-save").hidden = !(Android && Android.saveText);
+  const del = $("#wk-del"); delete del.dataset.armed; del.textContent = "Delete story";
+  drawWork();
+}
+function drawWork() {
+  const w = work; if (!w) return;
+  $("#work-cover").innerHTML = coverHtml(w);
+  $("#wk-cover-style").hidden = !!w.coverImg; $("#wk-cover-clear").hidden = !w.coverImg; $("#wk-cover-pic").textContent = w.coverImg ? "Change picture" : "Use a picture";
+  $("#wk-chaps").innerHTML = w.chapters.map((c, i) => `<li><button type="button" data-ch="${i}"><span class="ct">${i + 1}. ${esc(c.title || "Untitled chapter")}</span><span class="cm">${wordsOf(c.body).toLocaleString()} words${c.updated ? " · edited " + ago(c.updated) : ""}</span><span class="st${c.draft ? "" : " done"}">${c.draft ? "Draft" : "Done"}</span></button></li>`).join("");
+}
+function readWorkForm() {
+  if (!work) return;
+  const w = work;
+  w.title = clean($("#wk-title").value); w.author = clean($("#wk-author").value); w.summary = $("#wk-sum").value.trim();
+  w.fandom = clean($("#wk-fandom").value); w.ship = clean($("#wk-ship").value); w.tags = splitList($("#wk-tags").value).join(", "); w.rating = $("#wk-rating").value;
+  if (w.author) LS.set("penName", w.author);
+}
+function saveWorkNow() { clearTimeout(workT); if (!work) return; readWorkForm(); saveWork(work); }
+$("#work").addEventListener("input", e => { if (e.target.closest(".field")) { clearTimeout(workT); workT = setTimeout(() => { readWorkForm(); saveWork(work).then(() => { $("#work-cover").innerHTML = coverHtml(work); }); }, 500); } });
+$("#work").addEventListener("change", e => { if (e.target.id === "wk-rating") saveWorkNow(); });
+$("#write").addEventListener("click", e => {
+  if (e.target.closest("[data-new-work]")) return newWork();
+  const li = e.target.closest("[data-work]"); if (li) openWork(li.dataset.work);
+});
+$("#work-back").addEventListener("click", () => { saveWorkNow(); showView("write"); });
+$("#wk-chaps").addEventListener("click", e => { const b = e.target.closest("[data-ch]"); if (b) { saveWorkNow(); openEditor(Number(b.dataset.ch)); } });
+$("#wk-add-chap").addEventListener("click", async () => { saveWorkNow(); work.chapters.push({ title: "", body: "", draft: true }); await saveWork(work); drawWork(); openEditor(work.chapters.length - 1); });
+$("#wk-cover-style").addEventListener("click", async () => { const m = lib[work.id] || (lib[work.id] = {}); m.cs = (coverStyle(work.id) + 1 + Math.floor(Math.random() * 20)) % (COVER_PAL.length * COVER_ART.length); saveLib(); drawWork(); });
+$("#wk-cover-pic").addEventListener("click", () => { sheetFic = null; coverTarget = work; $("#cover-file").click(); });
+$("#wk-cover-clear").addEventListener("click", async () => { delete work.coverImg; await saveWork(work); drawWork(); });
+$("#wk-read").addEventListener("click", async () => {
+  saveWorkNow(); if (!work.chapters.some(c => wordsOf(c.body))) return toast("Write something first, then you can read it here.");
+  await saveWork(work); readerFrom = work.id; openFic(work.id);
+});
+function htmlToText(h) { const t = document.createElement("textarea"); t.innerHTML = String(h || "").replace(/<hr>/g, "\n* * *\n\n").replace(/<br>/g, "\n").replace(/<\/p>/g, "\n\n").replace(/<[^>]+>/g, ""); return t.value.trim(); }
+function workText(w) {
+  const out = [w.title || "Untitled story", w.author ? "by " + w.author : "", ""];
+  if (w.summary) out.push(w.summary, "");
+  w.chapters.forEach((c, i) => { out.push(`Chapter ${i + 1}${c.title ? ": " + c.title : ""}`, ""); if (c.startNote) out.push(c.startNote, ""); out.push(htmlToText(c.body), ""); if (c.endNote) out.push(c.endNote, ""); });
+  return out.join("\n").replace(/\n{3,}/g, "\n\n");
+}
+$("#wk-copy").addEventListener("click", async () => { saveWorkNow(); try { await navigator.clipboard.writeText(workText(work)); toast("Copied! You can paste it anywhere now."); } catch { toast("Copying didn't work here."); } });
+$("#wk-save").addEventListener("click", () => { saveWorkNow(); try { Android.saveText(workText(work), `${(work.title || "My story").replace(/[\\/:*?"<>|]+/g, "")}.txt`, "text/plain"); } catch {} });
+window.ficNookFileSaved = ok => toast(ok ? "Saved." : "It wasn't saved.");
+$("#wk-del").addEventListener("click", async e => {
+  const b = e.currentTarget;
+  if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Tap again to delete it forever"; return; }
+  const id = work.id; await DB.del(id); works = works.filter(w => w.id !== id); LS.del("pos:" + id); LS.del("opened:" + id); LS.del("hl:" + id); LS.del("bm:" + id); delete lib[id]; saveLib(); work = null; showView("write"); toast("Story deleted.");
+});
+
+/* chapter editor */
+function cleanEditor(root) {
+  let out = "", para = "";
+  const inline = (n, b, i) => {
+    let h = "";
+    for (const c of n.childNodes) {
+      if (c.nodeType === 3) { h += esc(c.nodeValue.replace(/ /g, " ")); continue; }
+      if (c.nodeType !== 1) continue;
+      const t = c.tagName.toLowerCase(), st = c.getAttribute("style") || "";
+      if (t === "br") { h += "<br>"; continue; }
+      const isB = t === "b" || t === "strong" || /font-weight:\s*(bold|[6-9]00)/.test(st), isI = t === "i" || t === "em" || /font-style:\s*italic/.test(st);
+      let inner = inline(c, b || isB, i || isI);
+      if (isB && !b) inner = `<strong>${inner}</strong>`;
+      if (isI && !i) inner = `<em>${inner}</em>`;
+      h += inner;
+    }
+    return h;
+  };
+  const flush = () => { const t = para.replace(/(<br>)+$/, ""); if (t.replace(/<[^>]+>/g, "").trim()) out += `<p>${t}</p>`; para = ""; };
+  for (const c of root.childNodes) {
+    if (c.nodeType === 3) { para += esc(c.nodeValue.replace(/ /g, " ")); continue; }
+    if (c.nodeType !== 1) continue;
+    const t = c.tagName.toLowerCase();
+    if (t === "hr") { flush(); out += "<hr>"; continue; }
+    if (/^(p|div|h\d|li|blockquote)$/.test(t)) { flush(); if (c.querySelector("hr")) { out += cleanEditor(c); continue; } para = inline(c, false, false); flush(); continue; }
+    const wrap = document.createElement("span"); wrap.appendChild(c.cloneNode(true)); para += inline(wrap, false, false);
+  }
+  flush();
+  return out;
+}
+function edStatus(t) { $("#ed-status").textContent = t; }
+function edWords() { return (($("#ed-body").innerText || "").match(/\S+/g) || []).length; }
+function openEditor(i) {
+  edIdx = i; const c = work.chapters[i];
+  $("#ed-title").value = c.title || ""; $("#ed-body").innerHTML = c.body || ""; $("#ed-start").value = c.startNote || ""; $("#ed-end").value = c.endNote || "";
+  $("#ed-note1").open = !!c.startNote; $("#ed-note2").open = !!c.endNote;
+  $("#ed-state").textContent = c.draft ? "Draft" : "Done ✓"; $("#ed-state").setAttribute("aria-label", c.draft ? "This chapter is a draft. Tap to mark it done." : "This chapter is done. Tap to make it a draft again.");
+  const del = $("#ed-del"); delete del.dataset.armed; del.textContent = "Delete chapter"; del.hidden = work.chapters.length < 2;
+  $("#editor").hidden = false; document.body.style.overflow = "hidden";
+  edStatus(`Chapter ${i + 1} · ${edWords().toLocaleString()} words`);
+  try { document.execCommand("defaultParagraphSeparator", false, "p"); } catch {}
+  if (!c.body) setTimeout(() => $("#ed-body").focus(), 50);
+}
+async function saveChapter() {
+  clearTimeout(edT); if (!work || edIdx < 0) return;
+  const c = work.chapters[edIdx];
+  c.title = clean($("#ed-title").value); c.body = cleanEditor($("#ed-body")); c.startNote = $("#ed-start").value.trim(); c.endNote = $("#ed-end").value.trim(); c.updated = Date.now();
+  await saveWork(work);
+  edStatus(`Chapter ${edIdx + 1} · ${edWords().toLocaleString()} words · saved`);
+}
+async function closeEditor() { await saveChapter(); $("#editor").hidden = true; document.body.style.overflow = ""; edIdx = -1; drawWork(); }
+$("#ed-back").addEventListener("click", closeEditor);
+$("#editor").addEventListener("input", () => { edStatus(`Chapter ${edIdx + 1} · ${edWords().toLocaleString()} words · saving…`); clearTimeout(edT); edT = setTimeout(saveChapter, 800); });
+$("#ed-state").addEventListener("click", async () => { const c = work.chapters[edIdx]; c.draft = !c.draft; await saveChapter(); $("#ed-state").textContent = c.draft ? "Draft" : "Done ✓"; toast(c.draft ? "Back to draft." : "Chapter marked as done."); });
+$(".ed-tools").addEventListener("mousedown", e => { if (e.target.closest("[data-cmd]")) e.preventDefault(); });
+$(".ed-tools").addEventListener("click", async e => {
+  const b = e.target.closest("[data-cmd]");
+  if (b) {
+    const cmd = b.dataset.cmd;
+    if (document.activeElement !== $("#ed-body") && cmd !== "undo" && cmd !== "redo") $("#ed-body").focus();
+    if (cmd === "hr") document.execCommand("insertHTML", false, "<hr><p><br></p>"); else document.execCommand(cmd);
+    $("#editor").dispatchEvent(new Event("input")); updTools(); return;
+  }
+  const del = e.target.closest("#ed-del");
+  if (del) {
+    if (!del.dataset.armed) { del.dataset.armed = "1"; del.textContent = "Tap again to delete"; return; }
+    clearTimeout(edT); work.chapters.splice(edIdx, 1); await saveWork(work); $("#editor").hidden = true; document.body.style.overflow = ""; edIdx = -1; drawWork(); toast("Chapter deleted.");
+  }
+});
+function updTools() { for (const k of ["bold", "italic"]) { let on = false; try { on = document.queryCommandState(k); } catch {} $(`.ed-tools [data-cmd="${k}"]`).setAttribute("aria-pressed", String(on)); } }
+document.addEventListener("selectionchange", () => { if (!$("#editor").hidden) updTools(); });
+$("#ed-body").addEventListener("paste", e => {
+  const t = e.clipboardData && e.clipboardData.getData("text/plain"); if (t == null) return;
+  e.preventDefault(); document.execCommand("insertHTML", false, paras(t) || esc(t));
+});
+document.addEventListener("visibilitychange", () => { if (document.hidden) { if (!$("#editor").hidden) saveChapter(); else if (work && !$("#work").hidden) saveWorkNow(); } });
 let sheetFic = null;
 function openFicSheet(id) {
   const f = fics.find(x => x.id === id); if (!f) return;
@@ -2564,7 +2825,7 @@ $("#fic-body").addEventListener("click", async e => {
   if (chip) { closeSheets(); $("#q").value = chip.dataset.tag; shelfTab = "all"; drawShelf(); return; }
   if (e.target.closest("#fs-read") || e.target.closest("#fs-read-top")) { closeSheets(); openFic(f.id); return; }
   if (e.target.closest("#fs-cover-style")) { const m = lib[f.id] || (lib[f.id] = {}); m.cs = (coverStyle(f.id) + 1 + Math.floor(Math.random() * 20)) % (COVER_PAL.length * COVER_ART.length); saveLib(); keepNote(); openFicSheet(f.id); drawShelf(); return; }
-  if (e.target.closest("#fs-cover-pic")) { keepNote(); $("#cover-file").click(); return; }
+  if (e.target.closest("#fs-cover-pic")) { keepNote(); coverTarget = null; $("#cover-file").click(); return; }
   if (e.target.closest("#fs-cover-clear")) { delete f.coverImg; await DB.put(f); keepNote(); openFicSheet(f.id); drawShelf(); return; }
   const del = e.target.closest("#fs-del");
   if (del) {
@@ -2802,7 +3063,9 @@ window.ficNookBack = () => {
   if (fic && document.body.classList.contains("controls")) { setControls(false); return true; }
   if (fic) { closeReader(); return true; }
   if (!$("#stats").hidden) { showView("me"); return true; }
-  if (!$("#me").hidden) { showView("home"); return true; }
+  if (!$("#editor").hidden) { closeEditor(); return true; }
+  if (!$("#work").hidden) { saveWorkNow(); showView("write"); return true; }
+  if (!$("#me").hidden || !$("#write").hidden) { showView("home"); return true; }
   return false;
 };
 

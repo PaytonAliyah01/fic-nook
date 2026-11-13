@@ -2,6 +2,15 @@
 
 Version numbers come from the GitHub build number: build 5 is version 1.5, and so on.
 
+## 1.12
+
+- **Write your own stories.** A new **Write** tab at the bottom. Start a story, give it a title, pen name, description, fandom, ships, tags, rating and a cover (made-up colors or your own picture).
+- **Chapters and drafts.** Write chapter by chapter in a full-screen editor with **bold**, *italic*, scene breaks (* * *), undo and redo. Every chapter is a **Draft** until you mark it **Done**. You can add a note at the start and end of each chapter, like on AO3.
+- Everything saves by itself while you type.
+- **Read it like a fic** opens your story in the reader, with your cover, summary, tags and notes, just like a downloaded fic.
+- **Copy all the text** or **Save as a file** (a .txt you can put on Google Drive or post somewhere).
+- Your stories stay on your phone, separate from your Library, and are included in backups.
+
 ## 1.11
 
 - **A new Home page in your Library**, a bit like a bookstore app: a big "Keep reading" card at the top, then rows of covers you can swipe through (New chapters, Still reading, Up next, Favourites, your own shelves, Top rated, your biggest fandoms, Recently added, Finished) and tags to browse by.

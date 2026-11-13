@@ -64,6 +64,7 @@ public class MainActivity extends Activity {
     private volatile int ttsLast = -1;
     private volatile boolean volumeKeys = false;
     private volatile String pendingBackup;
+    private volatile String pendingSaveCb = "ficNookBackupDone";
     private volatile String launchAction;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable sleepTask = () -> {
@@ -277,17 +278,28 @@ public class MainActivity extends Activity {
         /* Backup: ask where to save (Google Drive shows up in the list), then write the file there. */
         @JavascriptInterface
         public void saveBackup(String json, String filename) {
+            startSave(json, filename, "application/json", "ficNookBackupDone");
+        }
+
+        /* Save any text (like a story you wrote) to a file the person picks. */
+        @JavascriptInterface
+        public void saveText(String text, String filename, String mime) {
+            startSave(text, filename, mime == null || mime.isEmpty() ? "text/plain" : mime, "ficNookFileSaved");
+        }
+
+        private void startSave(String json, String filename, String mime, String cb) {
             pendingBackup = json;
+            pendingSaveCb = cb;
             runOnUiThread(() -> {
                 Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                 i.addCategory(Intent.CATEGORY_OPENABLE);
-                i.setType("application/json");
+                i.setType(mime);
                 i.putExtra(Intent.EXTRA_TITLE, filename);
                 try {
                     startActivityForResult(i, SAVE_BACKUP);
                 } catch (Exception e) {
                     pendingBackup = null;
-                    js("window.ficNookBackupDone && window.ficNookBackupDone(false)");
+                    js("window." + cb + " && window." + cb + "(false)");
                 }
             });
         }
@@ -508,9 +520,10 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == SAVE_BACKUP) {
             final String json = pendingBackup;
+            final String cb = pendingSaveCb;
             pendingBackup = null;
             if (resultCode != RESULT_OK || data == null || data.getData() == null || json == null) {
-                js("window.ficNookBackupDone && window.ficNookBackupDone(false)");
+                js("window." + cb + " && window." + cb + "(false)");
                 return;
             }
             final Uri target = data.getData();
@@ -522,7 +535,7 @@ public class MainActivity extends Activity {
                         ok = true;
                     }
                 } catch (Exception ignored) { }
-                js("window.ficNookBackupDone && window.ficNookBackupDone(" + ok + ")");
+                js("window." + cb + " && window." + cb + "(" + ok + ")");
             }).start();
             return;
         }
