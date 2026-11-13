@@ -8,6 +8,11 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+import android.view.KeyEvent;
 import android.provider.DocumentsContract;
 import android.provider.DocumentsContract.Document;
 import android.provider.Settings;
@@ -51,6 +56,17 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> pendingPick;
     private boolean checkedUpdate = false;
     private volatile String updateUrl;
+    private static final int SAVE_BACKUP = 43;
+    private TextToSpeech tts;
+    private volatile boolean ttsReady = false;
+    private volatile int ttsLast = -1;
+    private volatile boolean volumeKeys = false;
+    private volatile String pendingBackup;
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private final Runnable sleepTask = () -> {
+        if (tts != null) tts.stop();
+        js("window.ficNookTts && window.ficNookTts('sleep', -1)");
+    };
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
@@ -74,6 +90,7 @@ public class MainActivity extends Activity {
                 .build();
 
         web.addJavascriptInterface(new Bridge(), "FicNookAndroid");
+        setupTts();
 
         web.setWebViewClient(new WebViewClient() {
             @Override
@@ -167,6 +184,109 @@ public class MainActivity extends Activity {
         public void installUpdate() {
             startUpdate();
         }
+
+        /* Read aloud: the page sends the paragraphs, Android's text-to-speech reads them in order. */
+        @JavascriptInterface
+        public void ttsSpeak(String json, int start, float rate) {
+            if (tts == null || !ttsReady) {
+                js("window.ficNookTts && window.ficNookTts('error', -1)");
+                return;
+            }
+            try {
+                JSONArray a = new JSONArray(json);
+                tts.stop();
+                tts.setSpeechRate(rate);
+                ttsLast = a.length() - 1;
+                for (int i = Math.max(0, start); i < a.length(); i++) {
+                    tts.speak(a.getString(i), i == start ? TextToSpeech.QUEUE_FLUSH : TextToSpeech.QUEUE_ADD, null, "u" + i);
+                }
+            } catch (Exception e) {
+                js("window.ficNookTts && window.ficNookTts('error', -1)");
+            }
+        }
+
+        @JavascriptInterface
+        public void ttsStop() {
+            if (tts != null) tts.stop();
+        }
+
+        @JavascriptInterface
+        public void ttsSleep(long ms) {
+            handler.removeCallbacks(sleepTask);
+            if (ms > 0) handler.postDelayed(sleepTask, ms);
+        }
+
+        @JavascriptInterface
+        public void setVolumeKeys(boolean on) {
+            volumeKeys = on;
+        }
+
+        /* Backup: ask where to save (Google Drive shows up in the list), then write the file there. */
+        @JavascriptInterface
+        public void saveBackup(String json, String filename) {
+            pendingBackup = json;
+            runOnUiThread(() -> {
+                Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("application/json");
+                i.putExtra(Intent.EXTRA_TITLE, filename);
+                try {
+                    startActivityForResult(i, SAVE_BACKUP);
+                } catch (Exception e) {
+                    pendingBackup = null;
+                    js("window.ficNookBackupDone && window.ficNookBackupDone(false)");
+                }
+            });
+        }
+    }
+
+    /* ---------- read aloud ---------- */
+
+    private void setupTts() {
+        tts = new TextToSpeech(this, status -> {
+            ttsReady = status == TextToSpeech.SUCCESS;
+            if (!ttsReady) return;
+            tts.setOnUtteranceProgressListener(new UtteranceProgressListener() {
+                @Override
+                public void onStart(String id) {
+                    js("window.ficNookTts && window.ficNookTts('start'," + num(id) + ")");
+                }
+
+                @Override
+                public void onDone(String id) {
+                    if (num(id) == ttsLast) js("window.ficNookTts && window.ficNookTts('end'," + num(id) + ")");
+                }
+
+                @Override
+                @SuppressWarnings("deprecation")
+                public void onError(String id) {
+                    js("window.ficNookTts && window.ficNookTts('error'," + num(id) + ")");
+                }
+            });
+        });
+    }
+
+    private static int num(String id) {
+        try { return Integer.parseInt(id.substring(1)); } catch (Exception e) { return -1; }
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent e) {
+        int k = e.getKeyCode();
+        if (volumeKeys && (k == KeyEvent.KEYCODE_VOLUME_DOWN || k == KeyEvent.KEYCODE_VOLUME_UP)) {
+            if (e.getAction() == KeyEvent.ACTION_DOWN) {
+                js("window.ficNookVolume && window.ficNookVolume(" + (k == KeyEvent.KEYCODE_VOLUME_DOWN ? 1 : -1) + ")");
+            }
+            return true;
+        }
+        return super.dispatchKeyEvent(e);
+    }
+
+    @Override
+    protected void onDestroy() {
+        handler.removeCallbacks(sleepTask);
+        if (tts != null) tts.shutdown();
+        super.onDestroy();
     }
 
     /* ---------- the fic folder ---------- */
@@ -314,6 +434,26 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == SAVE_BACKUP) {
+            final String json = pendingBackup;
+            pendingBackup = null;
+            if (resultCode != RESULT_OK || data == null || data.getData() == null || json == null) {
+                js("window.ficNookBackupDone && window.ficNookBackupDone(false)");
+                return;
+            }
+            final Uri target = data.getData();
+            new Thread(() -> {
+                boolean ok = false;
+                try (OutputStream out = getContentResolver().openOutputStream(target, "wt")) {
+                    if (out != null) {
+                        out.write(json.getBytes(StandardCharsets.UTF_8));
+                        ok = true;
+                    }
+                } catch (Exception ignored) { }
+                js("window.ficNookBackupDone && window.ficNookBackupDone(" + ok + ")");
+            }).start();
+            return;
+        }
         if (requestCode == PICK_FOLDER) {
             if (resultCode == RESULT_OK && data != null && data.getData() != null) {
                 Uri tree = data.getData();

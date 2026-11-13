@@ -8,7 +8,7 @@ A comfy Android reader for fics you downloaded from AO3. Open a PDF, EPUB or HTM
 2. Tap **FicNook.apk** to download it.
 3. Open the downloaded file. If your phone asks, allow installing apps from your browser or Files app, then tap **Install**.
 
-Each time the code changes, GitHub builds a fresh APK automatically. From version 1.3 on, the app notices new versions by itself and shows an **Update now** button on the shelf. Updating keeps your shelf and reading spots.
+Each time the code changes, GitHub builds a fresh APK automatically. From version 1.3 on, the app notices new versions by itself and shows an **Update now** button (on the shelf in 1.3, under **Me** from 1.4). Updating keeps your shelf and reading spots.
 
 ## How it's built
 
