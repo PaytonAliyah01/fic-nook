@@ -1,0 +1,45 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.ficnook.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.ficnook.app'
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    // A fixed key so each new build installs over the old one (your shelf is kept).
+    signingConfigs {
+        ficnook {
+            storeFile file('ficnook.keystore')
+            storePassword 'ficnook'
+            keyAlias 'ficnook'
+            keyPassword 'ficnook'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.ficnook
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.ficnook
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+}

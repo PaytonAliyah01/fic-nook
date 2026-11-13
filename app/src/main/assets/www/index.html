@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fic Nook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A comfy reader for fics you downloaded from AO3 (PDF, EPUB or HTML).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
+<style>
+/* Layout: a bookshelf home screen, then a single centered reading column with a slim bar that hides while you read. */
+:root {
+  --bg: #f6f6f2;
+  --surface: #ffffff;
+  --fg: #26252b;
+  --muted: #6c6a74;
+  --line: #dcdbe2;
+  --accent: #4446a0;
+  --accent-ink: #ffffff;
+  --note-bg: #ececf3;
+  --ui: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --book: "Literata", Georgia, "Times New Roman", serif;
+  --read-font: var(--book);
+  --fs: 19px;
+  --lh: 1.65;
+  --measure: 34em;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17171c; --surface: #212128; --fg: #dcdad3; --muted: #9a98a3; --line: #34343e;
+    --accent: #a5a8f2; --accent-ink: #15152a; --note-bg: #24242d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17171c; --surface: #212128; --fg: #dcdad3; --muted: #9a98a3; --line: #34343e;
+  --accent: #a5a8f2; --accent-ink: #15152a; --note-bg: #24242d; color-scheme: dark;
+}
+/* Reading themes the reader picks inside the app (these win over the system setting) */
+:root.t-paper { --bg: #f6f6f2; --surface: #ffffff; --fg: #26252b; --muted: #6c6a74; --line: #dcdbe2; --accent: #4446a0; --accent-ink: #fff; --note-bg: #ececf3; color-scheme: light; }
+:root.t-sepia { --bg: #f1e6d2; --surface: #f8efdf; --fg: #46382a; --muted: #7d6b58; --line: #dccbb0; --accent: #7a4f2a; --accent-ink: #fff; --note-bg: #e8dbc3; color-scheme: light; }
+:root.t-dark  { --bg: #17171c; --surface: #212128; --fg: #dcdad3; --muted: #9a98a3; --line: #34343e; --accent: #a5a8f2; --accent-ink: #15152a; --note-bg: #24242d; color-scheme: dark; }
+:root.t-night { --bg: #000000; --surface: #111114; --fg: #b9b7b0; --muted: #85838c; --line: #26262c; --accent: #9093d8; --accent-ink: #000; --note-bg: #121216; color-scheme: dark; }
+
+[hidden] { display: none !important; }
+html { background: var(--bg); }
+body { background: var(--bg); color: var(--fg); font-family: var(--ui); font-size: 16px; line-height: 1.5; min-height: 100%;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Home / shelf ---------- */
+#home { max-width: 40rem; margin: 0 auto; padding-block: 28px 64px; display: grid; gap: 28px; }
+.brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.brand h1 { font-family: var(--book); font-weight: 600; font-size: 2rem; margin: 0; letter-spacing: -0.01em; }
+.brand p { margin: 0; color: var(--muted); }
+.open-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; display: grid; gap: 12px; }
+.open-card.drag { border-color: var(--accent); border-style: dashed; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 14px 22px; font-weight: 700; font-size: 1.05rem; justify-self: start; display: inline-flex; gap: 8px; align-items: center; }
+.btn-primary svg { width: 20px; height: 20px; }
+.open-card p { margin: 0; color: var(--muted); font-size: .95rem; }
+.formats { display: flex; gap: 6px; flex-wrap: wrap; }
+.formats span { font-size: .78rem; letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--line); border-radius: 999px; padding: 2px 9px; color: var(--muted); }
+.shelf h2, .help h2 { font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; font-weight: 700; }
+.shelf ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.fic { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.fic button.open { all: unset; cursor: pointer; display: grid; gap: 3px; min-width: 0; }
+.fic button.open:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+.fic .t { font-family: var(--book); font-weight: 600; font-size: 1.08rem; line-height: 1.3; overflow-wrap: anywhere; }
+.fic .a { color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; }
+.fic .bar { height: 4px; border-radius: 4px; background: var(--line); overflow: hidden; margin-top: 6px; }
+.fic .bar i { display: block; height: 100%; background: var(--accent); }
+.fic .meta { font-size: .8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.fic .tag { font-size: .7rem; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+.fic .del { background: none; border: 0; color: var(--muted); padding: 8px; border-radius: 8px; }
+.fic .del svg { width: 18px; height: 18px; display: block; }
+.fic .confirm { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .9rem; }
+.btn-small { border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 14px; }
+.btn-small.warn { border-color: currentColor; color: #b3261e; }
+.empty { color: var(--muted); margin: 0; }
+.help details { border-top: 1px solid var(--line); padding-block: 12px; }
+.help details:last-child { border-bottom: 1px solid var(--line); }
+.help summary { cursor: pointer; font-weight: 700; }
+.help ol, .help p { margin: 10px 0 0; color: var(--fg); }
+.help li { margin-bottom: 4px; }
+.privacy { font-size: .88rem; color: var(--muted); margin: 0; }
+
+/* ---------- Reader ---------- */
+#reader { max-width: calc(var(--measure) + 2rem); margin: 0 auto; padding-block: 0 80px; }
+body.reading::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); display: flex; align-items: center; gap: 4px; padding-block: 8px; border-bottom: 1px solid var(--line); transition: transform .25s ease; margin-inline: -4px; }
+.topbar.away { transform: translateY(calc(-100% - env(safe-area-inset-top, 0px) - 2px)); }
+.icon-btn { background: none; border: 0; border-radius: 10px; padding: 9px; display: inline-flex; align-items: center; gap: 6px; color: var(--fg); }
+.icon-btn:hover { background: var(--note-bg); }
+.icon-btn svg { width: 22px; height: 22px; display: block; }
+.topbar .where { flex: 1; min-width: 0; text-align: center; font-size: .88rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.progress { position: fixed; left: 0; right: 0; bottom: 0; height: calc(3px + env(safe-area-inset-bottom, 0px)); z-index: 5; pointer-events: none; }
+.progress i { display: block; height: 3px; width: 0; background: var(--accent); opacity: .7; }
+
+#page { font-family: var(--read-font); font-size: var(--fs); line-height: var(--lh); max-width: var(--measure); margin: 0 auto; padding-top: 28px; overflow-wrap: break-word; }
+#page.justify p { text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+.ch-head { margin-bottom: 1.8em; display: grid; gap: .3em; }
+.ch-head .eyebrow { font-family: var(--ui); font-size: .72em; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.ch-head h1 { font-family: var(--read-font); font-size: 1.45em; line-height: 1.25; margin: 0; text-wrap: balance; font-weight: 600; }
+.ch-head .by { margin: 0; color: var(--muted); font-size: .9em; }
+#page p { margin: 0 0 .85em; }
+#page p.c, #page [align="center"], #page .c { text-align: center; }
+#page [align="right"], #page .r { text-align: right; }
+#page h2, #page h3, #page h4 { font-size: 1.1em; line-height: 1.3; margin: 1.6em 0 .6em; }
+#page blockquote { margin: 0 0 .85em; padding-left: 1.1em; border-left: 2px solid var(--line); }
+#page hr, #page .scene { border: 0; text-align: center; margin: 1.6em 0; color: var(--muted); }
+#page hr::after { content: "\2042"; font-size: 1.1em; }
+#page a { color: var(--accent); }
+#page table { border-collapse: collapse; display: block; overflow-x: auto; max-width: 100%; }
+#page td, #page th { border: 1px solid var(--line); padding: .3em .5em; }
+#page ul, #page ol { padding-left: 1.4em; }
+#page img { max-width: 100%; height: auto; }
+#page .img-note { color: var(--muted); font-style: italic; font-size: .9em; }
+
+.fn-note { background: var(--note-bg); border-radius: 10px; margin: 1.2em 0 1.6em; font-size: .88em; line-height: 1.55; color: var(--fg); }
+.fn-note > summary { font-family: var(--ui); cursor: pointer; padding: .7em 1em; font-size: .82em; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 1em; }
+.fn-note > summary::-webkit-details-marker { display: none; }
+.fn-note > summary::after { content: "Show"; text-transform: none; letter-spacing: 0; font-weight: 400; }
+.fn-note[open] > summary::after { content: "Hide"; }
+.fn-note .note-body { padding: 0 1em .4em; }
+.fn-note blockquote { border: 0 !important; padding: 0 !important; }
+
+.about dl { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: .35em 1em; font-family: var(--ui); font-size: .82em; margin: 0 0 1.6em; }
+.about dt { color: var(--muted); font-weight: 700; }
+.about dd { margin: 0; overflow-wrap: anywhere; }
+.about h2.lbl { font-family: var(--ui); font-size: .72em; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 1.6em 0 .4em; }
+@media (max-width: 30rem) { .about dl { grid-template-columns: 1fr; } .about dd { margin-bottom: .5em; } }
+
+.ch-nav { display: flex; gap: 10px; justify-content: space-between; margin-top: 2.4em; padding-top: 1.4em; border-top: 1px solid var(--line); font-family: var(--ui); flex-wrap: wrap; }
+.ch-nav button { flex: 1 1 10rem; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 14px; text-align: left; display: grid; gap: 2px; min-width: 0; }
+.ch-nav button.next { text-align: right; }
+.ch-nav button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.ch-nav small { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; opacity: .8; }
+.ch-nav span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.the-end { text-align: center; color: var(--muted); font-family: var(--ui); margin-top: 2em; }
+
+/* ---------- Sheets (settings, chapters) ---------- */
+.scrim { position: fixed; inset: 0; background: rgba(10, 10, 20, .4); z-index: 20; }
+.sheet { position: fixed; z-index: 21; left: 0; right: 0; bottom: 0; max-height: 82vh; overflow-y: auto; background: var(--surface); color: var(--fg);
+  border-radius: 18px 18px 0 0; border-top: 1px solid var(--line); box-shadow: 0 -8px 30px rgba(0,0,0,.18);
+  padding: 8px max(18px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); }
+@media (min-width: 46rem) { .sheet { left: 50%; right: auto; width: 34rem; transform: translateX(-50%); } }
+.sheet .grab { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 4px auto 10px; }
+.sheet header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.sheet h2 { margin: 0; font-size: 1.1rem; }
+.row { display: grid; gap: 8px; padding-block: 12px; border-top: 1px solid var(--line); }
+.row > label, .row > .lab { font-weight: 700; font-size: .9rem; display: flex; justify-content: space-between; }
+.row output { color: var(--muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+.seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); gap: 6px; }
+.seg button { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 6px; font-size: .9rem; }
+.seg button[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); font-weight: 700; }
+.swatch { display: grid; gap: 4px; justify-items: center; }
+.swatch i { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(128,128,128,.4); display: block; font-style: normal; font-family: var(--book); line-height: 28px; font-size: 14px; }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.toggle { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-weight: 700; font-size: .95rem; }
+.toggle small { display: block; font-weight: 400; color: var(--muted); font-size: .82rem; }
+.toggle input { width: 22px; height: 22px; accent-color: var(--accent); flex: none; }
+#toc-list { list-style: none; margin: 0; padding: 0; }
+#toc-list button { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; padding: 12px 8px; border-top: 1px solid var(--line); display: flex; gap: 12px; align-items: baseline; }
+#toc-list button:focus-visible { outline: 2px solid var(--accent); }
+#toc-list .n { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 2ch; font-size: .85rem; }
+#toc-list .cur { color: var(--accent); font-weight: 700; }
+
+/* ---------- Busy / message ---------- */
+.busy { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: color-mix(in srgb, var(--bg) 85%, transparent); padding: 24px; }
+.busy div { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px 24px; max-width: 22rem; text-align: center; display: grid; gap: 12px; }
+.busy p { margin: 0; }
+.spin { width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--accent); margin: 0 auto; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 31; background: var(--fg); color: var(--bg); padding: 12px 18px; border-radius: 12px; max-width: min(28rem, calc(100vw - 32px)); font-size: .95rem; }
+@media (prefers-reduced-motion: reduce) { .topbar { transition: none; } .spin { animation-duration: 3s; } }
+</style>
+</head>
+<body>
+
+<main id="home">
+  <div class="brand">
+    <h1>Fic Nook</h1>
+    <p>A comfy place to read the fics you downloaded.</p>
+  </div>
+
+  <section class="open-card" id="drop">
+    <button class="btn-primary" id="open-btn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Open a fic
+    </button>
+    <input type="file" id="file" class="sr" accept=".pdf,.epub,.html,.htm,application/pdf,application/epub+zip,text/html" multiple>
+    <p>Pick a fic you downloaded from AO3. It gets added to your shelf below, so next time you can just tap it.</p>
+    <div class="formats" aria-label="File types that work"><span>PDF</span><span>EPUB</span><span>HTML</span></div>
+  </section>
+
+  <section class="shelf" aria-labelledby="shelf-h">
+    <h2 id="shelf-h">Your shelf</h2>
+    <ul id="shelf-list"></ul>
+  </section>
+
+  <section class="help" aria-labelledby="help-h">
+    <h2 id="help-h">Help</h2>
+    <details>
+      <summary>How do I get a fic in here?</summary>
+      <ol>
+        <li>On AO3, open the fic and tap <b>Download</b> near the top.</li>
+        <li>Pick <b>PDF</b> (or <b>EPUB</b>, which tends to come out even cleaner).</li>
+        <li>Come back here, tap <b>Open a fic</b>, and choose it from your Downloads or Files.</li>
+      </ol>
+    </details>
+    <details>
+      <summary>How do I change the text size or colors?</summary>
+      <p>While reading, tap the <b>Aa</b> button at the top. You can pick light, sepia, dark or night mode, change the font and size, and tuck away author's notes. If the top bar is hidden, scroll up a little to bring it back.</p>
+    </details>
+    <details>
+      <summary>Will it remember where I stopped?</summary>
+      <p>Yes. Fic Nook saves your chapter and spot on this device as you read. Just tap the fic on your shelf to jump back in.</p>
+    </details>
+    <details>
+      <summary>Something looks wrong in a PDF</summary>
+      <p>PDFs are made for printing, so Fic Nook has to guess where paragraphs and chapters start. Italics are lost, and now and then a heading lands in the wrong spot. If a fic looks off, download the EPUB version from AO3 instead and open that.</p>
+    </details>
+  </section>
+  <p class="privacy">Your fics never leave your device. Fic Nook reads the file right here in your browser and keeps your shelf only on this phone or computer.</p>
+</main>
+
+<div id="reader" hidden>
+  <nav class="topbar" id="topbar" aria-label="Reader">
+    <button class="icon-btn" id="back" type="button" aria-label="Back to your shelf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="where" id="where"></div>
+    <button class="icon-btn" id="toc-btn" type="button" aria-label="Chapters">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>
+    </button>
+    <button class="icon-btn" id="set-btn" type="button" aria-label="Reading settings">
+      <svg viewBox="0 0 28 24" fill="currentColor" aria-hidden="true"><text x="1" y="19" font-family="Georgia, serif" font-size="19">A</text><text x="15" y="19" font-family="Georgia, serif" font-size="13">a</text></svg>
+    </button>
+  </nav>
+  <article id="page" aria-live="polite"></article>
+</div>
+<div class="progress" id="progress" hidden><i></i></div>
+
+<div class="scrim" id="scrim" hidden></div>
+
+<section class="sheet" id="sheet-settings" hidden aria-labelledby="set-h" role="dialog">
+  <div class="grab"></div>
+  <header><h2 id="set-h">Reading settings</h2><button class="btn-small" type="button" data-close>Done</button></header>
+  <div class="row">
+    <span class="lab">Theme</span>
+    <div class="seg" id="seg-theme">
+      <button type="button" data-v="auto" class="swatch"><i style="background:linear-gradient(135deg,#f6f6f2 50%,#17171c 50%)"></i>Auto</button>
+      <button type="button" data-v="paper" class="swatch"><i style="background:#f6f6f2;color:#26252b">A</i>Light</button>
+      <button type="button" data-v="sepia" class="swatch"><i style="background:#f1e6d2;color:#46382a">A</i>Sepia</button>
+      <button type="button" data-v="dark" class="swatch"><i style="background:#17171c;color:#dcdad3">A</i>Dark</button>
+      <button type="button" data-v="night" class="swatch"><i style="background:#000;color:#b9b7b0">A</i>Night</button>
+    </div>
+  </div>
+  <div class="row">
+    <span class="lab">Font</span>
+    <div class="seg" id="seg-font">
+      <button type="button" data-v="book" style="font-family:var(--book)">Bookish</button>
+      <button type="button" data-v="classic" style="font-family:Georgia,serif">Classic</button>
+      <button type="button" data-v="easy" style="font-family:var(--ui)">Easy read</button>
+      <button type="button" data-v="plain" style="font-family:system-ui,sans-serif">Plain</button>
+    </div>
+  </div>
+  <div class="row">
+    <label for="r-size">Text size <output id="o-size"></output></label>
+    <input type="range" id="r-size" min="14" max="30" step="1">
+  </div>
+  <div class="row">
+    <label for="r-lh">Line spacing <output id="o-lh"></output></label>
+    <input type="range" id="r-lh" min="1.3" max="2.2" step="0.05">
+  </div>
+  <div class="row">
+    <span class="lab">Page width</span>
+    <div class="seg" id="seg-width">
+      <button type="button" data-v="narrow">Narrow</button>
+      <button type="button" data-v="normal">Normal</button>
+      <button type="button" data-v="wide">Wide</button>
+    </div>
+  </div>
+  <div class="row">
+    <label class="toggle" for="c-notes"><span>Show author's notes<small>When off, notes fold into a small bar you can tap to open.</small></span><input type="checkbox" id="c-notes"></label>
+  </div>
+  <div class="row">
+    <label class="toggle" for="c-about"><span>Show the info page<small>Tags, summary and stats before chapter 1.</small></span><input type="checkbox" id="c-about"></label>
+  </div>
+  <div class="row">
+    <label class="toggle" for="c-justify"><span>Straight right edge<small>Lines up text on both sides, like a printed book.</small></span><input type="checkbox" id="c-justify"></label>
+  </div>
+</section>
+
+<section class="sheet" id="sheet-toc" hidden aria-labelledby="toc-h" role="dialog">
+  <div class="grab"></div>
+  <header><h2 id="toc-h">Chapters</h2><button class="btn-small" type="button" data-close>Close</button></header>
+  <ul id="toc-list"></ul>
+</section>
+
+<div class="busy" id="busy" hidden><div><div class="spin"></div><p id="busy-msg">Opening your fic…</p></div></div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const clean = s => (s || "").replace(/\s+/g, " ").trim();
+
+/* ---------------- storage (never required to work) ---------------- */
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem("ficnook:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("ficnook:" + k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem("ficnook:" + k); } catch {} }
+};
+const DB = {
+  db: null, mem: new Map(),
+  async open() {
+    try {
+      this.db = await new Promise((res, rej) => {
+        const r = indexedDB.open("ficnook", 1);
+        r.onupgradeneeded = () => r.result.createObjectStore("fics", { keyPath: "id" });
+        r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+      });
+    } catch { this.db = null; }
+  },
+  tx(mode, fn) {
+    return new Promise((res, rej) => {
+      const t = this.db.transaction("fics", mode); const st = t.objectStore("fics");
+      const r = fn(st); t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error);
+    });
+  },
+  async all() { if (this.db) { try { return await this.tx("readonly", s => s.getAll()) || []; } catch {} } return [...this.mem.values()]; },
+  async put(f) { this.mem.set(f.id, f); if (this.db) { try { await this.tx("readwrite", s => s.put(f)); } catch {} } },
+  async del(id) { this.mem.delete(id); if (this.db) { try { await this.tx("readwrite", s => s.delete(id)); } catch {} } }
+};
+
+/* ---------------- settings ---------------- */
+const FONTS = { book: 'var(--book)', classic: 'Georgia, "Times New Roman", serif', easy: 'var(--ui)', plain: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif' };
+const WIDTHS = { narrow: "28em", normal: "34em", wide: "44em" };
+const settings = Object.assign({ theme: "auto", font: "book", size: 19, lh: 1.65, width: "normal", notes: true, about: true, justify: false }, LS.get("settings", {}));
+function applySettings() {
+  const root = document.documentElement;
+  root.classList.remove("t-paper", "t-sepia", "t-dark", "t-night");
+  if (settings.theme !== "auto") root.classList.add("t-" + settings.theme);
+  root.style.setProperty("--read-font", FONTS[settings.font] || FONTS.book);
+  root.style.setProperty("--fs", settings.size + "px");
+  root.style.setProperty("--lh", settings.lh);
+  root.style.setProperty("--measure", WIDTHS[settings.width] || WIDTHS.normal);
+  $("#page").classList.toggle("justify", !!settings.justify);
+  for (const [id, key] of [["seg-theme", "theme"], ["seg-font", "font"], ["seg-width", "width"]])
+    $$("#" + id + " button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === settings[key])));
+  $("#r-size").value = settings.size; $("#o-size").textContent = settings.size + "px";
+  $("#r-lh").value = settings.lh; $("#o-lh").textContent = Number(settings.lh).toFixed(2).replace(/0$/, "");
+  $("#c-notes").checked = settings.notes; $("#c-about").checked = settings.about; $("#c-justify").checked = settings.justify;
+  $$("#page details.fn-note").forEach(d => { d.open = settings.notes; });
+  LS.set("settings", settings);
+}
+
+/* ---------------- helpers ---------------- */
+function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement("script"); s.src = src; s.onload = res;
+    s.onerror = () => rej(new Error("Couldn't load a helper it needs. Try closing and reopening the app."));
+    document.head.appendChild(s);
+  });
+}
+let pdfReady = null, zipReady = null;
+const PDFJS = "lib/";
+function loadPdfJs() {
+  // The worker is loaded as a plain script so PDF.js runs on the page itself (works inside locked-down frames).
+  return pdfReady ||= (async () => {
+    await loadScript(PDFJS + "pdf.min.js");
+    await loadScript(PDFJS + "pdf.worker.min.js");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js";
+  })().catch(e => { pdfReady = null; throw e; });
+}
+function loadZip() {
+  return zipReady ||= loadScript("lib/jszip.min.js").catch(e => { zipReady = null; throw e; });
+}
+
+/* ---------------- HTML cleaning ---------------- */
+const DROP_SEL = "script,style,link,meta,iframe,frame,object,embed,form,input,button,select,textarea,svg,noscript,head,title,nav,audio,video,canvas,template";
+function cleanHtml(node) {
+  const box = document.createElement("div");
+  box.appendChild(document.importNode(node, true));
+  $$(DROP_SEL, box).forEach(e => e.remove());
+  $$("img", box).forEach(img => {
+    const alt = clean(img.getAttribute("alt"));
+    if (alt && !/^(cover|image)$/i.test(alt)) { const s = document.createElement("span"); s.className = "img-note"; s.textContent = "[image: " + alt + "]"; img.replaceWith(s); }
+    else img.remove();
+  });
+  for (const el of $$("*", box)) {
+    const keep = {};
+    const align = el.getAttribute("align"); if (align && /^(center|right|left)$/i.test(align)) keep.align = align.toLowerCase();
+    const style = el.getAttribute("style") || "";
+    const m = /text-align\s*:\s*(center|right)/i.exec(style); if (m) keep.align = m[1].toLowerCase();
+    const cls = el.getAttribute("class") || "";
+    const ownCls = cls.split(/\s+/).filter(c => /^(fn-note|note-body|lbl|about|c)$/.test(c)).join(" ");
+    const href = el.tagName === "A" ? el.getAttribute("href") : null;
+    for (const a of [...el.attributes]) el.removeAttribute(a.name);
+    if (keep.align) el.setAttribute("align", keep.align);
+    if (ownCls) el.setAttribute("class", ownCls);
+    if (href && /^https?:/i.test(href)) { el.setAttribute("href", href); el.setAttribute("target", "_blank"); el.setAttribute("rel", "noopener noreferrer"); }
+  }
+  return box.innerHTML.replace(/(<p>\s*(&nbsp;|\s)*<\/p>\s*){2,}/g, "<p>&nbsp;</p>");
+}
+const hasText = n => clean(n.textContent).length > 0;
+function noteHtml(label, innerHtml) {
+  return `<details class="fn-note"><summary>${esc(label)}</summary><div class="note-body">${innerHtml}</div></details>`;
+}
+function noteFromEl(el) {
+  // Pull a "Notes:" style label off the front if the fic has one.
+  let label = "Author's note";
+  const first = el.querySelector("p, h3, h4, b, strong");
+  const t = first ? clean(first.textContent).replace(/:$/, "") : "";
+  if (first && /^(chapter )?(end )?(notes?|summary)$/i.test(t)) { label = t; first.remove(); }
+  if (!hasText(el)) return "";
+  return noteHtml(label, cleanHtml(el));
+}
+
+/* ---------------- AO3 HTML / EPUB parsing ---------------- */
+// roots: array of {el, label}. Works for one AO3 HTML page, or one entry per EPUB file.
+function parseAo3Roots(roots, fallbackTitle, perFile) {
+  let title = "", author = "", about = "", fields = [];
+  const chapters = []; let endNotes = "";
+  for (const { el: root, label } of roots) {
+    $$(".toc-heading, .landmark, #toc, .toc", root).forEach(e => e.remove());
+    const pre = root.querySelector("#preface");
+    if (pre) {
+      const h1 = pre.querySelector("h1"); if (h1) { title ||= clean(h1.textContent); h1.remove(); }
+      const by = pre.querySelector(".byline"); if (by) { author ||= clean(by.textContent).replace(/^by\s+/i, ""); by.remove(); }
+      $$("dl.tags", pre).forEach(dl => {
+        $$("dt", dl).forEach(dt => { const dd = dt.nextElementSibling; fields.push([clean(dt.textContent).replace(/:$/, ""), dd ? clean(dd.textContent) : ""]); });
+        dl.remove();
+      });
+      $$(".message", pre).forEach(e => e.remove());
+      // Label + blockquote pairs (Summary, Notes)
+      let html = "";
+      for (const child of [...(pre.querySelector(".meta") || pre).children]) {
+        if (!hasText(child)) continue;
+        const t = clean(child.textContent);
+        if (child.localName === "p" && /^(summary|notes|series this work belongs to|work text)\s*:?$/i.test(t)) { if (!/work text/i.test(t)) html += `<h2 class="lbl">${esc(t.replace(/:$/, ""))}</h2>`; continue; }
+        html += cleanHtml(child);
+      }
+      about += html;
+      pre.remove();
+    }
+    const aft = root.querySelector("#afterword");
+    if (aft) {
+      $$(".message, #endnotes .message", aft).forEach(e => e.remove());
+      $$("p", aft).forEach(p => { if (/please drop by the archive|posted originally on the archive/i.test(p.textContent)) p.remove(); });
+      $$(".meta, .endnotes, #endnotes, [id^=endnotes], #children, #series", aft).forEach(n => { if (hasText(n) && !n.querySelector(".meta, .endnotes, #endnotes")) endNotes += noteFromEl(n); });
+      if (!endNotes && hasText(aft)) endNotes = noteFromEl(aft);
+      aft.remove();
+    }
+    if (!hasText(root)) continue;
+    $$("p", root).forEach(p => { if (/^\(see the end of the (chapter|work) for (more )?notes\.?\)$/i.test(clean(p.textContent))) p.remove(); });
+    // Lift chapter headings out of the "meta" boxes, then turn note boxes into foldable notes.
+    $$("h2.heading", root).forEach(h => { const box = h.closest(".meta, .notes, .summary"); if (box && root.contains(box)) box.before(h); });
+    const noteBoxes = $$(".notes, .endnotes, .end.notes, .summary, .meta, .chapter-notes, [id^=notes], [id^=endnotes], [id^=summary]", root)
+      .filter(n => !n.parentElement.closest(".notes, .endnotes, .summary, .meta, [id^=notes], [id^=endnotes], [id^=summary]"));
+    for (const n of noteBoxes) {
+      if (n.querySelector("h2.heading")) continue;
+      const html = noteFromEl(n);
+      const ph = document.createElement("div"); ph.setAttribute("data-note", ""); ph.setAttribute("data-html", html); n.replaceWith(ph);
+    }
+    let headings = $$("h2.heading", root);
+    if (!headings.length && perFile) {
+      const h = root.querySelector("h1, h2, h3");
+      if (h && clean(h.textContent).length < 160) headings = [h];
+    }
+    const doc = root.ownerDocument;
+    const fragToHtml = frag => {
+      const box = document.createElement("div"); box.appendChild(document.importNode(frag, true));
+      $$("[data-note]", box).forEach(ph => { const t = document.createElement("template"); t.innerHTML = ph.getAttribute("data-html") || ""; ph.replaceWith(t.content); });
+      return hasText(box) ? cleanHtml(box) : "";
+    };
+    const build = (startNode, endNode) => {
+      const r = doc.createRange();
+      if (startNode) r.setStartAfter(startNode); else r.setStart(root, 0);
+      if (endNode) r.setEndBefore(endNode); else r.setEnd(root, root.childNodes.length);
+      return fragToHtml(r.cloneContents());
+    };
+    if (!headings.length) {
+      const html = build(null, null);
+      if (html) chapters.push({ title: label || "", html });
+      continue;
+    }
+    const lead = build(null, headings[0]);
+    if (lead) { if (chapters.length) chapters[chapters.length - 1].html += lead; else chapters.push({ title: "", html: lead }); }
+    headings.forEach((h, i) => chapters.push({ title: clean(h.textContent), html: build(h, headings[i + 1] || null) }));
+  }
+  if (endNotes && chapters.length) chapters[chapters.length - 1].html += endNotes;
+  return { title: title || fallbackTitle, author, about, fields, chapters };
+}
+
+function parseHtmlText(text, filename) {
+  const doc = new DOMParser().parseFromString(text, "text/html");
+  const fallback = clean(doc.title).replace(/\s*\[Archive of Our Own\]\s*$/i, "") || filename.replace(/\.[^.]+$/, "");
+  const res = parseAo3Roots([{ el: doc.body, label: "" }], fallback, false);
+  res.chapters.forEach(c => { if (!c.title) c.title = res.title; });
+  return res;
+}
+
+async function parseEpub(buf, filename) {
+  await loadZip();
+  const zip = await window.JSZip.loadAsync(buf);
+  const read = p => { const f = zip.file(p) || zip.file(decodeURIComponent(p)); return f ? f.async("string") : Promise.resolve(""); };
+  const container = new DOMParser().parseFromString(await read("META-INF/container.xml"), "application/xml");
+  const opfPath = container.querySelector("rootfile")?.getAttribute("full-path");
+  if (!opfPath) throw new Error("This EPUB looks damaged, so it couldn't be opened.");
+  const base = opfPath.includes("/") ? opfPath.slice(0, opfPath.lastIndexOf("/") + 1) : "";
+  const opf = new DOMParser().parseFromString(await read(opfPath), "application/xml");
+  const meta = (n) => clean(opf.getElementsByTagNameNS("*", n)[0]?.textContent);
+  const manifest = {};
+  for (const it of opf.getElementsByTagNameNS("*", "item")) manifest[it.getAttribute("id")] = { href: it.getAttribute("href"), type: it.getAttribute("media-type") || "", props: it.getAttribute("properties") || "" };
+  const spine = [...opf.getElementsByTagNameNS("*", "itemref")].map(r => manifest[r.getAttribute("idref")]).filter(x => x && /html|xml/.test(x.type) && !/nav/.test(x.props));
+  const roots = [];
+  for (const item of spine) {
+    const src = await read(base + item.href);
+    if (!src) continue;
+    let doc = new DOMParser().parseFromString(src, "application/xhtml+xml");
+    if (doc.querySelector("parsererror") || !doc.body) doc = new DOMParser().parseFromString(src, "text/html");
+    if (!doc.body || clean(doc.body.textContent).length < 2) continue;
+    roots.push({ el: doc.body, label: "" });
+  }
+  const res = parseAo3Roots(roots, meta("title") || filename.replace(/\.[^.]+$/, ""), true);
+  res.title = res.title || meta("title"); res.author = res.author || meta("creator");
+  res.chapters = res.chapters.filter(c => clean(c.html.replace(/<[^>]+>/g, " ")).length > 1);
+  // Calibre title pages repeat the title; drop a tiny first "chapter" that is just that.
+  const plain = h => clean(h.replace(/<[^>]+>/g, " "));
+  while (res.chapters.length > 1 && plain(res.chapters[0].html).length < 200 && (res.chapters[0].title === res.title || plain(res.chapters[0].html).includes(res.title) || !res.chapters[0].title)) res.chapters.shift();
+  res.chapters.forEach((c, i) => { if (!c.title) c.title = res.chapters.length === 1 ? res.title : "Part " + (i + 1); });
+  return res;
+}
+
+/* ---------------- PDF parsing ---------------- */
+const FIELD_RX = /^(Rating|Archive Warnings?|Categor(?:y|ies)|Fandoms?|Relationships?|Characters?|Additional Tags|Language|Series|Collections?|Stats|Published|Updated|Completed|Words|Chapters)\s*:\s*(.*)$/i;
+const LABELS = { "summary": "Summary", "notes": "Notes", "chapter notes": "Chapter notes", "chapter summary": "Chapter summary", "chapter end notes": "Chapter end notes", "end notes": "End notes", "afterword": "Afterword", "author's note": "Author's note", "author's notes": "Author's note", "a/n": "Author's note" };
+const STICKY = new Set(["chapter end notes", "end notes", "afterword"]);
+const DROP_RX = [/^\(see the end of the (chapter|work) for (more )?notes\.?\)$/i, /^(work text|chapter text)\s*:?$/i, /^posted originally on the archive of our own/i, /^please drop by the archive and comment/i, /^archiveofourown\.org/i];
+const CHAP_RX = /^(chapter|part)\s+(\d+|[ivxlcdm]+)\b/i;
+const SCENE_RX = /^[\s*~\-–—•·oO0x#=_+.❀✿♡♥❤︎]{1,30}$/;
+const labelKey = t => t.toLowerCase().replace(/[’]/g, "'").replace(/[:.]$/, "").trim();
+
+async function parsePdf(buf, filename, progress) {
+  await loadPdfJs();
+  const pdf = await window.pdfjsLib.getDocument({ data: buf, isEvalSupported: false }).promise;
+  let info = {}; try { info = (await pdf.getMetadata()).info || {}; } catch {}
+  const pages = [];
+  for (let p = 1; p <= pdf.numPages; p++) {
+    progress(`Reading page ${p} of ${pdf.numPages}…`);
+    const page = await pdf.getPage(p);
+    const tc = await page.getTextContent();
+    const items = tc.items.filter(it => typeof it.str === "string" && it.str.length && Math.abs(it.transform[1]) < 0.01)
+      .map(it => ({ s: it.str, x: it.transform[4], y: it.transform[5], w: it.width, size: Math.abs(it.transform[3]) || it.height || 10 }));
+    items.sort((a, b) => b.y - a.y || a.x - b.x);
+    const lines = [];
+    for (const it of items) {
+      if (!it.s.trim() && !lines.length) continue;
+      const ln = lines[lines.length - 1];
+      if (ln && Math.abs(ln.y - it.y) < Math.max(ln.size, it.size) * 0.45) ln.items.push(it);
+      else lines.push({ y: it.y, size: it.size, items: [it] });
+    }
+    const out = [];
+    for (const ln of lines) {
+      ln.items.sort((a, b) => a.x - b.x);
+      let text = "", end = null, weights = {};
+      for (const it of ln.items) {
+        if (end !== null && it.x - end > it.size * 0.12 && !/\s$/.test(text) && !/^\s/.test(it.s)) text += " ";
+        text += it.s; end = Math.max(end ?? -1e9, it.x + it.w);
+        if (it.s.trim()) { const k = Math.round(it.size * 2) / 2; weights[k] = (weights[k] || 0) + it.s.length; }
+      }
+      text = clean(text);
+      if (!text) continue;
+      const size = Number(Object.entries(weights).sort((a, b) => b[1] - a[1])[0]?.[0] || ln.size);
+      const firstReal = ln.items.find(i => i.s.trim()) || ln.items[0];
+      out.push({ page: p, y: ln.y, x: firstReal.x, end, size, text });
+    }
+    pages.push(out);
+  }
+  // Strip repeating headers / footers and page numbers.
+  const n = pages.length, keyOf = t => t.toLowerCase().replace(/\d+/g, "#").replace(/\s+/g, " ");
+  const counts = {};
+  pages.forEach(pl => { const c = new Set([...pl.slice(0, 2), ...pl.slice(-2)].map(l => keyOf(l.text))); c.forEach(k => counts[k] = (counts[k] || 0) + 1); });
+  pages.forEach((pl, i) => {
+    const edge = new Set([...pl.slice(0, 2), ...pl.slice(-2)]);
+    pages[i] = pl.filter(l => {
+      if (!edge.has(l)) return true;
+      const k = keyOf(l.text);
+      if (/^(page )?#( (of|\/) #)?$|^- ?# ?-$|^# \/ #$/.test(k)) return false;
+      if (n >= 3 && counts[k] >= Math.max(3, n * 0.4) && l.text.length < 120) return false;
+      return true;
+    });
+  });
+  const lines = pages.flat();
+  if (lines.length === 0) throw new Error("This PDF doesn't seem to have any text in it (it might be made of pictures). Try downloading the EPUB version from AO3 instead.");
+
+  // Body text stats
+  const sizeW = {}; lines.forEach(l => sizeW[l.size] = (sizeW[l.size] || 0) + l.text.length);
+  const body = Number(Object.entries(sizeW).sort((a, b) => b[1] - a[1])[0][0]);
+  const bodyLines = lines.filter(l => Math.abs(l.size - body) < 0.6);
+  const xs = {}; bodyLines.forEach(l => { const k = Math.round(l.x / 2) * 2; xs[k] = (xs[k] || 0) + 1; });
+  const margin = Number(Object.entries(xs).sort((a, b) => b[1] - a[1])[0][0]);
+  const ends = bodyLines.map(l => l.end).sort((a, b) => a - b);
+  const right = ends[Math.floor(ends.length * 0.9)] || margin + 400;
+  const gaps = [];
+  for (let i = 1; i < bodyLines.length; i++) { const a = bodyLines[i - 1], b = bodyLines[i]; if (a.page === b.page) { const g = a.y - b.y; if (g > body * 0.8 && g < body * 3) gaps.push(g); } }
+  gaps.sort((a, b) => a - b);
+  const lineGap = gaps[Math.floor(gaps.length / 2)] || body * 1.3;
+
+  // Lines -> paragraphs
+  const paras = []; let cur = null, prev = null;
+  const startsBlock = t => FIELD_RX.test(t) || LABELS[labelKey(t)] || CHAP_RX.test(t) || DROP_RX.some(r => r.test(t));
+  for (const l of lines) {
+    const head = l.size >= body * 1.18;
+    let brk = !cur;
+    if (!brk) {
+      if (head !== cur.head) brk = true;
+      else if (prev.page === l.page && (prev.y - l.y > lineGap * (head ? 1.9 : 1.4) || prev.y - l.y < -2)) brk = true;
+      else if (l.x > prev.x + body * 0.8) brk = true;                     // first-line indent
+      else if (!head && prev.end < right - body * 4) brk = true;          // previous line was short
+      else if (startsBlock(l.text) || startsBlock(prev.text) && !head) brk = true;
+    }
+    if (brk) { cur = { head, lines: [], page: l.page }; paras.push(cur); }
+    cur.lines.push(l); prev = l;
+  }
+  for (const p of paras) {
+    let t = "";
+    for (const l of p.lines) t = !t ? l.text : (/[-–—\/]$/.test(t) && !/\s[-–]$/.test(t) ? t + l.text : t + " " + l.text);
+    p.text = t;
+    p.minX = Math.min(...p.lines.map(l => l.x));
+    const f = p.lines[0];
+    p.center = p.lines.length <= 2 && f.x > margin + body * 2 && Math.abs((f.x - margin) - (right - f.end)) < body * 2.5;
+    p.quote = !p.center && p.minX > margin + body * 1.5;
+  }
+
+  // Paragraphs -> about page + chapters
+  const hasFields = paras.slice(0, 80).some(p => FIELD_RX.test(p.text));
+  let section = hasFields ? "about" : "text";
+  const about = { titleParas: [], fields: [], blocks: [] };
+  const chapters = []; let chap = null, note = null, lastField = null;
+  const renderPara = p => {
+    if (SCENE_RX.test(p.text) && p.text.replace(/\s/g, "").length) return `<hr>`;
+    if (p.head) return `<h3>${esc(p.text)}</h3>`;
+    if (p.center) return `<p class="c">${esc(p.text)}</p>`;
+    if (p.quote && !note) return `<blockquote><p>${esc(p.text)}</p></blockquote>`;
+    return `<p>${esc(p.text)}</p>`;
+  };
+  const newChap = title => { chap = { title, parts: [] }; chapters.push(chap); note = null; section = "text"; };
+  const closeNote = () => { note = null; };
+  for (const p of paras) {
+    const t = p.text, key = labelKey(t);
+    if (DROP_RX.some(r => r.test(t))) continue;
+    if (LABELS[key]) {
+      if (section === "about" && (key === "summary" || key === "notes")) { about.blocks.push({ label: LABELS[key], paras: [] }); note = about.blocks[about.blocks.length - 1]; note.about = true; continue; }
+      if (!chap) newChap("");
+      note = { label: LABELS[key], paras: [], sticky: STICKY.has(key) }; chap.parts.push(note); continue;
+    }
+    if (CHAP_RX.test(t) && t.length < 150 && (p.head || p.lines.length <= 2)) { newChap(t); continue; }
+    if (section === "about") {
+      const m = FIELD_RX.exec(t);
+      if (m) { lastField = [m[1], m[2]]; about.fields.push(lastField); closeNote(); continue; }
+      if (note && note.about) {
+        // Summary/notes are indented quotes; a paragraph back at the margin means the fic has started.
+        if (note.paras.length && !p.quote && about.fields.length) { newChap(""); chap.parts.push(p); continue; }
+        note.paras.push(p); continue;
+      }
+      if (!about.fields.length || (!about.blocks.length && (p.head || /^by\s+\S/i.test(t)) && t.length < 200)) { about.titleParas.push(p); continue; }
+      if (lastField && !about.blocks.length && p.minX > margin + body) { lastField[1] += " " + t; continue; }
+      newChap(""); chap.parts.push(p); continue;
+    }
+    if (!chap) newChap("");
+    if (note && !note.sticky && note.paras.length && !p.quote) note = null;
+    if (note) { note.paras.push(p); continue; }
+    chap.parts.push(p);
+  }
+
+  // Title and author
+  const tp = about.titleParas;
+  let title = clean(info.Title), author = clean(info.Author);
+  const headT = tp.find(p => p.head);
+  title = title.replace(/\s*\[Archive of Our Own\]\s*$/i, "");
+  if (headT && (!title || /^untitled|\.pdf$|^microsoft|^document/i.test(title) || title.startsWith(headT.text + " - "))) title = headT.text;
+  const byP = tp.find(p => /^by\s+/i.test(p.text));
+  if (byP) author = byP.text.replace(/^by\s+/i, "");
+  else if (!author && headT) { const i = tp.indexOf(headT); if (tp[i + 1] && !tp[i + 1].head) author = tp[i + 1].text; }
+  if (!title) title = filename.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
+
+  const renderParts = parts => parts.map(x => x.paras ? (x.paras.length ? noteHtml(x.label, x.paras.map(renderPara).join("")) : "") : renderPara(x)).join("");
+  let aboutHtml = "";
+  for (const b of about.blocks) aboutHtml += `<h2 class="lbl">${esc(b.label)}</h2>` + b.paras.map(p => `<p>${esc(p.text)}</p>`).join("");
+  const extra = tp.filter(p => p !== headT && p !== byP);
+  if (extra.length && !aboutHtml) aboutHtml = extra.map(renderPara).join("");
+  const outChapters = chapters.map(c => ({ title: c.title || "", html: renderParts(c.parts) })).filter(c => c.html || c.title);
+  if (!outChapters.length) outChapters.push({ title, html: paras.map(renderPara).join("") });
+  outChapters.forEach((c, i) => { if (!c.title) c.title = outChapters.length === 1 ? title : (i === 0 ? "Beginning" : "Part " + (i + 1)); });
+  return { title, author, about: aboutHtml, fields: about.fields, chapters: outChapters };
+}
+
+/* ---------------- opening files ---------------- */
+function busy(msg) { const b = $("#busy"); if (msg == null) { b.hidden = true; return; } $("#busy-msg").textContent = msg; b.hidden = false; }
+let toastT;
+function toast(msg, ms = 4500) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, ms); }
+
+async function openFile(file) {
+  const buf = await file.arrayBuffer();
+  const head = new Uint8Array(buf.slice(0, 5));
+  const sig = String.fromCharCode(...head);
+  const name = file.name || "fic";
+  let res, format;
+  if (sig.startsWith("%PDF")) { format = "PDF"; res = await parsePdf(buf, name, busy); }
+  else if (sig.startsWith("PK")) { format = "EPUB"; busy("Unpacking your EPUB…"); res = await parseEpub(buf, name); }
+  else if (/\.(mobi|azw3?)$/i.test(name)) throw new Error("MOBI and AZW3 files are for Kindles, so they can't be opened here. On AO3, download the PDF, EPUB or HTML version instead.");
+  else { format = "HTML"; const text = new TextDecoder().decode(buf); if (!/<\w+/.test(text)) throw new Error(`"${name}" doesn't look like a fic file. Pick a PDF, EPUB or HTML you downloaded from AO3.`); res = parseHtmlText(text, name); }
+  if (!res.chapters.length) throw new Error(`Couldn't find any story text in "${name}".`);
+  const words = res.chapters.reduce((n, c) => n + (c.html.replace(/<[^>]+>/g, " ").match(/\S+/g) || []).length, 0);
+  const id = "f" + hashStr(res.title + "|" + res.author + "|" + words + "|" + res.chapters.length);
+  const fic = { id, title: res.title, author: res.author, about: res.about, fields: res.fields, chapters: res.chapters, format, words, added: Date.now() };
+  await DB.put(fic);
+  return fic;
+}
+async function handleFiles(files) {
+  files = [...files]; if (!files.length) return;
+  let last = null;
+  for (const f of files) {
+    try { busy(`Opening “${f.name}”…`); last = await openFile(f); }
+    catch (e) { console.error(e); busy(null); toast(e && e.message ? e.message : "Something went wrong opening that file."); }
+  }
+  busy(null);
+  await renderShelf();
+  if (last) openFic(last.id);
+}
+
+/* ---------------- shelf ---------------- */
+let fics = [];
+const ICON_X = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>';
+function pct(f) {
+  const pr = LS.get("pos:" + f.id, null); if (!pr) return 0;
+  const n = f.chapters.length; const ch = Math.max(0, pr.ch);
+  return Math.min(100, Math.round(((ch + (pr.ch < 0 ? 0 : pr.frac || 0)) / n) * 100));
+}
+async function renderShelf() {
+  fics = (await DB.all()).sort((a, b) => (LS.get("opened:" + b.id, b.added) - LS.get("opened:" + a.id, a.added)));
+  const list = $("#shelf-list");
+  if (!fics.some(f => f.sample) && !LS.get("sampleRemoved", false)) { const s = sampleFic(); await DB.put(s); fics.push(s); }
+  if (!fics.length) { list.innerHTML = `<li><p class="empty">Nothing here yet. Tap <b>Open a fic</b> to add your first one.</p></li>`; return; }
+  list.innerHTML = fics.map(f => {
+    const p = pct(f);
+    const chs = f.chapters.length;
+    return `<li class="fic" data-id="${esc(f.id)}">
+      <button class="open" type="button">
+        ${f.sample ? '<span class="tag">Example</span>' : ""}
+        <span class="t">${esc(f.title)}</span>
+        ${f.author ? `<span class="a">by ${esc(f.author)}</span>` : ""}
+        <span class="meta">${chs} chapter${chs === 1 ? "" : "s"} · ${Number(f.words || 0).toLocaleString()} words · ${p ? (p >= 99 ? "Finished" : p + "% read") : "Not started"}</span>
+        <span class="bar" aria-hidden="true"><i style="width:${p}%"></i></span>
+      </button>
+      <button class="del" type="button" aria-label="Remove ${esc(f.title)} from your shelf">${ICON_X}</button>
+    </li>`;
+  }).join("");
+}
+$("#shelf-list").addEventListener("click", async e => {
+  const li = e.target.closest(".fic"); if (!li) return;
+  const id = li.dataset.id;
+  if (e.target.closest(".open")) return openFic(id);
+  if (e.target.closest(".del")) {
+    if (li.querySelector(".confirm")) return;
+    const c = document.createElement("div"); c.className = "confirm";
+    c.innerHTML = `<span>Remove it from your shelf?</span><button class="btn-small warn" type="button" data-yes>Remove</button><button class="btn-small" type="button" data-no>Keep</button>`;
+    li.appendChild(c); c.querySelector("[data-no]").focus();
+    return;
+  }
+  if (e.target.closest("[data-no]")) return li.querySelector(".confirm").remove();
+  if (e.target.closest("[data-yes]")) {
+    const f = fics.find(x => x.id === id); if (f && f.sample) LS.set("sampleRemoved", true);
+    await DB.del(id); LS.del("pos:" + id); LS.del("opened:" + id); renderShelf();
+  }
+});
+
+/* ---------------- reader ---------------- */
+let fic = null, idx = 0;   // idx -1 = info page
+const hasAbout = f => !!(f.about || (f.fields && f.fields.length));
+function minIdx() { return settings.about && hasAbout(fic) ? -1 : 0; }
+async function openFic(id) {
+  fic = fics.find(f => f.id === id) || (await DB.all()).find(f => f.id === id);
+  if (!fic) return;
+  LS.set("opened:" + id, Date.now());
+  const pos = LS.get("pos:" + id, null);
+  $("#home").hidden = true; $("#reader").hidden = false; $("#progress").hidden = false;
+  document.body.classList.add("reading");
+  if (pos) { idx = Math.max(minIdx(), Math.min(fic.chapters.length - 1, pos.ch)); showChapter(idx, pos.ch === idx ? pos.frac : 0); }
+  else showChapter(minIdx(), 0);
+  try { history.replaceState(null, "", "#reading"); } catch {}
+}
+function closeReader() {
+  savePos(); fic = null;
+  $("#reader").hidden = true; $("#progress").hidden = true; $("#home").hidden = false;
+  document.body.classList.remove("reading"); closeSheets();
+  try { history.replaceState(null, "", location.pathname + location.search); } catch {}
+  renderShelf(); window.scrollTo(0, 0);
+}
+function chapterLabel(i) { return i < 0 ? "About this fic" : (fic.chapters.length > 1 ? `Chapter ${i + 1} of ${fic.chapters.length}` : ""); }
+function showChapter(i, frac = 0) {
+  idx = i;
+  const page = $("#page"), n = fic.chapters.length;
+  let html = "";
+  if (i < 0) {
+    html += `<header class="ch-head"><p class="eyebrow">About this fic</p><h1>${esc(fic.title)}</h1>${fic.author ? `<p class="by">by ${esc(fic.author)}</p>` : ""}</header>`;
+    html += `<div class="about">`;
+    if (fic.fields && fic.fields.length) html += `<dl>${fic.fields.map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`;
+    html += fic.about || "";
+    html += `</div>`;
+  } else {
+    const c = fic.chapters[i];
+    const showTitle = c.title && !(n === 1 && c.title === fic.title);
+    html += `<header class="ch-head">${n > 1 ? `<p class="eyebrow">${esc(chapterLabel(i))}</p>` : ""}<h1>${esc(showTitle ? c.title : fic.title)}</h1>${(i === 0 && fic.author && !(settings.about && hasAbout(fic))) ? `<p class="by">by ${esc(fic.author)}</p>` : ""}</header>`;
+    html += c.html;
+  }
+  const prevI = i - 1 >= minIdx() ? i - 1 : null, nextI = i + 1 < n ? i + 1 : null;
+  html += `<nav class="ch-nav" aria-label="Chapter navigation">`;
+  if (prevI !== null) html += `<button type="button" data-go="${prevI}"><small>Previous</small><span>${esc(prevI < 0 ? "About this fic" : fic.chapters[prevI].title)}</span></button>`;
+  if (nextI !== null) html += `<button type="button" class="next primary" data-go="${nextI}"><small>${i < 0 ? "Start reading" : "Next chapter"}</small><span>${esc(fic.chapters[nextI].title)}</span></button>`;
+  else html += `<button type="button" class="next" data-shelf><small>All done</small><span>Back to your shelf</span></button>`;
+  html += `</nav>`;
+  if (nextI === null && i >= 0) html += `<p class="the-end">The end. If you loved it, go leave the author some kudos.</p>`;
+  page.innerHTML = html;
+  $$("details.fn-note", page).forEach(d => d.open = settings.notes);
+  $("#where").textContent = i < 0 ? "About this fic" : (n > 1 ? `${i + 1} / ${n} · ${fic.chapters[i].title}` : fic.title);
+  $("#topbar").classList.remove("away");
+  requestAnimationFrame(() => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    window.scrollTo(0, frac > 0 ? Math.round(frac * max) : 0);
+    updateProgress(); savePos();
+  });
+}
+function scrollFrac() { const max = document.documentElement.scrollHeight - innerHeight; return max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 1; }
+function savePos() { if (fic) LS.set("pos:" + fic.id, { ch: idx, frac: idx < 0 ? 0 : +scrollFrac().toFixed(4) }); }
+function updateProgress() {
+  if (!fic) return;
+  const n = fic.chapters.length, f = idx < 0 ? 0 : (idx + scrollFrac()) / n;
+  $("#progress i").style.width = (f * 100).toFixed(2) + "%";
+}
+$("#page").addEventListener("click", e => {
+  const b = e.target.closest("[data-go]"); if (b) return showChapter(Number(b.dataset.go), 0);
+  if (e.target.closest("[data-shelf]")) closeReader();
+});
+$("#back").addEventListener("click", closeReader);
+let lastY = 0, saveT;
+addEventListener("scroll", () => {
+  if (!fic) return;
+  const y = scrollY, bar = $("#topbar");
+  if (y > lastY + 8 && y > 80) bar.classList.add("away");
+  else if (y < lastY - 8 || y < 40) bar.classList.remove("away");
+  lastY = y; updateProgress();
+  clearTimeout(saveT); saveT = setTimeout(savePos, 300);
+}, { passive: true });
+addEventListener("pagehide", savePos);
+document.addEventListener("visibilitychange", () => { if (document.hidden) savePos(); });
+addEventListener("keydown", e => {
+  if (!fic || e.target.closest("input, select, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === "Escape") { if (!$("#scrim").hidden) closeSheets(); return; }
+  if (!$("#scrim").hidden) return;
+  if (e.key === "ArrowRight" && idx + 1 < fic.chapters.length) showChapter(idx + 1, 0);
+  if (e.key === "ArrowLeft" && idx - 1 >= minIdx()) showChapter(idx - 1, 0);
+});
+
+/* ---------------- sheets ---------------- */
+let lastFocus = null;
+function openSheet(id) {
+  closeSheets(); lastFocus = document.activeElement;
+  $("#scrim").hidden = false; const s = $(id); s.hidden = false;
+  const focusEl = s.querySelector("#toc-list .cur") || s.querySelector("[data-close]");
+  focusEl && focusEl.focus({ preventScroll: true });
+}
+function closeSheets() { $("#scrim").hidden = true; $$(".sheet").forEach(s => s.hidden = true); if (lastFocus && document.contains(lastFocus)) lastFocus.focus({ preventScroll: true }); lastFocus = null; }
+$("#scrim").addEventListener("click", closeSheets);
+$$("[data-close]").forEach(b => b.addEventListener("click", closeSheets));
+$("#set-btn").addEventListener("click", () => openSheet("#sheet-settings"));
+$("#toc-btn").addEventListener("click", () => {
+  const items = [];
+  if (hasAbout(fic) && settings.about) items.push(`<li><button type="button" data-i="-1" class="${idx === -1 ? "cur" : ""}"><span class="n"></span><span>About this fic</span></button></li>`);
+  fic.chapters.forEach((c, i) => items.push(`<li><button type="button" data-i="${i}" class="${idx === i ? "cur" : ""}"><span class="n">${i + 1}</span><span>${esc(c.title)}</span></button></li>`));
+  $("#toc-list").innerHTML = items.join("");
+  openSheet("#sheet-toc");
+});
+$("#toc-list").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (!b) return; closeSheets(); showChapter(Number(b.dataset.i), 0); });
+for (const [id, key] of [["seg-theme", "theme"], ["seg-font", "font"], ["seg-width", "width"]])
+  $("#" + id).addEventListener("click", e => { const b = e.target.closest("button[data-v]"); if (!b) return; const f = fic && scrollFrac(); settings[key] = b.dataset.v; applySettings(); if (fic && key === "width") restoreFrac(f); });
+function restoreFrac(f) { requestAnimationFrame(() => { const max = document.documentElement.scrollHeight - innerHeight; scrollTo(0, Math.round(f * max)); }); }
+$("#r-size").addEventListener("input", e => { const f = fic && scrollFrac(); settings.size = Number(e.target.value); applySettings(); if (fic) restoreFrac(f); });
+$("#r-lh").addEventListener("input", e => { const f = fic && scrollFrac(); settings.lh = Number(e.target.value); applySettings(); if (fic) restoreFrac(f); });
+$("#c-notes").addEventListener("change", e => { settings.notes = e.target.checked; applySettings(); });
+$("#c-justify").addEventListener("change", e => { settings.justify = e.target.checked; applySettings(); });
+$("#c-about").addEventListener("change", e => { settings.about = e.target.checked; applySettings(); if (fic) { if (idx < minIdx()) showChapter(0, 0); else showChapter(idx, scrollFrac()); } });
+
+/* ---------------- file picking ---------------- */
+$("#open-btn").addEventListener("click", () => $("#file").click());
+$("#file").addEventListener("change", e => { const fl = e.target.files; handleFiles(fl).finally(() => { e.target.value = ""; }); });
+const drop = document.body;
+["dragenter", "dragover"].forEach(t => drop.addEventListener(t, e => { if (e.dataTransfer && [...e.dataTransfer.types].includes("Files")) { e.preventDefault(); $("#drop").classList.add("drag"); } }));
+["dragleave", "drop"].forEach(t => drop.addEventListener(t, e => { $("#drop").classList.remove("drag"); }));
+drop.addEventListener("drop", e => { if (e.dataTransfer && e.dataTransfer.files.length) { e.preventDefault(); if (fic) closeReader(); handleFiles(e.dataTransfer.files); } });
+
+/* ---------------- example fic ---------------- */
+function sampleFic() {
+  const P = a => a.map(t => `<p>${t}</p>`).join("");
+  const chapters = [
+    { title: "Chapter 1: Low Tide", html:
+      noteHtml("Chapter notes", "<p>Hi! This is a little example so you can try out Fic Nook. Tap <b>Aa</b> at the top to change how it looks. This box is an author's note; you can tuck notes away in the settings.</p>") +
+      P(["The kettle had been whistling for a full minute before Wren noticed it, which said a lot about the letter on the table.",
+         "It was only three lines long. She had read it eleven times. The handwriting slanted to the right as if it were in a hurry to get somewhere, and the ink had smudged where the writer had pressed down on the word <em>soon</em>.",
+         "Outside, the tide was pulling back from the rocks, leaving the long ribbons of kelp to dry in the sun. The lighthouse cast no beam in daylight, but she climbed the stairs anyway, cup in hand, because that was what you did when you didn't know what else to do.",
+         "“You're going to wear a groove in those steps,” Abel said from the doorway below.",
+         "“Then they'll know someone lived here,” she said, and kept climbing."]) + "<hr>" +
+      P(["By evening the fog had come in thick and soft, swallowing the harbor one boat at a time. Wren lit the lamp and watched the light sweep out over nothing at all.",
+         "Somewhere out there, a ship was coming. Soon, the letter said. She decided she could wait for soon."]) },
+    { title: "Chapter 2: The Bell Buoy", html:
+      P(["The bell buoy rang twice in the night, which it never did unless something had brushed against it.",
+         "Abel was already in his coat when she came down. He didn't say anything. He just held out the second lantern, and she took it.",
+         "The beach was cold and grey, and the sand squeaked under their boots. At the water's edge, half in and half out of the foam, sat a small wooden box with a brass clasp, the kind sailors kept their letters in.",
+         "Wren knelt and opened it. Inside, wrapped in oilcloth, was a second letter, in the same hurried hand.",
+         "This one only had one word on it.",
+         "<em>Here.</em>"]) +
+      noteHtml("Chapter end notes", "<p>Thanks for reading the example! Now try opening one of your own downloads with the <b>Open a fic</b> button on your shelf.</p>") }
+  ];
+  return { id: "sample-lighthouse", sample: true, title: "The Lighthouse Keeper's Tea", author: "Fic Nook", format: "Example",
+    fields: [["Rating", "General Audiences"], ["Fandom", "Original Work"], ["Characters", "Wren, Abel"], ["Additional Tags", "Lighthouses, Letters, Slow Burn, Fog"], ["Stats", "Words: 420 · Chapters: 2/2"]],
+    about: `<h2 class="lbl">Summary</h2><p>A lighthouse keeper gets a letter that says <em>soon</em>. This is an example fic so you can try the reader before opening your own.</p>`,
+    chapters, words: 420, added: 0 };
+}
+
+/* Android Back button (used by the app version): close a panel, or leave the fic. */
+window.ficNookBack = () => {
+  if (!$("#scrim").hidden) { closeSheets(); return true; }
+  if (fic) { closeReader(); return true; }
+  return false;
+};
+
+/* ---------------- start ---------------- */
+applySettings();
+DB.open().then(renderShelf);
+})();
+</script>
+
+</body>
+</html>
