@@ -2,6 +2,12 @@
 
 Version numbers come from the GitHub build number: build 5 is version 1.5, and so on.
 
+## 1.9
+
+- **Italics and bold now show in real AO3 PDFs.** AO3's PDFs name their fonts in a short way ("ReguItal", "Medi") that Fic Nook didn't recognise before. Tested on real downloads.
+- **Chapters are found properly in AO3 PDFs**: chapters with names instead of numbers ("Come to Me"), a chapter called just "69", chapters whose title the author repeats at the top, and notes that start with "Chapter 2 is here!" no longer get mixed up. Every test fic now has the same number of chapters AO3 lists.
+- Your fic folder is read again once after updating so all of this applies to fics you already have.
+
 ## 1.8
 
 - No more closing the app to update. Fic Nook looks for a new version every time you come back to it and every 30 minutes while it's open.

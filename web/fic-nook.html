@@ -1093,7 +1093,7 @@ async function parseEpub(buf, filename) {
 const FIELD_RX = /^(Rating|Archive Warnings?|Categor(?:y|ies)|Fandoms?|Relationships?|Characters?|Additional Tags|Language|Series|Collections?|Stats|Published|Updated|Completed|Words|Chapters)\s*:\s*(.*)$/i;
 const LABELS = { "summary": "Summary", "notes": "Notes", "chapter notes": "Chapter notes", "chapter summary": "Chapter summary", "chapter end notes": "Chapter end notes", "end notes": "End notes", "afterword": "Afterword", "author's note": "Author's note", "author's notes": "Author's note", "a/n": "Author's note" };
 const STICKY = new Set(["chapter end notes", "end notes", "afterword"]);
-const DROP_RX = [/^\(see the end of the (chapter|work) for (more )?notes\.?\)$/i, /^(work text|chapter text)\s*:?$/i, /^posted originally on the archive of our own/i, /^please drop by the archive and comment/i, /^archiveofourown\.org/i];
+const DROP_RX = [/^\(?see the end of the (chapter|work) for (more )?notes\.?\)?$/i, /^(work text|chapter text)\s*:?$/i, /^posted originally on the archive of our own/i, /^please drop by the archive and comment/i, /^archiveofourown\.org/i];
 const CHAP_RX = /^(chapter|part)\s+(\d+|[ivxlcdm]+)\b/i;
 const SCENE_RX = /^[\s*~\-–—•·oO0x#=_+.❀✿♡♥❤︎]{1,30}$/;
 const labelKey = t => t.toLowerCase().replace(/[’]/g, "'").replace(/[:.]$/, "").trim();
@@ -1116,7 +1116,11 @@ async function parsePdf(buf, filename, progress) {
       const fam = (tc.styles[fn] || {}).fontFamily || "";
       name = name.replace(/^[A-Z]{6}\+/, "");
       const base = (name.split(/[-,]/)[0] || "").replace(/(PSMT|PS|MT)$/, "") || fam || fn;
-      fontInfo[fn] = { base, fam, i: /italic|oblique/i.test(name), b: /bold|black|heavy|semibold|demi/i.test(name), mono: fam === "monospace" || /mono|courier|consol/i.test(name) };
+      // AO3's PDFs name their fonts like "NimbusRomNo9L-ReguItal" (italic) and "NimbusRomNo9L-Medi" (bold).
+      const style = name.slice(name.indexOf("-") + 1 || name.length);
+      const mono = fam === "monospace" || /mono|courier|consol|typewriter/i.test(name);
+      const sans = !mono && /sans|arial|helvet|verdana|tahoma|calibri|roboto|segoe|futura|gothic/i.test(name.split("-")[0]);
+      fontInfo[fn] = { base, fam, mono, sans, i: /ital|obl/i.test(style) || /italic|oblique/i.test(name), b: /bold|black|heavy|semi|demi|medi/i.test(style) || /bold/i.test(name) };
     }
     const items = tc.items.filter(it => typeof it.str === "string" && it.str.length && Math.abs(it.transform[1]) < 0.01)
       .map(it => ({ s: it.str, x: it.transform[4], y: it.transform[5], w: it.width, size: Math.abs(it.transform[3]) || it.height || 10, f: it.fontName }));
@@ -1150,16 +1154,21 @@ async function parsePdf(buf, filename, progress) {
   const n = pages.length, keyOf = t => t.toLowerCase().replace(/\d+/g, "#").replace(/\s+/g, " ");
   const counts = {};
   pages.forEach(pl => { const c = new Set([...pl.slice(0, 2), ...pl.slice(-2)].map(l => keyOf(l.text))); c.forEach(k => counts[k] = (counts[k] || 0) + 1); });
+  const roughW = {}; pages.flat().forEach(l => roughW[l.size] = (roughW[l.size] || 0) + l.text.length);
+  const roughBody = Number((Object.entries(roughW).sort((a, b) => b[1] - a[1])[0] || [12])[0]);
   pages.forEach((pl, i) => {
     const edge = new Set([...pl.slice(0, 2), ...pl.slice(-2)]);
     pages[i] = pl.filter(l => {
       if (!edge.has(l)) return true;
+      if (l.size > roughBody * 1.15) return true;   // big text is a heading (a chapter can be called "69"), never a page number
       const k = keyOf(l.text);
       if (/^(page )?#( (of|\/) #)?$|^- ?# ?-$|^# \/ #$/.test(k)) return false;
-      if (n >= 3 && counts[k] >= Math.max(3, n * 0.4) && l.text.length < 120) return false;
+      // Chapter headings start a new page, so "Chapter #" sits at the top of many pages. That is not a running header.
+      if (n >= 3 && counts[k] >= Math.max(3, n * 0.4) && l.text.length < 120 && !CHAP_RX.test(l.text)) return false;
       return true;
     });
   });
+  pages.forEach(pl => { if (pl[0]) pl[0].top = true; });   // AO3 starts every chapter on a new page
   const lines = pages.flat();
   if (lines.length === 0) throw new Error("This PDF doesn't seem to have any text in it (it might be made of pictures). Try downloading the EPUB version from AO3 instead.");
 
@@ -1216,7 +1225,7 @@ async function parsePdf(buf, filename, progress) {
   const bodyBase = (Object.entries(baseChars).sort((a, b) => b[1] - a[1])[0] || [""])[0];
   const styleKey = f => {
     const fi = f && fontInfo[f]; if (!fi) return null;
-    let k = fi.mono ? "m" : (fi.base && fi.base !== bodyBase ? (fi.fam === "serif" ? "r" : "s") : "");
+    let k = fi.mono ? "m" : (fi.base && fi.base !== bodyBase ? (fi.sans ? "s" : "r") : "");
     return k + (fi.b ? "b" : "") + (fi.i ? "i" : "");
   };
   const wrapRun = (k, h) => {
@@ -1263,7 +1272,11 @@ async function parsePdf(buf, filename, progress) {
       if (!chap) newChap("");
       note = { label: LABELS[key], paras: [], sticky: STICKY.has(key) }; chap.parts.push(note); continue;
     }
-    if (CHAP_RX.test(t) && t.length < 150 && (p.head || p.lines.length <= 2)) { newChap(t); continue; }
+    // Authors often repeat the chapter title as the first line of the text: skip that copy.
+    if (chap && !chap.parts.length && chap.title && t.toLowerCase() === chap.title.toLowerCase()) continue;
+    if (CHAP_RX.test(t) && (p.head ? t.length < 150 : t.length < 60 && p.lines.length <= 2)) { newChap(t); continue; }
+    // Named chapters ("Wasting My Young Years"): a big heading at the very top of a page, once the fic's details are done.
+    if (p.head && p.lines[0].top && t.length < 150 && p.page > 1 && (section !== "about" || about.fields.length)) { newChap(t); continue; }
     if (section === "about") {
       const m = FIELD_RX.exec(t);
       if (m) { lastField = [m[1], m[2]]; about.fields.push(lastField); closeNote(); continue; }
@@ -2553,7 +2566,7 @@ $("#setup").addEventListener("click", e => {
 
 /* ---------------- app-only: fic folder + updates ---------------- */
 let syncing = false, lastSync = 0, syncNoteT;
-const PARSER_V = 2;
+const PARSER_V = 3;
 function syncNote(msg, ms) {
   const n = $("#sync-note"); clearTimeout(syncNoteT);
   if (!msg) { n.hidden = true; return; }
