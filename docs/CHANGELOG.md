@@ -2,6 +2,11 @@
 
 Version numbers come from the GitHub build number: build 5 is version 1.5, and so on.
 
+## 1.6
+
+- Fixed the cards under **Me** sitting squashed together with no space between them.
+- The **Update now** bar now also shows at the top of your Library, and the app looks for new versions again when you come back to it (before, it only checked when it first started).
+
 ## 1.5
 
 - **Your own shelves**, like "Comfort reads". They show up as tabs in your Library. Make them from a fic's ⋮ button or under **Me**.

@@ -8,7 +8,7 @@ A comfy Android reader for fics you downloaded from AO3. Fic Nook opens your PDF
 2. If Chrome warns that the file might be harmful, tap **Download anyway**.
 3. Open the downloaded file. If your phone asks, allow installing apps from Chrome or your Files app, then tap **Install**.
 
-Already have Fic Nook 1.3 or newer? You don't need to download anything. The app notices new versions by itself and shows an **Update now** button (under **Me** from 1.4 on). Updating keeps your library, shelves, highlights and reading spots.
+Already have Fic Nook 1.3 or newer? You don't need to download anything. The app notices new versions by itself and shows an **Update now** button at the top of your Library and under **Me**. Updating keeps your library, shelves, highlights and reading spots.
 
 ## Documentation
 

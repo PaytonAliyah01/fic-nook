@@ -282,7 +282,9 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 /* ---------- Navigation, Me, reader controls, setup ---------- */
 body.has-nav { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
 #home, #me, #stats { padding-block: 22px 24px; gap: 14px; }
-#me { gap: 12px; }
+#me { max-width: 40rem; margin: 0 auto; display: grid; gap: 14px; }
+.me-card > * { min-width: 0; }
+.my-shelves li button { flex: none; }
 .view-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
 .view-head h1 { font-family: var(--book); font-weight: 600; font-size: 1.9rem; margin: 0; }
 .view-head span { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -411,6 +413,7 @@ body.controls .topbar { transform: none; }
 
 <main id="home" class="view">
   <div class="view-head"><h1>Library</h1><span id="shelf-count"></span></div>
+  <div class="update-bar" hidden role="status"><span class="update-msg"></span><button class="update-btn" type="button">Update now</button></div>
   <div class="tools">
     <label class="sr" for="q">Search your library</label>
     <input type="search" id="q" placeholder="Search titles, tags, summaries…" autocomplete="off" enterkeyhint="search">
@@ -440,7 +443,7 @@ body.controls .topbar { transform: none; }
 
 <main id="me" class="view" hidden>
   <div class="view-head"><h1>Me</h1></div>
-  <div class="update-bar" id="update-bar" hidden role="status"><span id="update-msg"></span><button id="update-btn" type="button">Update now</button></div>
+  <div class="update-bar" hidden role="status"><span class="update-msg"></span><button class="update-btn" type="button">Update now</button></div>
   <section class="me-card">
     <h2>Your reading this year</h2>
     <div class="tiles" id="me-tiles"></div>
@@ -2613,9 +2616,9 @@ window.ficNookFolderChanged = () => {
 window.ficNookToast = m => toast(m);
 window.ficNookOpenLast = () => { const id = lastFicId(); if (id && (!fic || fic.id !== id)) { if (fic) closeReader(); openFic(id); } };
 window.ficNookResume = () => { if (!fic && Date.now() - lastSync > 15000) syncFolder(false); };
-window.ficNookUpdateAvailable = ver => { $("#update-msg").textContent = `Fic Nook ${ver} is ready.`; $("#update-bar").hidden = false; };
-window.ficNookUpdateStatus = (msg, canTap) => { const b = $("#update-btn"); b.textContent = msg; b.disabled = !canTap; };
-$("#update-btn").addEventListener("click", () => { if (Android) { $("#update-btn").disabled = true; Android.installUpdate(); } });
+window.ficNookUpdateAvailable = ver => { $$(".update-msg").forEach(m => m.textContent = `Fic Nook ${ver} is ready.`); $$(".update-bar").forEach(b => b.hidden = false); };
+window.ficNookUpdateStatus = (msg, canTap) => $$(".update-btn").forEach(b => { b.textContent = msg; b.disabled = !canTap; });
+$$(".update-btn").forEach(btn => btn.addEventListener("click", () => { if (Android) { $$(".update-btn").forEach(b => b.disabled = true); Android.installUpdate(); } }));
 $("#folder-pick").addEventListener("click", () => Android && Android.pickFolder());
 $("#folder-sync").addEventListener("click", () => { showView("home"); syncFolder(true); });
 if (Android) { try { $("#app-version").textContent = `Fic Nook ${Android.version()}. `; } catch {} folderUI(); }

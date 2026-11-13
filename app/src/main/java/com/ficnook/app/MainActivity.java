@@ -56,6 +56,7 @@ public class MainActivity extends Activity {
     private SharedPreferences prefs;
     private ValueCallback<Uri[]> pendingPick;
     private boolean checkedUpdate = false;
+    private long lastUpdateCheck = 0;
     private volatile String updateUrl;
     private static final int SAVE_BACKUP = 43;
     private TextToSpeech tts;
@@ -393,6 +394,7 @@ public class MainActivity extends Activity {
     /* ---------- updates ---------- */
 
     private void checkForUpdate() {
+        lastUpdateCheck = System.currentTimeMillis();
         new Thread(() -> {
             try {
                 HttpURLConnection c = (HttpURLConnection) new URL(RELEASES).openConnection();
@@ -555,6 +557,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        // Look for a new version again if the app has been open a while (it used to check only at start).
+        if (checkedUpdate && updateUrl == null && System.currentTimeMillis() - lastUpdateCheck > 20 * 60 * 1000) checkForUpdate();
         // Pick up fics that were downloaded while the app was in the background.
         web.evaluateJavascript("window.ficNookResume && window.ficNookResume()", null);
     }
