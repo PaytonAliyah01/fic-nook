@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fic Nook</title>
+<title>FicNook</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="A comfy reader for fics you downloaded from AO3 (PDF, EPUB or HTML).">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -484,7 +484,7 @@ body.controls .topbar { transform: none; }
     <ul class="me-hl" id="me-hl"></ul>
   </section>
   <section class="me-card" id="app-card" hidden>
-    <h2>Fic Nook app</h2>
+    <h2>FicNook app</h2>
     <p id="app-card-text"></p>
     <div class="row-btns"><button class="btn-small" type="button" id="check-update">Check for updates</button></div>
   </section>
@@ -513,7 +513,7 @@ body.controls .topbar { transform: none; }
     </details>
     <details>
       <summary>A fic got new chapters. What do I do?</summary>
-      <p>Download it again from AO3. Fic Nook sees it's the same fic and updates the one in your Library, keeping your spot, highlights and shelf. The card says how many chapters are new.</p>
+      <p>Download it again from AO3. FicNook sees it's the same fic and updates the one in your Library, keeping your spot, highlights and shelf. The card says how many chapters are new.</p>
     </details>
     <details>
       <summary>How do I use the reading screen?</summary>
@@ -536,15 +536,15 @@ body.controls .topbar { transform: none; }
       <p>Under <b>More</b> while reading (or Reading settings here), turn on the <b>Night light</b> to tint the screen amber, or pick the <b>Warm</b> theme. <b>Auto-scroll</b> moves through the fic by itself at your reading speed. To make a quote card, tap a highlight and choose <b>Make a quote card</b>.</p>
     </details>
     <details>
-      <summary>Can I put Fic Nook on my home screen?</summary>
-      <p>Yes. Press and hold an empty spot on your home screen, tap <b>Widgets</b>, find <b>Fic Nook</b> and drag the <b>Keep reading</b> widget out. Tapping it opens the fic you were reading.</p>
+      <summary>Can I put FicNook on my home screen?</summary>
+      <p>Yes. Press and hold an empty spot on your home screen, tap <b>Widgets</b>, find <b>FicNook</b> and drag the <b>Keep reading</b> widget out. Tapping it opens the fic you were reading.</p>
     </details>
     <details>
       <summary>Something looks wrong in a PDF</summary>
-      <p>PDFs are made for printing, so Fic Nook has to guess where paragraphs and chapters start. It keeps italics, bold and the author's special fonts (like text messages) when it can. If a fic still looks off, download the EPUB version from AO3 instead.</p>
+      <p>PDFs are made for printing, so FicNook has to guess where paragraphs and chapters start. It keeps italics, bold and the author's special fonts (like text messages) when it can. If a fic still looks off, download the EPUB version from AO3 instead.</p>
     </details>
   </section>
-  <p class="privacy"><span id="app-version"></span>Your fics never leave your device. Fic Nook reads each file right here and keeps your library only on this phone or computer.</p>
+  <p class="privacy"><span id="app-version"></span>Your fics never leave your device. FicNook reads each file right here and keeps your library only on this phone or computer.</p>
 </main>
 
 <main id="stats" class="view" hidden>
@@ -637,7 +637,7 @@ body.controls .topbar { transform: none; }
 
 <div class="setup" id="setup" hidden role="dialog" aria-labelledby="setup-h">
   <div class="setup-card">
-    <p class="eyebrow">Welcome to Fic Nook</p>
+    <p class="eyebrow">Welcome to FicNook</p>
     <div id="setup-1">
       <h2 id="setup-h">Where do your fics go?</h2>
       <p>Pick the folder your AO3 downloads are saved in (usually <b>Download</b>). New fics there will show up in your Library by themselves.</p>
@@ -2115,7 +2115,7 @@ function renderStats(y) {
   const { secs, words, readDays, best, fin, months, maxM, busiest, fandoms, ships, tags, longest } = computeYear(y);
   const body = $("#stats-body");
   if (!secs && !fin.length) {
-    body.innerHTML = `<div class="recap"><p class="eyebrow">${y} in fics</p><h2>Your recap starts here</h2><p>Fic Nook counts your reading time, the words you read and the fics you finish from now on. Come back after some reading to see your stats grow.</p></div>`;
+    body.innerHTML = `<div class="recap"><p class="eyebrow">${y} in fics</p><h2>Your recap starts here</h2><p>FicNook counts your reading time, the words you read and the fics you finish from now on. Come back after some reading to see your stats grow.</p></div>`;
     return;
   }
   const list = (title, rows) => `<div class="toplist"><h3>${title}</h3>${rows.length ? `<ol>${rows.map(([v, n]) => `<li>${esc(v)} <small>${n}</small></li>`).join("")}</ol>` : `<p class="empty">Finish some fics to see this.</p>`}</div>`;
@@ -2155,7 +2155,7 @@ async function makeBackup() {
 }
 if (!(Android && Android.saveBackup)) {
   $("#backup-btn").hidden = true;
-  $("#backup-text").textContent = "In the Fic Nook app you can back up your library to Google Drive. Here you can restore a backup you made in the app.";
+  $("#backup-text").textContent = "In the FicNook app you can back up your library to Google Drive. Here you can restore a backup you made in the app.";
 }
 $("#backup-btn").addEventListener("click", async () => {
   busy("Packing up your library…");
@@ -2194,7 +2194,7 @@ $("#restore-file").addEventListener("change", async e => {
     busy(null); toast(`Restored ${data.fics.length} fic${data.fics.length === 1 ? "" : "s"}. Reloading…`, 2000);
     setTimeout(() => location.reload(), 1500);
   } catch (err) {
-    busy(null); toast("That file isn't a Fic Nook backup.");
+    busy(null); toast("That file isn't a FicNook backup.");
   }
 });
 
@@ -2641,14 +2641,14 @@ window.ficNookToast = m => toast(m);
 window.ficNookOpenLast = () => { const id = lastFicId(); if (id && (!fic || fic.id !== id)) { if (fic) closeReader(); openFic(id); } };
 window.ficNookResume = () => { if (!fic && Date.now() - lastSync > 15000) syncFolder(false); };
 window.ficNookUpdateAvailable = ver => {
-  $$(".update-msg").forEach(m => m.textContent = `Fic Nook ${ver} is ready.`); $$(".update-bar").forEach(b => b.hidden = false);
+  $$(".update-msg").forEach(m => m.textContent = `FicNook ${ver} is ready.`); $$(".update-bar").forEach(b => b.hidden = false);
   const c = $("#check-update"); if (c && c.disabled) { c.disabled = false; c.textContent = "Check for updates"; if (!$("#me").hidden) window.scrollTo({ top: 0, behavior: "smooth" }); }
 };
 window.ficNookUpdateStatus = (msg, canTap) => $$(".update-btn").forEach(b => { b.textContent = msg; b.disabled = !canTap; });
 $$(".update-btn").forEach(btn => btn.addEventListener("click", () => { if (Android) { $$(".update-btn").forEach(b => b.disabled = true); Android.installUpdate(); } }));
 $("#folder-pick").addEventListener("click", () => Android && Android.pickFolder());
 $("#folder-sync").addEventListener("click", () => { showView("home"); syncFolder(true); });
-if (Android) { try { $("#app-version").textContent = `Fic Nook ${Android.version()}. `; $("#app-card-text").textContent = `You have version ${Android.version()}. New versions show up by themselves at the top of your Library and here, and you can update without closing the app.`; } catch {} folderUI(); }
+if (Android) { try { $("#app-version").textContent = `FicNook ${Android.version()}. `; $("#app-card-text").textContent = `You have version ${Android.version()}. New versions show up by themselves at the top of your Library and here, and you can update without closing the app.`; } catch {} folderUI(); }
 if (Android && Android.checkUpdate) $("#app-card").hidden = false;
 $("#check-update").addEventListener("click", () => { const b = $("#check-update"); b.disabled = true; b.textContent = "Checking…"; try { Android.checkUpdate(); } catch { b.disabled = false; b.textContent = "Check for updates"; } });
 window.ficNookUpdateNone = ok => { const b = $("#check-update"); b.disabled = false; b.textContent = ok ? "You're up to date. Check again" : "Couldn't check. Try again"; };
@@ -2677,7 +2677,7 @@ function sampleFic() {
   const P = a => a.map(t => `<p>${t}</p>`).join("");
   const chapters = [
     { title: "Chapter 1: Low Tide", html:
-      noteHtml("Chapter notes", "<p>Hi! This is a little example so you can try out Fic Nook. Tap <b>Aa</b> at the top to change how it looks. This box is an author's note; you can tuck notes away in the settings.</p>") +
+      noteHtml("Chapter notes", "<p>Hi! This is a little example so you can try out FicNook. Tap <b>Aa</b> at the top to change how it looks. This box is an author's note; you can tuck notes away in the settings.</p>") +
       P(["The kettle had been whistling for a full minute before Wren noticed it, which said a lot about the letter on the table.",
          "It was only three lines long. She had read it eleven times. The handwriting slanted to the right as if it were in a hurry to get somewhere, and the ink had smudged where the writer had pressed down on the word <em>soon</em>.",
          "Outside, the tide was pulling back from the rocks, leaving the long ribbons of kelp to dry in the sun. The lighthouse cast no beam in daylight, but she climbed the stairs anyway, cup in hand, because that was what you did when you didn't know what else to do.",
@@ -2694,7 +2694,7 @@ function sampleFic() {
          "<em>Here.</em>"]) +
       noteHtml("Chapter end notes", "<p>Thanks for reading the example! Now try opening one of your own downloads with the <b>Open a fic</b> button on your shelf.</p>") }
   ];
-  return { id: "sample-lighthouse", sample: true, title: "The Lighthouse Keeper's Tea", author: "Fic Nook", format: "Example",
+  return { id: "sample-lighthouse", sample: true, title: "The Lighthouse Keeper's Tea", author: "FicNook", format: "Example",
     fields: [["Rating", "General Audiences"], ["Fandom", "Original Work"], ["Characters", "Wren, Abel"], ["Additional Tags", "Lighthouses, Letters, Slow Burn, Fog"], ["Stats", "Words: 420 · Chapters: 2/2"]],
     about: `<h2 class="lbl">Summary</h2><p>A lighthouse keeper gets a letter that says <em>soon</em>. This is an example fic so you can try the reader before opening your own.</p>`,
     chapters, words: 420, added: 0 };

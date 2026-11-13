@@ -1,6 +1,6 @@
-# Fic Nook user guide
+# FicNook user guide
 
-This guide covers everything Fic Nook can do as of version 1.9.
+This guide covers everything FicNook can do as of version 1.9.
 
 ## Getting started
 
@@ -10,21 +10,21 @@ See [Get the app](../README.md#get-the-app). After that, updates arrive inside t
 
 ### First-time setup
 
-The first time you open Fic Nook it asks two things:
+The first time you open FicNook it asks two things:
 
 1. **Where do your fics go?** Pick the folder your AO3 downloads are saved in (usually **Download**). Any PDF, EPUB or HTML fic in that folder shows up in your Library by itself. You can skip this and add fics by hand instead.
 2. **Light or dark?** You can change this any time.
 
-### Getting a fic into Fic Nook
+### Getting a fic into FicNook
 
 On AO3, open the fic, tap **Download** and pick **PDF** or **EPUB**. EPUB comes out a little cleaner, but PDF works well too.
 
-- If you picked a fic folder, the fic appears on its own the next time you open Fic Nook (or tap **Check for new fics** under **Me**).
+- If you picked a fic folder, the fic appears on its own the next time you open FicNook (or tap **Check for new fics** under **Me**).
 - Otherwise, tap **Add a fic** in your Library and pick the file.
 
 ### When a fic gets new chapters
 
-Download it again from AO3. Fic Nook recognises it's the same fic (it uses the AO3 work number, or the title and author if that's missing), so it updates the copy you already have. Your reading spot, highlights, bookmarks, rating, notes and shelves all stay. The card shows "1 new chapter" (or however many) until you open it, and a fic you'd finished moves back to **Reading**.
+Download it again from AO3. FicNook recognises it's the same fic (it uses the AO3 work number, or the title and author if that's missing), so it updates the copy you already have. Your reading spot, highlights, bookmarks, rating, notes and shelves all stay. The card shows "1 new chapter" (or however many) until you open it, and a fic you'd finished moves back to **Reading**.
 
 ## Getting around
 
@@ -87,7 +87,7 @@ Under **More**, set **Night light** to **On**, or to **Evenings** so it switches
 
 ### Auto-scroll
 
-Under **More**, tap **Start auto-scroll**. Fic Nook moves through the fic by itself at your reading speed: it turns pages in flip mode, or scrolls slowly in scroll mode, and carries on into the next chapter. A bar at the bottom lets you pause, go slower or faster (− and +), or stop.
+Under **More**, tap **Start auto-scroll**. FicNook moves through the fic by itself at your reading speed: it turns pages in flip mode, or scrolls slowly in scroll mode, and carries on into the next chapter. A bar at the bottom lets you pause, go slower or faster (− and +), or stop.
 
 ### Read aloud
 
@@ -103,11 +103,11 @@ Tap a highlight, then **Make a quote card**. You get a pretty picture of the quo
 
 ### PDFs with special fonts
 
-Authors sometimes use a different font for text messages, signs or letters. Fic Nook spots these in PDFs and shows them in a different font too (typewriter-style for text messages, a clean sans-serif for others). It also keeps *italics* and **bold**. PDFs are made for printing, so Fic Nook has to guess where paragraphs and chapters start. If a fic looks off, try the EPUB download instead.
+Authors sometimes use a different font for text messages, signs or letters. FicNook spots these in PDFs and shows them in a different font too (typewriter-style for text messages, a clean sans-serif for others). It also keeps *italics* and **bold**. PDFs are made for printing, so FicNook has to guess where paragraphs and chapters start. If a fic looks off, try the EPUB download instead.
 
 ## Me
 
-- **Update now** appears at the top (here and in your Library) when a new version is ready. Fic Nook looks for new versions whenever you come back to it, and the **Check for updates** button (in the Fic Nook app box) checks right away.
+- **Update now** appears at the top (here and in your Library) when a new version is ready. FicNook looks for new versions whenever you come back to it, and the **Check for updates** button (in the FicNook app box) checks right away.
 - **Your reading this year**: fics finished, words read, time spent reading, and your best streak of days in a row. **See your recap** shows the whole year: busiest month, top fandoms, ships and tags, your longest fic, and more. You can look back at earlier years too.
 - **Your reading goal**: pick a number of fics a week, month or year, or minutes a day, and watch the bar fill up.
 - **Your shelves**: make new shelves (like "Comfort reads" or "Reread someday") or remove ones you don't need. Removing a shelf never removes the fics.
@@ -125,12 +125,12 @@ To bring it back (on a new phone, for example), tap **Restore from a backup** an
 
 ## Home screen widget
 
-Press and hold an empty spot on your home screen, tap **Widgets**, find **Fic Nook**, and drag the **Keep reading** widget out. It shows the fic you're reading and how much is left. Tap it to jump straight back in.
+Press and hold an empty spot on your home screen, tap **Widgets**, find **FicNook**, and drag the **Keep reading** widget out. It shows the fic you're reading and how much is left. Tap it to jump straight back in.
 
 ## Privacy
 
-Your fics never leave your phone. Fic Nook reads each file on the phone and keeps your library there. The only time it goes online is to check GitHub for app updates. Backups only go where you choose to save them.
+Your fics never leave your phone. FicNook reads each file on the phone and keeps your library there. The only time it goes online is to check GitHub for app updates. Backups only go where you choose to save them.
 
 ## The web version
 
-There's also a web version of Fic Nook that runs in a browser. It has the same reader and library (read aloud uses your browser's voice, where it has one). It can't watch a fic folder, use the volume buttons, make backups, update itself or show a widget, but it can restore a backup made in the app.
+There's also a web version of FicNook that runs in a browser. It has the same reader and library (read aloud uses your browser's voice, where it has one). It can't watch a fic folder, use the volume buttons, make backups, update itself or show a widget, but it can restore a backup made in the app.

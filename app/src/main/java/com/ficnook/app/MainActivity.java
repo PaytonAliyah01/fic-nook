@@ -43,7 +43,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
-/** Shows the Fic Nook page (bundled in assets/www) full screen, plus folder access and self-updates. */
+/** Shows the FicNook page (bundled in assets/www) full screen, plus folder access and self-updates. */
 public class MainActivity extends Activity {
     private static final int PICK_FILE = 41;
     private static final int PICK_FOLDER = 42;

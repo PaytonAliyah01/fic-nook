@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="ink">#4446A0</color>
+    <color name="icon_bg">#170D08</color>
     <color name="night">#17171C</color>
     <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@color/night</item>

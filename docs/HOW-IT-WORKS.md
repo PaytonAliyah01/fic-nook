@@ -1,10 +1,10 @@
-# How Fic Nook works
+# How FicNook works
 
 This is for anyone changing the code. For how to use the app, see the [user guide](USER-GUIDE.md).
 
 ## The ground rule
 
-Fic Nook only works on files the reader downloaded themselves. It never scrapes, logs in to, or downloads from AO3. The only network request the app makes is to the GitHub Releases API to check for updates.
+FicNook only works on files the reader downloaded themselves. It never scrapes, logs in to, or downloads from AO3. The only network request the app makes is to the GitHub Releases API to check for updates.
 
 ## The pieces
 
@@ -34,7 +34,7 @@ The same page also runs on its own in a browser (it was first published as a Cla
 All parsing happens on the phone, in the page.
 
 - **HTML and EPUB** (AO3's own download formats): the preface (`#preface`, `dl.tags`) becomes the info page and the tag fields. Chapters split on `h2.heading`. Author's notes become foldable `<details class="fn-note">` boxes. Markup is cleaned down to a safe set of tags.
-- **PDF**: PDF.js gives positioned text pieces. Fic Nook groups them into lines and paragraphs using the body font size, the left margin, line gaps, first-line indents and short last lines. It then spots AO3's labels (Summary, Notes, Chapter Notes, End Notes), the chapter headings and the tag fields (Rating, Fandom, Relationship...). Repeating headers, footers and page numbers are removed (but never big text or "Chapter N" lines, since every chapter starts on a new page). A chapter starts at a "Chapter N" line or at a big heading at the top of a page, which is how AO3 prints named chapters. `PARSER_V` in the page is bumped whenever this gets better, so the app re-reads the fic folder once.
+- **PDF**: PDF.js gives positioned text pieces. FicNook groups them into lines and paragraphs using the body font size, the left margin, line gaps, first-line indents and short last lines. It then spots AO3's labels (Summary, Notes, Chapter Notes, End Notes), the chapter headings and the tag fields (Rating, Fandom, Relationship...). Repeating headers, footers and page numbers are removed (but never big text or "Chapter N" lines, since every chapter starts on a new page). A chapter starts at a "Chapter N" line or at a big heading at the top of a page, which is how AO3 prints named chapters. `PARSER_V` in the page is bumped whenever this gets better, so the app re-reads the fic folder once.
   - **Fonts (1.5)**: after `getTextContent()`, the page also runs `getOperatorList()` so PDF.js loads each font, then reads its real name (for example `LiberationSerif-Italic` or `DejaVuSansMono`) from `page.commonObjs`. The font with the most text is the body font. AO3's PDFs (made with wkhtmltopdf) use names like `NimbusRomNo9L-Regu`, `-ReguItal` (italic), `-Medi` (bold) and `-MediItal`, so the style part after the dash is matched loosely (`ital`, `obl`, `medi`, `semi`, `bold`...). Text in an italic, bold, monospace or different-family font becomes `<em>`, `<strong>`, `<span class="f-mono">`, `<span class="f-sans">` or `<span class="f-alt">`.
 - **Same fic, new chapters**: every fic gets an id from its AO3 work number (`w12345`, read from the work URL inside the file), or else from a hash of title and author. A re-download that matches an existing fic by id, work number, or title and author replaces the text but keeps the id, so reading spot, highlights and everything else stay attached. `lib[id].newCh` counts the new chapters for the card label.
 
@@ -93,3 +93,7 @@ The fic folder is read through two made-up addresses the activity answers itself
 ## Testing
 
 There's no phone in the loop yet. Changes are checked by loading the page in headless Chromium (Playwright) with a fake `FicNookAndroid` object and test fics (AO3-style HTML, an EPUB and PDFs printed from them, including one with italics, bold and text-message fonts). The scripts walk through setup, folder import, re-download updates, shelves, filters, the reader, highlights, read aloud, auto-scroll, quote cards, goals, backups and widget launches. The Java side is checked by the GitHub build.
+
+## App icon
+
+The icon is an adaptive icon in `app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`: a dark background colour (`icon_bg`), a picture layer (`mipmap-*/ic_launcher_foreground.png`) and a one-colour outline for themed icons (`mipmap-*/ic_launcher_monochrome.png`). The drawings they come from are in `docs/icon/` as SVG files.

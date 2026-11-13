@@ -46,5 +46,5 @@ jobs:
         run: |
           gh release delete latest --yes --cleanup-tag || true
           gh release create "v$NUM" FicNook.apk --latest \
-            --title "Fic Nook 1.$NUM" \
-            --notes "Tap FicNook.apk below on your Android phone to download and install it. If you already have Fic Nook 1.3 or newer, the app offers this update by itself."
+            --title "FicNook 1.$NUM" \
+            --notes "Tap FicNook.apk below on your Android phone to download and install it. If you already have FicNook 1.3 or newer, the app offers this update by itself."
