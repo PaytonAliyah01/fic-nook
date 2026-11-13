@@ -1,6 +1,6 @@
 # Fic Nook user guide
 
-This guide covers everything Fic Nook can do as of version 1.7.
+This guide covers everything Fic Nook can do as of version 1.8.
 
 ## Getting started
 
@@ -107,7 +107,7 @@ Authors sometimes use a different font for text messages, signs or letters. Fic 
 
 ## Me
 
-- **Update now** appears at the top (here and in your Library) when a new version is ready. If you don't see it, close Fic Nook fully and open it again.
+- **Update now** appears at the top (here and in your Library) when a new version is ready. Fic Nook looks for new versions whenever you come back to it, and the **Check for updates** button (in the Fic Nook app box) checks right away.
 - **Your reading this year**: fics finished, words read, time spent reading, and your best streak of days in a row. **See your recap** shows the whole year: busiest month, top fandoms, ships and tags, your longest fic, and more. You can look back at earlier years too.
 - **Your reading goal**: pick a number of fics a week, month or year, or minutes a day, and watch the bar fill up.
 - **Your shelves**: make new shelves (like "Comfort reads" or "Reread someday") or remove ones you don't need. Removing a shelf never removes the fics.

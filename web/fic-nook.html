@@ -476,6 +476,11 @@ body.controls .topbar { transform: none; }
     <h2>Highlights and notes</h2>
     <ul class="me-hl" id="me-hl"></ul>
   </section>
+  <section class="me-card" id="app-card" hidden>
+    <h2>Fic Nook app</h2>
+    <p id="app-card-text"></p>
+    <div class="row-btns"><button class="btn-small" type="button" id="check-update">Check for updates</button></div>
+  </section>
   <section class="me-card" id="folder-card" hidden>
     <h2>Fic folder</h2>
     <p id="folder-text"></p>
@@ -2615,12 +2620,18 @@ window.ficNookFolderChanged = () => {
 window.ficNookToast = m => toast(m);
 window.ficNookOpenLast = () => { const id = lastFicId(); if (id && (!fic || fic.id !== id)) { if (fic) closeReader(); openFic(id); } };
 window.ficNookResume = () => { if (!fic && Date.now() - lastSync > 15000) syncFolder(false); };
-window.ficNookUpdateAvailable = ver => { $$(".update-msg").forEach(m => m.textContent = `Fic Nook ${ver} is ready.`); $$(".update-bar").forEach(b => b.hidden = false); };
+window.ficNookUpdateAvailable = ver => {
+  $$(".update-msg").forEach(m => m.textContent = `Fic Nook ${ver} is ready.`); $$(".update-bar").forEach(b => b.hidden = false);
+  const c = $("#check-update"); if (c && c.disabled) { c.disabled = false; c.textContent = "Check for updates"; if (!$("#me").hidden) window.scrollTo({ top: 0, behavior: "smooth" }); }
+};
 window.ficNookUpdateStatus = (msg, canTap) => $$(".update-btn").forEach(b => { b.textContent = msg; b.disabled = !canTap; });
 $$(".update-btn").forEach(btn => btn.addEventListener("click", () => { if (Android) { $$(".update-btn").forEach(b => b.disabled = true); Android.installUpdate(); } }));
 $("#folder-pick").addEventListener("click", () => Android && Android.pickFolder());
 $("#folder-sync").addEventListener("click", () => { showView("home"); syncFolder(true); });
-if (Android) { try { $("#app-version").textContent = `Fic Nook ${Android.version()}. `; } catch {} folderUI(); }
+if (Android) { try { $("#app-version").textContent = `Fic Nook ${Android.version()}. `; $("#app-card-text").textContent = `You have version ${Android.version()}. New versions show up by themselves at the top of your Library and here, and you can update without closing the app.`; } catch {} folderUI(); }
+if (Android && Android.checkUpdate) $("#app-card").hidden = false;
+$("#check-update").addEventListener("click", () => { const b = $("#check-update"); b.disabled = true; b.textContent = "Checking…"; try { Android.checkUpdate(); } catch { b.disabled = false; b.textContent = "Check for updates"; } });
+window.ficNookUpdateNone = ok => { const b = $("#check-update"); b.disabled = false; b.textContent = ok ? "You're up to date. Check again" : "Couldn't check. Try again"; };
 
 /* Android Back button: close a panel, hide the controls, leave the fic, or go back to the Library. */
 window.ficNookBack = () => {

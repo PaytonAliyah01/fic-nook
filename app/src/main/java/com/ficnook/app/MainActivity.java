@@ -185,6 +185,11 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public void checkUpdate() {
+            checkForUpdate(true);
+        }
+
+        @JavascriptInterface
         public void installUpdate() {
             startUpdate();
         }
@@ -393,26 +398,44 @@ public class MainActivity extends Activity {
 
     /* ---------- updates ---------- */
 
-    private void checkForUpdate() {
+    private final Runnable periodicCheck = new Runnable() {
+        @Override
+        public void run() {
+            checkForUpdate(false);
+            handler.postDelayed(this, 30 * 60 * 1000);
+        }
+    };
+
+    private void checkForUpdate() { checkForUpdate(false); }
+
+    /* Asks GitHub for the newest release. "manual" means the person tapped Check for updates, so always answer. */
+    private void checkForUpdate(boolean manual) {
         lastUpdateCheck = System.currentTimeMillis();
         new Thread(() -> {
+            boolean found = false, ok = false;
             try {
                 HttpURLConnection c = (HttpURLConnection) new URL(RELEASES).openConnection();
                 c.setRequestProperty("Accept", "application/vnd.github+json");
                 c.setConnectTimeout(10000);
                 c.setReadTimeout(10000);
-                if (c.getResponseCode() != 200) return;
-                JSONObject o = new JSONObject(readAll(c.getInputStream()));
-                int remote = Integer.parseInt(o.optString("tag_name").replaceAll("[^0-9]", ""));
-                if (remote <= BuildConfig.VERSION_CODE) return;
-                JSONArray assets = o.getJSONArray("assets");
-                for (int i = 0; i < assets.length(); i++) {
-                    JSONObject a = assets.getJSONObject(i);
-                    if (a.optString("name").endsWith(".apk")) updateUrl = a.optString("browser_download_url");
+                if (c.getResponseCode() == 200) {
+                    ok = true;
+                    JSONObject o = new JSONObject(readAll(c.getInputStream()));
+                    int remote = Integer.parseInt(o.optString("tag_name").replaceAll("[^0-9]", ""));
+                    if (remote > BuildConfig.VERSION_CODE) {
+                        JSONArray assets = o.getJSONArray("assets");
+                        for (int i = 0; i < assets.length(); i++) {
+                            JSONObject a = assets.getJSONObject(i);
+                            if (a.optString("name").endsWith(".apk")) updateUrl = a.optString("browser_download_url");
+                        }
+                        if (updateUrl != null) {
+                            found = true;
+                            js("window.ficNookUpdateAvailable && window.ficNookUpdateAvailable(" + JSONObject.quote("1." + remote) + ")");
+                        }
+                    }
                 }
-                if (updateUrl == null) return;
-                js("window.ficNookUpdateAvailable && window.ficNookUpdateAvailable(" + JSONObject.quote("1." + remote) + ")");
             } catch (Exception ignored) { }
+            if (manual && !found) js("window.ficNookUpdateNone && window.ficNookUpdateNone(" + ok + ")");
         }).start();
     }
 
@@ -557,8 +580,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Look for a new version again if the app has been open a while (it used to check only at start).
-        if (checkedUpdate && updateUrl == null && System.currentTimeMillis() - lastUpdateCheck > 20 * 60 * 1000) checkForUpdate();
+        // Look for a new version whenever you come back to the app (at most every 2 minutes), and every 30 minutes while it's open.
+        if (checkedUpdate && System.currentTimeMillis() - lastUpdateCheck > 2 * 60 * 1000) checkForUpdate();
+        handler.removeCallbacks(periodicCheck);
+        handler.postDelayed(periodicCheck, 30 * 60 * 1000);
         // Pick up fics that were downloaded while the app was in the background.
         web.evaluateJavascript("window.ficNookResume && window.ficNookResume()", null);
     }
@@ -567,6 +592,7 @@ public class MainActivity extends Activity {
     protected void onPause() {
         // Make sure the reading spot is saved when the app goes to the background.
         web.evaluateJavascript("window.dispatchEvent(new Event('pagehide'))", null);
+        handler.removeCallbacks(periodicCheck);
         super.onPause();
     }
 }

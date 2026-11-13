@@ -87,7 +87,7 @@ The fic folder is read through two made-up addresses the activity answers itself
 
 - `app/build.gradle`: `minSdk 26`, `targetSdk 34`, Android Gradle Plugin 8.7.3, `androidx.webkit` and `androidx.core`. The version code is the `ficVersion` property and the version name is `1.<ficVersion>`.
 - The workflow runs `gradle assembleRelease -PficVersion=<run number>` with Gradle 8.11.1 and Java 17, then creates a release `v<run number>` with `FicNook.apk` and marks it latest. The stable download link is `releases/latest/download/FicNook.apk`.
-- On launch the app asks the GitHub API for the latest release. If its number is higher than the installed version code, the page shows **Update now**. Tapping it downloads the APK into the app's cache and hands it to the Android installer through a `FileProvider`. That needs the "install unknown apps" permission, which Android asks for the first time.
+- The app asks the GitHub API for the latest release at launch, on resume (at most every 2 minutes), every 30 minutes while open, and when **Check for updates** is tapped (`checkUpdate()`, answered by `ficNookUpdateAvailable` or `ficNookUpdateNone(ok)`). If its number is higher than the installed version code, the page shows **Update now**. Tapping it downloads the APK into the app's cache and hands it to the Android installer through a `FileProvider`. That needs the "install unknown apps" permission, which Android asks for the first time.
 - All builds are signed with the committed keystore (password `ficnook`). If it ever changes, updates won't install over old copies.
 
 ## Testing

@@ -2,6 +2,11 @@
 
 Version numbers come from the GitHub build number: build 5 is version 1.5, and so on.
 
+## 1.8
+
+- No more closing the app to update. Fic Nook looks for a new version every time you come back to it and every 30 minutes while it's open.
+- New **Check for updates** button under **Me**.
+
 ## 1.7
 
 - Fics in your fic folder are read again once after updating, so ones you added before 1.5 also get italics, bold and special fonts. Your spot, highlights and shelves stay. (Fics you added by hand with **Add a fic** need adding again.)
