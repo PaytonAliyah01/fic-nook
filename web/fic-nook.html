@@ -154,6 +154,33 @@ button { cursor: pointer; }
 .finished-list li { border-bottom: 1px solid var(--line); padding-bottom: 6px; overflow-wrap: anywhere; }
 .finished-list small { color: var(--muted); }
 
+
+/* ---------- 1.13: Insights ---------- */
+#insights { max-width: 40rem; margin: 0 auto; display: grid; gap: 14px; }
+#insights > * { min-width: 0; }
+.ins-hero { background: var(--accent); color: var(--accent-ink); border-radius: 18px; padding: 22px; display: grid; gap: 6px; }
+.ins-hero .eyebrow { margin: 0; font-size: .76rem; letter-spacing: .12em; text-transform: uppercase; opacity: .85; font-weight: 700; }
+.ins-hero h2 { margin: 0; font-family: var(--book); font-weight: 600; font-size: 1.55rem; line-height: 1.25; text-wrap: balance; overflow-wrap: anywhere; }
+.ins-hero p { margin: 0; opacity: .9; }
+.speed-num { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; color: var(--fg); }
+.speed-num b { font-size: 2.6rem; line-height: 1; font-variant-numeric: tabular-nums; font-family: var(--book); }
+.speed-num span { color: var(--muted); }
+.me-card p.big { color: var(--fg); font-size: 1rem; }
+.ins-list ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ins-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: baseline; }
+.ins-list .nm { overflow-wrap: anywhere; color: var(--fg); }
+.ins-list .ct { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ins-list .track { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+.ins-list .track i { display: block; height: 100%; border-radius: 4px; background: var(--accent); }
+.ins-list .more { justify-self: start; border: 0; background: none; color: var(--accent); font-weight: 700; padding: 4px 0; }
+.ins-bars { display: grid; align-items: end; gap: 6px; height: 120px; border-bottom: 1px solid var(--line); }
+.ins-bars .bar-col .b { width: min(26px, 70%); }
+.ins-labels { display: grid; gap: 6px; font-size: .72rem; color: var(--muted); text-align: center; }
+.facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.facts li { display: grid; grid-template-columns: 2rem minmax(0, 1fr); gap: 10px; align-items: start; color: var(--fg); overflow-wrap: anywhere; }
+.facts li span:first-child { font-size: 1.3rem; line-height: 1.3; text-align: center; }
+.ins-two { display: grid; grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr)); gap: 14px; }
+
 /* ---------- Reader ---------- */
 #reader { max-width: calc(var(--measure) + 2rem); margin: 0 auto; padding-block: 0 96px; }
 body.reading::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
@@ -276,7 +303,7 @@ input[type="range"] { width: 100%; accent-color: var(--accent); }
 
 /* ---------- Navigation, Me, reader controls, setup ---------- */
 body.has-nav { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
-#home, #me, #stats { padding-block: 22px 24px; gap: 14px; }
+#home, #me, #stats, #insights { padding-block: 22px 24px; gap: 14px; }
 #me { max-width: 40rem; margin: 0 auto; display: grid; gap: 14px; }
 .me-card > * { min-width: 0; }
 .my-shelves li button { flex: none; }
@@ -285,9 +312,9 @@ body.has-nav { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
 .view-head span { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 .tools { margin-bottom: 0; }
 .tabs { margin-bottom: 0; }
-.tabbar { position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); background: var(--surface); border-top: 1px solid var(--line);
+.tabbar { position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--surface); border-top: 1px solid var(--line);
   padding: 6px max(8px, env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px)); }
-.tabbar button { background: none; border: 0; display: grid; justify-items: center; align-content: center; gap: 3px; padding: 6px 4px; font-size: .8rem; color: var(--muted); border-radius: 12px; min-height: 58px; }
+.tabbar button { background: none; border: 0; display: grid; justify-items: center; align-content: center; gap: 3px; padding: 6px 2px; font-size: .76rem; min-width: 0; color: var(--muted); border-radius: 12px; min-height: 58px; }
 .tabbar svg { width: 24px; height: 24px; }
 .tabbar button[aria-current="page"] { color: var(--accent); font-weight: 700; }
 .fab { position: fixed; z-index: 8; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 999px; padding: 15px 20px; font-weight: 700; font-size: 1rem; display: inline-flex; gap: 8px; align-items: center; box-shadow: 0 6px 20px rgba(0,0,0,.3); }
@@ -642,6 +669,11 @@ body.controls .topbar { transform: none; }
 </main>
 
 
+<main id="insights" class="view" hidden>
+  <div class="view-head"><h1>Insights</h1><span id="ins-sub"></span></div>
+  <div id="ins-body" style="display:grid;gap:14px"></div>
+</main>
+
 <main id="write" class="view" hidden>
   <div class="view-head"><h1>Write</h1><span id="works-count"></span></div>
   <div id="write-empty" class="write-empty" hidden>
@@ -702,6 +734,10 @@ body.controls .topbar { transform: none; }
   <button type="button" data-view="write">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>
     Write
+  </button>
+  <button type="button" data-view="insights">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+    Insights
   </button>
   <button type="button" data-view="me">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
@@ -1506,14 +1542,37 @@ function fmtMins(m) {
 const minsLeft = f => (f.words || 0) * (1 - pct(f) / 100) / settings.wpm;
 
 /* ---------------- reading stats ---------------- */
-const stats = Object.assign({ days: {}, read: {}, fin: {} }, LS.get("stats", {}));
+const stats = Object.assign({ days: {}, read: {}, fin: {}, ft: {}, hr: {} }, LS.get("stats", {}));
+stats.ft ||= {}; stats.hr ||= {};
 const saveStats = () => LS.set("stats", stats);
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const today = () => stats.days[dayKey()] || (stats.days[dayKey()] = { s: 0, w: 0 });
 let activeUntil = 0;
 const poke = () => { activeUntil = Date.now() + 90000; };
+// Where you are in the fic, counted in words from the start (for reading speed).
+function absPos() {
+  if (!fic || idx < 0) return 0;
+  let n = 0; for (let i = 0; i < idx; i++) n += chWords(fic, i);
+  return n + chWords(fic, idx) * readFrac();
+}
+let spLast = null, statsFrom = "me";
 setInterval(() => {
-  if (fic && (TTS.playing || (!document.hidden && Date.now() < activeUntil))) { today().s += 15; saveStats(); }
+  if (fic && (TTS.playing || (!document.hidden && Date.now() < activeUntil))) {
+    const d = today(); d.s += 15;
+    if (!fic.mine && !fic.sample) stats.ft[fic.id] = (stats.ft[fic.id] || 0) + 15;
+    const h = new Date().getHours(); stats.hr[h] = (stats.hr[h] || 0) + 15;
+    // Reading speed: only while you turn pages or scroll yourself (not read aloud or auto-scroll).
+    if (!TTS.playing && !AS.on) {
+      const p = absPos();
+      if (spLast && spLast.id === fic.id) {
+        const dw = p - spLast.p;
+        if (dw > 0 && dw <= 600) { d.pw = (d.pw || 0) + Math.round(dw); d.ps = (d.ps || 0) + 15; }
+        else if (dw <= 0 && dw > -50) d.ps = (d.ps || 0) + 15;   // still on the same page
+      }
+      spLast = { id: fic.id, p };
+    } else spLast = null;
+    saveStats();
+  } else spLast = null;
 }, 15000);
 function markChapterRead(i) {
   if (!fic || i < 0) return;
@@ -1621,7 +1680,7 @@ async function openFic(id) {
   hls = LS.get("hl:" + id, []); bms = LS.get("bm:" + id, []);
   if (lib[id] && lib[id].newCh) { delete lib[id].newCh; saveLib(); }
   const pos = LS.get("pos:" + id, null);
-  for (const v of ["home", "me", "stats", "write", "work"]) $("#" + v).hidden = true;
+  for (const v of ["home", "me", "stats", "insights", "write", "work"]) $("#" + v).hidden = true;
   $("#tabbar").hidden = true; $("#open-btn").hidden = true; document.body.classList.remove("has-nav"); setControls(false);
   $("#reader").hidden = false; $("#progress").hidden = false;
   showHint();
@@ -2274,9 +2333,216 @@ function renderStats(y) {
   const show = el => { $$("#bars .bar-col").forEach(b => b.classList.toggle("sel", b === el)); $("#readout").textContent = el.getAttribute("aria-label"); };
   $$("#bars .bar-col").forEach(b => { b.addEventListener("mouseenter", () => show(b)); b.addEventListener("focus", () => show(b)); b.addEventListener("click", () => show(b)); });
 }
-$("#stats-btn").addEventListener("click", showStats);
-$("#stats-back").addEventListener("click", () => showView("me"));
+$("#stats-btn").addEventListener("click", () => { statsFrom = "me"; showStats(); });
+$("#stats-back").addEventListener("click", () => showView(statsFrom));
 $("#stats-year").addEventListener("change", e => renderStats(Number(e.target.value)));
+
+/* ---------------- insights ---------------- */
+const GENRES = [
+  ["Fluff", /fluff/i], ["Angst", /angst/i], ["Hurt/Comfort", /hurt\/comfort|\bh\/c\b/i], ["Romance", /romance|romantic/i],
+  ["Slow burn", /slow\s*burn/i], ["Smut", /smut|explicit sexual|\bporn\b|\bpwp\b/i], ["Humour", /humou?r|crack|funny|comedy/i],
+  ["Drama", /drama/i], ["Alternate universe", /alternate universe|\bau\b/i], ["Enemies to lovers", /enemies to (friends to )?lovers/i],
+  ["Friends to lovers", /friends to lovers/i], ["Pining", /pining/i], ["Found family", /found family/i], ["Domestic", /domestic/i],
+  ["Whump", /whump/i], ["Fix-it", /fix-?it/i], ["Mystery", /mystery|detective/i], ["Horror", /horror/i], ["Adventure", /adventure/i],
+  ["Hurt no comfort", /hurt no comfort/i], ["Happy ending", /happy ending/i], ["Canon compliant", /canon compliant/i],
+  ["Fake dating", /fake (dating|relationship|marriage)/i], ["Soulmates", /soul\s*mates?/i], ["Time travel", /time travel/i],
+  ["Magic", /\bmagic/i], ["Grief", /grief|mourning/i], ["First kiss", /first kiss/i], ["Getting together", /getting together/i]
+];
+const genresOf = tags => GENRES.filter(([, rx]) => tags.some(t => rx.test(t))).map(([n]) => n);
+const DAY_NAMES = ["Sundays", "Mondays", "Tuesdays", "Wednesdays", "Thursdays", "Fridays", "Saturdays"];
+let insMore = {};
+
+// Every fic you've opened or finished, with the AO3 info FicNook read from the file.
+function readFics() {
+  const out = new Map();
+  for (const f of fics) {
+    if (f.sample) continue;
+    const st = statusOf(f), time = stats.ft[f.id] || 0;
+    if (st === "toread" && !time && !stats.fin[f.id]) continue;
+    const m = lib[f.id] || {};
+    out.set(f.id, { id: f.id, t: f.title, a: f.author, w: f.words || 0, fandom: ficField(f, /^fandoms?$/i), ships: ficField(f, /^relationships?$/i),
+      chars: ficField(f, /^characters?$/i), tags: splitList(ficField(f, /^additional tags$/i)), rating: ficField(f, /^rating$/i),
+      cat: ficField(f, /^categor/i), fin: st === "finished", time, stars: m.stars || 0, fav: !!m.fav, ci: chaptersInfo(f) });
+  }
+  for (const [id, x] of Object.entries(stats.fin)) {
+    if (out.has(id)) continue;
+    const skip = new Set([...splitList(x.fandom), ...splitList(x.ships)]);
+    out.set(id, { id, t: x.t, a: x.a, w: x.w || 0, fandom: x.fandom, ships: x.ships, chars: "", tags: (x.tags || []).filter(t => !skip.has(t)),
+      rating: "", cat: "", fin: true, time: stats.ft[id] || 0, stars: 0, fav: false, ci: null });
+  }
+  return [...out.values()];
+}
+// Most-read first; ties go to the one you spent more time on.
+function rankBy(list, keysOf) {
+  const c = new Map();
+  for (const f of list) for (const k of new Set(keysOf(f))) { const o = c.get(k) || { n: 0, s: 0 }; o.n++; o.s += f.time; c.set(k, o); }
+  return [...c.entries()].sort((a, b) => b[1].n - a[1].n || b[1].s - a[1].s || a[0].localeCompare(b[0]));
+}
+function readingSpeed() {
+  let w = 0, s = 0;
+  for (const d of Object.values(stats.days)) { w += d.pw || 0; s += d.ps || 0; }
+  if (s >= 300 && w >= 300) return { wpm: Math.round(w / (s / 60)), mins: s / 60, measured: true };
+  // Older reading (before 1.13): words in chapters you finished, over time spent.
+  let ow = 0, os = 0;
+  for (const d of Object.values(stats.days)) { ow += d.w || 0; os += d.s || 0; }
+  const est = os >= 600 ? Math.round(ow / (os / 60)) : 0;
+  if (est >= 80 && est <= 1000) return { wpm: est, mins: os / 60, measured: false };
+  return { wpm: 0, mins: s / 60, measured: false };
+}
+function streaks() {
+  const days = new Set(Object.entries(stats.days).filter(([, d]) => d.s >= 60 || d.w > 0).map(([k]) => k));
+  const d = new Date(); let cur = 0;
+  if (!days.has(dayKey(d))) d.setDate(d.getDate() - 1);   // today doesn't count against you yet
+  while (days.has(dayKey(d))) { cur++; d.setDate(d.getDate() - 1); }
+  let best = 0, run = 0, prev = null;
+  for (const k of [...days].sort()) {
+    const t = new Date(k + "T12:00:00").getTime();
+    run = prev !== null && Math.round((t - prev) / 86400000) === 1 ? run + 1 : 1;
+    best = Math.max(best, run); prev = t;
+  }
+  return { cur, best, days: days.size };
+}
+const timeShort = secs => secs >= 3600 ? (secs / 3600).toFixed(secs >= 36000 ? 0 : 1) + " h" : Math.round(secs / 60) + " min";
+const plural = (n, w) => `${n.toLocaleString()} ${w}${n === 1 ? "" : "s"}`;
+
+function insList(key, title, rows, unit, emptyMsg) {
+  if (!rows.length) return `<section class="me-card ins-list"><h2>${title}</h2><p>${emptyMsg}</p></section>`;
+  const max = rows[0][1].n, show = insMore[key] ? 15 : 5;
+  return `<section class="me-card ins-list"><h2>${title}</h2><ol>${rows.slice(0, show).map(([k, v]) =>
+    `<li><span class="nm">${esc(k)}</span><span class="ct">${plural(v.n, unit)}${v.s >= 60 ? " · " + timeShort(v.s) : ""}</span><span class="track" aria-hidden="true"><i style="width:${(v.n / max * 100).toFixed(1)}%"></i></span></li>`).join("")}</ol>${
+    rows.length > 5 ? `<button class="more" type="button" data-more="${key}">${insMore[key] ? "Show less" : `Show more (${Math.min(15, rows.length)})`}</button>` : ""}</section>`;
+}
+function insBars(id, title, vals, labels, names, fmt, note) {
+  const max = Math.max(...vals), cols = `grid-template-columns:repeat(${vals.length},minmax(0,1fr))`;
+  return `<figure class="chart"><figcaption>${title}</figcaption>
+    <div class="ins-bars" id="${id}" style="${cols}">${vals.map((v, i) => `<div class="bar-col" tabindex="0" aria-label="${esc(names[i])}: ${esc(fmt(v))}"><div class="b" style="height:${max ? (v / max * 100).toFixed(1) : 0}%"></div></div>`).join("")}</div>
+    <div class="ins-labels" aria-hidden="true" style="${cols}">${labels.map(l => `<span>${esc(l)}</span>`).join("")}</div>
+    <p class="readout" id="${id}-out">${note}</p></figure>`;
+}
+
+function renderInsights() {
+  const list = readFics(), sp = readingSpeed(), st = streaks();
+  const all = Object.entries(stats.days);
+  const secs = all.reduce((n, [, d]) => n + (d.s || 0), 0);
+  const words = all.reduce((n, [, d]) => n + Math.max(d.w || 0, d.pw || 0), 0);
+  const fin = list.filter(f => f.fin);
+  const body = $("#ins-body");
+  $("#ins-sub").textContent = list.length ? plural(list.length, "fic") + " read" : "";
+  if (!list.length && secs < 60) {
+    body.innerHTML = `<div class="ins-hero"><p class="eyebrow">Your insights</p><h2>Your reading story starts here</h2><p>Open a fic and read for a bit. FicNook will work out how fast you read, your favourite fandoms, ships and genres, and lots of other fun facts. Everything stays on your phone.</p></div>`;
+    return;
+  }
+  const fandoms = rankBy(list, f => splitList(f.fandom));
+  const ships = rankBy(list, f => splitList(f.ships));
+  const genres = rankBy(list, f => genresOf(f.tags));
+  const chars = rankBy(list, f => splitList(f.chars));
+  const authors = rankBy(list, f => splitList(f.a).filter(a => !/^anonymous$|^orphan_account$/i.test(a)));
+  const gset = new RegExp(GENRES.map(([, rx]) => rx.source).join("|"), "i");
+  const tags = rankBy(list, f => f.tags.filter(t => !gset.test(t)));
+  const ratings = rankBy(list.filter(f => f.rating), f => [f.rating]);
+  const cats = rankBy(list.filter(f => f.cat), f => splitList(f.cat));
+
+  // When you read
+  const hr = h => stats.hr[h] || 0;
+  const sum = hs => hs.reduce((n, h) => n + hr(h), 0);
+  const parts = [["Morning", [5, 6, 7, 8, 9, 10, 11]], ["Afternoon", [12, 13, 14, 15, 16]], ["Evening", [17, 18, 19, 20, 21]], ["Late night", [22, 23, 0, 1, 2, 3, 4]]];
+  const partVals = parts.map(([, hs]) => sum(hs)), hrTotal = partVals.reduce((a, b) => a + b, 0);
+  const topPart = hrTotal >= 600 ? partVals.indexOf(Math.max(...partVals)) : -1;
+  const wd = Array(7).fill(0);
+  all.forEach(([k, d]) => { wd[new Date(k + "T12:00:00").getDay()] += d.s || 0; });
+  const wdOrder = [1, 2, 3, 4, 5, 6, 0], wdVals = wdOrder.map(i => wd[i]);
+  const topDay = secs >= 600 ? wd.indexOf(Math.max(...wd)) : -1;
+  const persona = topPart === 0 ? "early bird" : topPart === 3 ? "night owl" : topPart === 1 ? "afternoon reader" : topPart === 2 ? "evening reader" : "";
+
+  // Hero line
+  const g = genres[0] && genres[0][0], sh = ships[0] && ships[0][0], fd = fandoms[0] && fandoms[0][0];
+  let hero = g ? `A ${esc(g)} reader` : fd ? `A ${esc(fd)} reader` : "A fic reader";
+  if (persona) hero = `A ${esc(g || fd || "fic")} ${persona === "early bird" ? "early bird" : persona}`;
+  if (sh) hero += ` with a soft spot for ${esc(sh)}`;
+  else if (g && fd) hero += ` who lives in ${esc(fd)}`;
+  hero += ".";
+  const heroSub = [plural(list.length, "fic") + " opened", fin.length ? plural(fin.length, "fic") + " finished" : "", secs >= 60 ? timeShort(secs) + " of reading" : ""].filter(Boolean).join(" · ");
+
+  // Speed card
+  let speed;
+  if (sp.wpm) {
+    const v = sp.wpm, cmp = v < 180 ? "You take your time and enjoy every word." : v < 300 ? "That's right around the usual pace for stories (about 250 words a minute)." : v < 450 ? "That's faster than most readers!" : "That's really fast! You might be skimming the slower bits.";
+    const tenK = fmtMins(10000 / v), fit = Math.min(500, Math.max(120, Math.round(v / 10) * 10));
+    speed = `<section class="me-card"><h2>Your reading speed</h2>
+      <div class="speed-num"><b>${v}</b><span>words a minute${sp.measured ? "" : " (a rough guess so far)"}</span></div>
+      <p class="big">${cmp} A 10,000-word fic takes you about ${tenK}.</p>
+      <p>${sp.measured ? `Worked out from ${fmtMins(sp.mins)} of reading where you turned the pages yourself.` : "FicNook now measures this properly while you turn pages. It'll get more accurate as you read."}</p>
+      ${Math.abs(fit - settings.wpm) >= 10 ? `<button class="btn-wide" type="button" id="ins-usewpm" data-wpm="${fit}">Use ${fit} for my “time left” estimates</button>` : `<p>Your “time left” estimates already use this speed.</p>`}
+    </section>`;
+    const last = [];
+    for (let i = 13; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate() - i); const x = stats.days[dayKey(d)] || {}; last.push({ d, v: (x.ps || 0) >= 120 ? Math.round((x.pw || 0) / (x.ps / 60)) : 0 }); }
+    if (last.filter(x => x.v).length >= 2) speed += insBars("ins-spd", "Your speed, last 2 weeks", last.map(x => x.v), last.map((x, i) => i % 2 ? "" : String(x.d.getDate())),
+      last.map(x => x.d.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" })), v => v ? v + " words a minute" : "no speed measured", "Tap a bar to see that day.");
+  } else {
+    speed = `<section class="me-card"><h2>Your reading speed</h2><p class="big">Read for about 5 more minutes, turning the pages yourself, and FicNook will work out how many words a minute you read.</p></section>`;
+  }
+
+  // Fun facts
+  const facts = [];
+  if (words >= 1000) {
+    const novels = words / 90000;
+    facts.push(["📚", `You've read <b>${words.toLocaleString()}</b> words. ${novels >= 1 ? `That's about ${novels >= 10 ? Math.round(novels) : novels.toFixed(1)} whole novels` : `That's about ${Math.round(words / 300).toLocaleString()} paperback pages`}.`]);
+  }
+  if (st.cur >= 1) facts.push(["🔥", `You're on a <b>${st.cur}-day</b> reading streak${st.best > st.cur ? `. Your best ever is ${plural(st.best, "day")}` : st.cur > 1 ? ", your best ever" : ""}.`]);
+  else if (st.best > 1) facts.push(["🔥", `Your best streak is <b>${plural(st.best, "day")}</b> in a row. Read today to start a new one.`]);
+  const most = list.filter(f => f.time >= 600).sort((a, b) => b.time - a.time)[0];
+  if (most) facts.push(["⏳", `You've spent the most time with <b>${esc(most.t)}</b>: ${fmtMins(most.time / 60)}.`]);
+  const longest = fin.filter(f => f.w).sort((a, b) => b.w - a.w)[0];
+  if (longest) facts.push(["🏔️", `Your longest finished fic is <b>${esc(longest.t)}</b>, at ${longest.w.toLocaleString()} words.`]);
+  if (fin.length >= 2) facts.push(["📏", `Fics you finish are <b>${Math.round(fin.reduce((n, f) => n + f.w, 0) / fin.length).toLocaleString()}</b> words long on average.`]);
+  const wips = list.filter(f => f.ci && !f.ci.complete).length;
+  if (wips) facts.push(["✍️", `You're following <b>${plural(wips, "work")} in progress</b>. Hoping for updates!`]);
+  if (topPart >= 0) facts.push([topPart === 3 ? "🌙" : topPart === 0 ? "🌅" : "☕", `You're ${persona === "early bird" ? "an early bird" : persona === "afternoon reader" ? "an afternoon reader" : "a" + (persona === "night owl" ? " night owl" : "n evening reader")}: most of your reading happens in the ${parts[topPart][0].toLowerCase()}.`]);
+  if (topDay >= 0) facts.push(["📅", `You read the most on <b>${DAY_NAMES[topDay]}</b>.`]);
+  const hlCount = fics.reduce((n, f) => n + LS.get("hl:" + f.id, []).length, 0);
+  if (hlCount) facts.push(["🖍️", `You've saved <b>${plural(hlCount, "highlight")}</b>.`]);
+  const fives = list.filter(f => f.stars >= 5).length;
+  if (fives) facts.push(["⭐", `You gave <b>${plural(fives, "fic")}</b> five stars.`]);
+  if (authors[0] && authors[0][1].n >= 2) facts.push(["💌", `Your most-read author is <b>${esc(authors[0][0])}</b> (${plural(authors[0][1].n, "fic")}).`]);
+
+  const finishMsg = "Open a few AO3 fics to see this.";
+  body.innerHTML = `
+    <div class="ins-hero"><p class="eyebrow">Your reading personality</p><h2>${hero}</h2><p>${heroSub}</p></div>
+    ${speed}
+    <div class="tiles">
+      <div class="tile"><b>${words.toLocaleString()}</b><span>words read</span></div>
+      <div class="tile"><b>${timeShort(secs)}</b><span>time reading</span></div>
+      <div class="tile"><b>${fin.length}</b><span>fic${fin.length === 1 ? "" : "s"} finished</span></div>
+      <div class="tile"><b>${st.cur}</b><span>day streak${st.best ? ` (best ${st.best})` : ""}</span></div>
+    </div>
+    ${facts.length ? `<section class="me-card"><h2>Fun facts</h2><ul class="facts">${facts.map(([e, t]) => `<li><span aria-hidden="true">${e}</span><span>${t}</span></li>`).join("")}</ul></section>` : ""}
+    ${insList("genres", "Favourite genres", genres, "fic", "FicNook spots genres like Fluff, Angst or Slow Burn in a fic's tags. Read some tagged fics to see yours.")}
+    ${insList("fandoms", "Favourite fandoms", fandoms, "fic", finishMsg)}
+    ${insList("ships", "Top ships", ships, "fic", finishMsg)}
+    ${insList("chars", "Favourite characters", chars, "fic", finishMsg)}
+    ${insList("authors", "Top authors", authors, "fic", finishMsg)}
+    ${insList("tags", "Tags you love", tags, "fic", finishMsg)}
+    <div class="ins-two">
+      ${insList("ratings", "Ratings", ratings, "fic", finishMsg)}
+      ${insList("cats", "Relationship types", cats, "fic", finishMsg)}
+    </div>
+    ${hrTotal >= 60 ? insBars("ins-tod", "When you read", partVals, parts.map(p => p[0]), parts.map(([n, hs]) => `${n} (${hs[0]}:00 to ${(hs[hs.length - 1] + 1) % 24}:00)`), v => v >= 60 ? fmtMins(v / 60) : "no reading", "Tap a bar to see how long.") : ""}
+    ${secs >= 60 ? insBars("ins-wd", "Your reading days", wdVals, ["M", "T", "W", "T", "F", "S", "S"], wdOrder.map(i => DAY_NAMES[i]), v => v >= 60 ? fmtMins(v / 60) + " in total" : "no reading", "Tap a bar to see how long.") : ""}
+    <button class="btn-wide" type="button" id="ins-recap">See your ${new Date().getFullYear()} recap</button>
+    <p class="privacy">Insights are worked out on your phone from the fics you've opened and the AO3 info inside them. Reading time and speed are counted only while FicNook is open and you're reading.</p>`;
+  for (const id of ["ins-spd", "ins-tod", "ins-wd"]) {
+    const box = $("#" + id); if (!box) continue;
+    const show = el => { $$(".bar-col", box).forEach(b => b.classList.toggle("sel", b === el)); $("#" + id + "-out").textContent = el.getAttribute("aria-label"); };
+    $$(".bar-col", box).forEach(b => { b.addEventListener("mouseenter", () => show(b)); b.addEventListener("focus", () => show(b)); b.addEventListener("click", () => show(b)); });
+  }
+}
+$("#ins-body").addEventListener("click", e => {
+  const m = e.target.closest("[data-more]");
+  if (m) { insMore[m.dataset.more] = !insMore[m.dataset.more]; const y = window.scrollY; renderInsights(); window.scrollTo(0, y); return; }
+  const u = e.target.closest("#ins-usewpm");
+  if (u) { settings.wpm = Number(u.dataset.wpm); applySettings(); toast(`Time estimates now use ${settings.wpm} words a minute.`); const y = window.scrollY; renderInsights(); window.scrollTo(0, y); return; }
+  if (e.target.closest("#ins-recap")) { statsFrom = "insights"; showStats(); }
+});
 
 /* ---------------- backup & restore ---------------- */
 async function makeBackup() {
@@ -2300,8 +2566,15 @@ function mergeJson(k, curStr, incStr) {
   try {
     const cur = JSON.parse(curStr), inc = JSON.parse(incStr);
     if (k === "ficnook:stats") {
-      const out = { days: { ...inc.days }, read: { ...inc.read, ...cur.read }, fin: { ...inc.fin, ...cur.fin } };
-      for (const [d, v] of Object.entries(cur.days || {})) { const o = out.days[d] || { s: 0, w: 0 }; out.days[d] = { s: Math.max(o.s || 0, v.s || 0), w: Math.max(o.w || 0, v.w || 0) }; }
+      const out = { days: { ...inc.days }, read: { ...inc.read, ...cur.read }, fin: { ...inc.fin, ...cur.fin }, ft: { ...(inc.ft || {}) }, hr: { ...(inc.hr || {}) } };
+      for (const [d, v] of Object.entries(cur.days || {})) {
+        const o = out.days[d] || { s: 0, w: 0 };
+        const n = { s: Math.max(o.s || 0, v.s || 0), w: Math.max(o.w || 0, v.w || 0) };
+        if ((v.ps || 0) >= (o.ps || 0)) { if (v.ps) { n.ps = v.ps; n.pw = v.pw || 0; } } else { n.ps = o.ps; n.pw = o.pw || 0; }
+        out.days[d] = n;
+      }
+      for (const [k, v] of Object.entries(cur.ft || {})) out.ft[k] = Math.max(out.ft[k] || 0, v);
+      for (const [k, v] of Object.entries(cur.hr || {})) out.hr[k] = Math.max(out.hr[k] || 0, v);
       return JSON.stringify(out);
     }
     if (k === "ficnook:lib" || k === "ficnook:folderSeen") return JSON.stringify({ ...inc, ...cur });
@@ -2403,12 +2676,13 @@ async function handleFiles(files) {
 
 /* ---------------- navigation ---------------- */
 function showView(v) {
-  for (const id of ["home", "me", "stats", "write", "work"]) $("#" + id).hidden = id !== v;
-  const tab = { stats: "me", work: "write" }[v] || v;
+  for (const id of ["home", "me", "stats", "insights", "write", "work"]) $("#" + id).hidden = id !== v;
+  const tab = { stats: statsFrom, work: "write" }[v] || v;
   $$("#tabbar button").forEach(b => { if (b.dataset.view === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   if (v === "write") renderWrite();
   $("#open-btn").hidden = v !== "home";
   if (v === "me") renderMe();
+  if (v === "insights") renderInsights();
   window.scrollTo(0, 0);
 }
 function lastFicId() {

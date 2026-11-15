@@ -28,11 +28,12 @@ Download it again from AO3. FicNook recognises it's the same fic (it uses the AO
 
 ## Getting around
 
-The bar along the bottom has four buttons:
+The bar along the bottom has five buttons:
 
 - **Library**: all your fics.
 - **Reading**: jumps straight back into the fic you were reading.
 - **Write**: your own stories.
+- **Insights**: your reading speed, favourite genres, fandoms and ships, and fun facts.
 - **Me**: your goal, shelves, stats, highlights, settings, fic folder, backups and help.
 
 The Android **Back** button closes whatever is open, one step at a time.
@@ -131,6 +132,19 @@ The **Write** tab is for your own stories. Everything stays on your phone (and i
 - **Read it like a fic** shows your story in the reader, exactly like a downloaded fic.
 - **Copy all the text** copies the whole story so you can paste it anywhere. In the app, **Save as a file** saves it as a .txt file (Google Drive shows up in the list).
 - **Delete story** (tap twice) removes it for good. **Delete chapter** is in the editor.
+
+## Insights
+
+Everything here is worked out on your phone from the fics you've opened and the AO3 info inside them (fandom, ships, characters, tags, rating).
+
+- **Your reading personality** sums you up in one line, from your favourite genre, ship and the time of day you read most.
+- **Your reading speed** is how many words a minute you read. It's measured only while you turn the pages or scroll yourself, so read aloud and auto-scroll don't count. It needs about 5 minutes of reading to start. Tap **Use … for my "time left" estimates** to make every reading time in the app match your real speed.
+- **Fun facts**: words read, your streak, the fic you've spent the most time with, your longest fic, works in progress you're following, and more.
+- **Favourite genres, fandoms, ships, characters, authors and tags**, each with how many fics and how much time. Tap **Show more** for a longer list. Genres are spotted in the tags (Fluff, Angst, Slow Burn, Hurt/Comfort, Alternate Universe and so on).
+- **When you read** and **your reading days**: tap a bar to see how long.
+- **See your recap** at the bottom opens the yearly recap.
+
+Reading speed, time of day and time per fic started counting in version 1.13, so those fill in as you read.
 
 ## Me
 

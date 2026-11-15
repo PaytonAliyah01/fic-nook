@@ -2,6 +2,16 @@
 
 Version numbers come from the GitHub build number: build 5 is version 1.5, and so on.
 
+## 1.13
+
+- **A new Insights tab** at the bottom, full of fun facts about your reading:
+  - **Your reading speed** in words a minute, worked out while you turn pages yourself (read aloud and auto-scroll don't count). One tap uses it for all the "time left" estimates. A little chart shows your speed over the last two weeks.
+  - **Your reading personality**, like "A Fluff night owl with a soft spot for Harry Potter/Draco Malfoy".
+  - **Favourite genres** (Fluff, Angst, Slow Burn, Hurt/Comfort, Enemies to Lovers and lots more, spotted in the AO3 tags), **fandoms**, **ships**, **characters**, **authors** and **tags**, plus your mix of ratings and relationship types.
+  - **Fun facts**: words read (and how many novels that is), your streak, the fic you spent the most time with, your longest fic, works in progress you're following, your favourite reading day, and whether you're an early bird or a night owl.
+  - Charts for **when you read** (morning, afternoon, evening, late night) and **which days**.
+- It uses every fic you've opened, not just the finished ones. Reading speed, time of day and time per fic start counting from this version.
+
 ## 1.12
 
 - **Write your own stories.** A new **Write** tab at the bottom. Start a story, give it a title, pen name, description, fandom, ships, tags, rating and a cover (made-up colors or your own picture).
