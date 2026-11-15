@@ -54,7 +54,7 @@ Everything is on the device, in the WebView's storage.
 | `opened:<id>` | When the fic was last opened (for sorting and the Reading button) |
 | `hl:<id>` | Highlights `{ id, ch, b, s, e, text, note, at }` (block index plus text offsets) |
 | `bm:<id>` | Bookmarks `{ id, ch, frac, text, at }` |
-| `stats` | `days` (seconds read and words per day), `read` (chapters counted), `fin` (finished fics, with fandom, ships and tags for the recap) |
+| `stats` | `days` (per day: `s` seconds read, `w` words in chapters finished, `ps`/`pw` seconds and words measured for reading speed), `read` (chapters counted), `fin` (finished fics, with fandom, ships and tags for the recap), `ft` (seconds per fic id), `hr` (seconds per hour of the day, 0-23). Insights (`renderInsights`) are computed from these plus the AO3 fields of opened fics. |
 | `goal` | `{ n, type }`, where type is week, month, year or day |
 | `filters`, `tab`, `sort` | Library view choices |
 | `folderSeen` | Files in the fic folder already imported (name, size, modified) |
